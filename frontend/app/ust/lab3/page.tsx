@@ -27,7 +27,7 @@ export default function Home() {
                 {/* Last checked */}
               </CardDescription>
               <div className="mx-auto w-full h-auto relative overflow-hidden rounded-lg p-2 border-slate-200 dark:border-[#424C5E] border">
-                <USTLab3 theme={theme} />
+                {/* <USTLab3 theme={theme} chartConfig={chartConfig} sensorData={currData} /> */}
               </div>
             </CardHeader>
           </Card>
