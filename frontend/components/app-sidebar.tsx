@@ -35,18 +35,18 @@ const items = [
     icon: Factory,
     subitems: [
       {
-        title: 'Lab 1',
-        url: '/opendc/lab1',
+        title: 'Room 1',
+        url: '/opendc/room1',
         activeIndicator: ''
       },
       {
-        title: 'Lab 2',
-        url: '/opendc/lab2',
+        title: 'Room 2',
+        url: '/opendc/room2',
         activeIndicator: ''
       },
       {
-        title: 'Lab 3',
-        url: '/opendc/lab3',
+        title: 'Room 3',
+        url: '/opendc/room3',
         activeIndicator: ''
       },
     ]

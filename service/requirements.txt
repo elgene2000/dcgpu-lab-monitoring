@@ -1,0 +1,11 @@
+python-dotenv
+schedule
+pymongo
+selenium
+webdriver_manager
+paramiko
+scp
+easyocr
+opencv-python
+paramiko
+puresnmp

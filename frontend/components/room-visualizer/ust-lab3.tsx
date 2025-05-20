@@ -7,7 +7,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
-// import { ChartConfig } from "@/components/ui/chart"
+import { ChartConfig } from "@/components/ui/chart"
 
 interface SensorData {
     key: string;
@@ -19,16 +19,17 @@ interface SensorData {
 interface RoomVisualizerProps {
     // chartConfig: ChartConfig
     theme?: string;
-    sensorData?: SensorData[];
+    chartConfig: ChartConfig,
+    sensorData: SensorData[];
 }
 
 
 
-const USTLab3: React.FC<RoomVisualizerProps> = ({ theme }) => {
+const USTLab3: React.FC<RoomVisualizerProps> = ({ theme, chartConfig, sensorData }) => {
 
-    // const findByLabel = (label: string) => {
-    //     return Object.values(chartConfig).find((config) => config.label === label);
-    // }
+    const findByLabel = (label: string) => {
+        return Object.values(chartConfig).find((config) => config.label === label);
+    }
 
     const colorConfig = {
         block_fill: theme == "dark" ? "#272D3C" : "#F6F8FA",
@@ -117,7 +118,7 @@ const USTLab3: React.FC<RoomVisualizerProps> = ({ theme }) => {
                         <path d="M0 0V-1H-1V0H0ZM0 173H-1V174H0V173ZM0 1H456V-1H0V1ZM456 172H0V174H456V172ZM1 173V0H-1V173H1Z" fill={colorConfig.block_stroke} mask="url(#path-34-inside-11_46_2)" />
                         <path d="M675.5 0C675.5 0.843415 675.51 1.68446 675.53 2.52302L676.03 2.51094C676.071 4.18808 676.152 5.85519 676.272 7.51133L675.774 7.54763C675.896 9.22818 676.059 10.8975 676.261 12.5547L676.758 12.494C676.961 14.1577 677.204 15.8091 677.486 17.4471L676.994 17.532C677.28 19.1911 677.605 20.8366 677.97 22.4674L678.458 22.3583C678.824 23.9926 679.228 25.612 679.671 27.2157L679.189 27.3488C679.637 28.9703 680.124 30.5757 680.648 32.1639L681.123 32.0072C681.648 33.5961 682.21 35.1678 682.81 36.7211L682.343 36.9011C682.949 38.4693 683.592 40.0189 684.271 41.5488L684.728 41.3459C685.406 42.8742 686.121 44.3828 686.871 45.8705L686.425 46.0956C687.182 47.5955 687.974 49.0743 688.801 50.5308L689.235 50.284C690.061 51.7373 690.92 53.1684 691.813 54.5761L691.391 54.8439C692.291 56.2615 693.224 57.6555 694.19 59.0248L694.599 58.7365C695.562 60.1014 696.557 61.4415 697.585 62.7558L697.191 63.0636C698.224 64.3858 699.289 65.682 700.385 66.951L700.763 66.6243C701.854 67.888 702.976 69.1247 704.127 70.3331L703.764 70.6779C704.921 71.8925 706.107 73.0788 707.322 74.2355L707.667 73.8735C708.875 75.0244 710.112 76.1459 711.376 77.237L711.049 77.6154C712.318 78.7111 713.614 79.7761 714.936 80.8094L715.244 80.4154C716.559 81.4426 717.899 82.4382 719.263 83.4011L718.975 83.8096C720.344 84.7757 721.738 85.7091 723.156 86.6087L723.424 86.1865C724.832 87.0798 726.263 87.9395 727.716 88.7645L727.469 89.1993C728.926 90.0262 730.404 90.8185 731.904 91.575L732.13 91.1285C733.617 91.8788 735.126 92.5938 736.654 93.2723L736.451 93.7293C737.981 94.4084 739.531 95.0513 741.099 95.6566L741.279 95.1902C742.832 95.7898 744.404 96.3524 745.993 96.8771L745.836 97.3519C747.424 97.8764 749.03 98.363 750.651 98.8109L750.784 98.3289C752.388 98.7718 754.007 99.1765 755.642 99.5419L755.533 100.03C757.163 100.395 758.809 100.72 760.468 101.006L760.553 100.514C762.191 100.796 763.842 101.039 765.506 101.242L765.445 101.739C767.102 101.941 768.772 102.104 770.452 102.226L770.489 101.728C772.145 101.848 773.812 101.929 775.489 101.97L775.477 102.47C776.316 102.49 777.157 102.5 778 102.5H778.5V102H779.5V102.5H780H780.5V102V99.45H780V94.35H780.5V89.25H780V84.15H780.5V79.05H780V73.95H780.5V68.85H780V63.75H780.5V58.65H780V53.55H780.5V48.45H780V43.35H780.5V38.25H780V33.15H780.5V28.05H780V22.95H780.5V17.85H780V12.75H780.5V7.65002H780V2.55002H780.5V0V-0.5H780H777.4V0H772.2V-0.5H767V0H761.8V-0.5H756.6V0H751.4V-0.5H746.2V0H741V-0.5H735.8V0H730.6V-0.5H725.4V0H720.2V-0.5H715V0H709.8V-0.5H704.6V0H699.4V-0.5H694.2V0H689V-0.5H683.8V0H678.6V-0.5H676V0H675.5Z" fill={colorConfig.block_fill} stroke={colorConfig.block_stroke} strokeDasharray="5 5" />
                     </g>
-                    {/* {
+                    {
                             Object.values(chartConfig).filter((sensor) => sensor.cx !== undefined && sensor.cy !== undefined).map((sensor, index) => (
                                 <Fragment key={index}>
                                     <circle
@@ -202,9 +203,9 @@ const USTLab3: React.FC<RoomVisualizerProps> = ({ theme }) => {
                                     </Tooltip>
                                 </Fragment>
                             ))
-                        } */}
+                        }
                 </g>
-                {/* {
+                {
                         sensorData && sensorData.length > 0 &&
                         <g>
                             <defs>
@@ -254,7 +255,7 @@ const USTLab3: React.FC<RoomVisualizerProps> = ({ theme }) => {
                                     : "N/A";
                             })()}</text>
                         </g>
-                    } */}
+                    }
 
                 <defs>
                     <clipPath id="clip0_46_2">

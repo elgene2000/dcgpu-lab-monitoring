@@ -11,7 +11,7 @@ import { useTheme } from "next-themes"
 export function TempInfo({ className, ...props }: TempInfoProps) {
     const { theme } = useTheme()
     return (
-        <Card className={cn("w-1/6 h-fit p-2 hidden md:block relative overflow-hidden", className)}>
+        <Card className={cn("w-1/6 h-fit p-2 hidden xl:block relative overflow-hidden", className)}>
             <motion.div
                 initial={{ opacity: 0, x: 30 }}
                 animate={{ opacity: 1, x: 0 }}
