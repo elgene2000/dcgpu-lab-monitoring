@@ -18,6 +18,7 @@ import {
 import { motion } from "framer-motion"
 import { TempInfo } from "@/components/temp-info";
 import { USTLab3 } from "@/components/room-visualizer/ust-lab3";
+import { OpenDC } from "@/components/room-visualizer/opendc";
 import { useTheme } from "next-themes"
 
 //CHART COLORS, CONFIGS, ETC.
@@ -132,35 +133,27 @@ export default function Home() {
       <p className="flex text-xl font-bold text-left pb-3">Home</p>
       <div className="flex w-full space-x-3">
         <div className="flex flex-col items-start space-y-3 w-full xl:w-5/6">
-          <Card className="w-full p-2" delay={0.4}>
-            <CardHeader className="text-left">
-              <CardTitle>UST - Lab 3</CardTitle>
-              <CardDescription>
-                Last checked
-              </CardDescription>
-              <div className="mx-auto w-full h-auto relative overflow-hidden rounded-lg p-2 border-slate-200 dark:border-[#424C5E] border">
-                <USTLab3 theme={theme} chartConfig={chartConfig} sensorData={currData} />
-              </div>
-            </CardHeader>
-          </Card>
           <Card className="w-full p-2">
             <CardHeader className="text-left">
               <CardTitle>OpenDC</CardTitle>
               <CardDescription>
                 {/* Last checked */}
               </CardDescription>
+              <div className="mx-auto w-full h-auto relative overflow-hidden rounded-lg p-2 border-slate-200 dark:border-[#424C5E] border">
+                <OpenDC theme={theme} />
+              </div>
             </CardHeader>
-            <div className="mx-auto text-center w-60 h-96 flex items-center justify-center">
-              <Image
-                alt="wip"
-                src={theme === "dark" ? "/cube-3d-dark.webp" : "/cube-3d.webp"}
-                width={100}
-                height={100}
-                className="mx-auto pb-20"
-              />
-            </div>
           </Card>
-
+          <Card className="w-full p-2" delay={0.4}>
+            <CardHeader className="text-left">
+              <CardTitle>UST - Lab 3</CardTitle>
+              <CardDescription>
+              </CardDescription>
+              <div className="mx-auto w-full h-auto relative overflow-hidden rounded-lg p-2 border-slate-200 dark:border-[#424C5E] border">
+                <USTLab3 theme={theme} chartConfig={chartConfig} sensorData={currData} />
+              </div>
+            </CardHeader>
+          </Card>
         </div>
         <TempInfo />
         {/* <Card className="w-1/6 h-60 p-2 hidden md:block relative overflow-hidden">

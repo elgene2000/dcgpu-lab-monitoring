@@ -10,17 +10,17 @@ import {
 import { TempInfo } from "@/components/temp-info";
 import { useTheme } from "next-themes"
 
-export default function OpenDCRoom3() {
+export default function OpenDCRoom2() {
     const { theme, setTheme } = useTheme()
 
     return (
         <>
-            <p className="flex text-xl font-bold text-left pb-3">OpenDC - Room 3</p>
+            <p className="flex text-xl font-bold text-left pb-3">OpenDC - Room 2</p>
             <div className="flex w-full space-x-3">
                 <div className="flex flex-col items-start space-y-3 w-5/6">
                     <Card className="w-full p-2">
                         <CardHeader className="text-left">
-                            <CardTitle>Room 3</CardTitle>
+                            <CardTitle>Data Hall 2</CardTitle>
                             <CardDescription>
                                 {/* Last checked */}
                             </CardDescription>

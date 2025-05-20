@@ -20,7 +20,7 @@ export default function OpenDCRoom1() {
                 <div className="flex flex-col items-start space-y-3 w-5/6">
                     <Card className="w-full p-2">
                         <CardHeader className="text-left">
-                            <CardTitle>Room 1</CardTitle>
+                            <CardTitle>Data Hall 1</CardTitle>
                             <CardDescription>
                                 {/* Last checked */}
                             </CardDescription>

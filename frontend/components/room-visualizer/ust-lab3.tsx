@@ -17,10 +17,9 @@ interface SensorData {
 }
 
 interface RoomVisualizerProps {
-    // chartConfig: ChartConfig
     theme?: string;
-    chartConfig: ChartConfig,
-    sensorData: SensorData[];
+    chartConfig?: ChartConfig,
+    sensorData?: SensorData[];
 }
 
 
@@ -28,8 +27,10 @@ interface RoomVisualizerProps {
 const USTLab3: React.FC<RoomVisualizerProps> = ({ theme, chartConfig, sensorData }) => {
 
     const findByLabel = (label: string) => {
-        return Object.values(chartConfig).find((config) => config.label === label);
-    }
+        return chartConfig
+            ? Object.values(chartConfig).find((config) => config.label === label)
+            : undefined;
+    };
 
     const colorConfig = {
         block_fill: theme == "dark" ? "#272D3C" : "#F6F8FA",
@@ -119,143 +120,144 @@ const USTLab3: React.FC<RoomVisualizerProps> = ({ theme, chartConfig, sensorData
                         <path d="M675.5 0C675.5 0.843415 675.51 1.68446 675.53 2.52302L676.03 2.51094C676.071 4.18808 676.152 5.85519 676.272 7.51133L675.774 7.54763C675.896 9.22818 676.059 10.8975 676.261 12.5547L676.758 12.494C676.961 14.1577 677.204 15.8091 677.486 17.4471L676.994 17.532C677.28 19.1911 677.605 20.8366 677.97 22.4674L678.458 22.3583C678.824 23.9926 679.228 25.612 679.671 27.2157L679.189 27.3488C679.637 28.9703 680.124 30.5757 680.648 32.1639L681.123 32.0072C681.648 33.5961 682.21 35.1678 682.81 36.7211L682.343 36.9011C682.949 38.4693 683.592 40.0189 684.271 41.5488L684.728 41.3459C685.406 42.8742 686.121 44.3828 686.871 45.8705L686.425 46.0956C687.182 47.5955 687.974 49.0743 688.801 50.5308L689.235 50.284C690.061 51.7373 690.92 53.1684 691.813 54.5761L691.391 54.8439C692.291 56.2615 693.224 57.6555 694.19 59.0248L694.599 58.7365C695.562 60.1014 696.557 61.4415 697.585 62.7558L697.191 63.0636C698.224 64.3858 699.289 65.682 700.385 66.951L700.763 66.6243C701.854 67.888 702.976 69.1247 704.127 70.3331L703.764 70.6779C704.921 71.8925 706.107 73.0788 707.322 74.2355L707.667 73.8735C708.875 75.0244 710.112 76.1459 711.376 77.237L711.049 77.6154C712.318 78.7111 713.614 79.7761 714.936 80.8094L715.244 80.4154C716.559 81.4426 717.899 82.4382 719.263 83.4011L718.975 83.8096C720.344 84.7757 721.738 85.7091 723.156 86.6087L723.424 86.1865C724.832 87.0798 726.263 87.9395 727.716 88.7645L727.469 89.1993C728.926 90.0262 730.404 90.8185 731.904 91.575L732.13 91.1285C733.617 91.8788 735.126 92.5938 736.654 93.2723L736.451 93.7293C737.981 94.4084 739.531 95.0513 741.099 95.6566L741.279 95.1902C742.832 95.7898 744.404 96.3524 745.993 96.8771L745.836 97.3519C747.424 97.8764 749.03 98.363 750.651 98.8109L750.784 98.3289C752.388 98.7718 754.007 99.1765 755.642 99.5419L755.533 100.03C757.163 100.395 758.809 100.72 760.468 101.006L760.553 100.514C762.191 100.796 763.842 101.039 765.506 101.242L765.445 101.739C767.102 101.941 768.772 102.104 770.452 102.226L770.489 101.728C772.145 101.848 773.812 101.929 775.489 101.97L775.477 102.47C776.316 102.49 777.157 102.5 778 102.5H778.5V102H779.5V102.5H780H780.5V102V99.45H780V94.35H780.5V89.25H780V84.15H780.5V79.05H780V73.95H780.5V68.85H780V63.75H780.5V58.65H780V53.55H780.5V48.45H780V43.35H780.5V38.25H780V33.15H780.5V28.05H780V22.95H780.5V17.85H780V12.75H780.5V7.65002H780V2.55002H780.5V0V-0.5H780H777.4V0H772.2V-0.5H767V0H761.8V-0.5H756.6V0H751.4V-0.5H746.2V0H741V-0.5H735.8V0H730.6V-0.5H725.4V0H720.2V-0.5H715V0H709.8V-0.5H704.6V0H699.4V-0.5H694.2V0H689V-0.5H683.8V0H678.6V-0.5H676V0H675.5Z" fill={colorConfig.block_fill} stroke={colorConfig.block_stroke} strokeDasharray="5 5" />
                     </g>
                     {
-                            Object.values(chartConfig).filter((sensor) => sensor.cx !== undefined && sensor.cy !== undefined).map((sensor, index) => (
-                                <Fragment key={index}>
-                                    <circle
-                                        cx={sensor.cx}
-                                        cy={sensor.cy}
-                                        r="15"
-                                        className={cn(
-                                            "fill-gray-200",
-                                            sensorData.find(
-                                                (obj) => obj["key"] === sensor.label && obj.reading <= 22
-                                            ) && "fill-emerald-300",
-                                            sensorData.find(
-                                                (obj) =>
-                                                    obj["key"] === sensor.label &&
-                                                    obj.reading > 22 &&
-                                                    obj.reading <= 28
-                                            ) && "fill-amber-300",
-                                            sensorData.find(
-                                                (obj) => obj["key"] === sensor.label && obj.reading > 28
-                                            ) && "fill-red-400"
-                                        )}
+                        chartConfig && sensorData && sensorData.length > 0 &&
+                        Object.values(chartConfig).filter((sensor) => sensor.cx !== undefined && sensor.cy !== undefined).map((sensor, index) => (
+                            <Fragment key={index}>
+                                <circle
+                                    cx={sensor.cx}
+                                    cy={sensor.cy}
+                                    r="15"
+                                    className={cn(
+                                        "fill-gray-200",
+                                        sensorData.find(
+                                            (obj) => obj["key"] === sensor.label && obj.reading <= 22
+                                        ) && "fill-emerald-300",
+                                        sensorData.find(
+                                            (obj) =>
+                                                obj["key"] === sensor.label &&
+                                                obj.reading > 22 &&
+                                                obj.reading <= 28
+                                        ) && "fill-amber-300",
+                                        sensorData.find(
+                                            (obj) => obj["key"] === sensor.label && obj.reading > 28
+                                        ) && "fill-red-400"
+                                    )}
+                                >
+                                    <animate
+                                        attributeName="r"
+                                        from="15"
+                                        to="120"
+                                        dur="2s"
+                                        begin="0s"
+                                        repeatCount="indefinite"
+                                        keyTimes="0;0.5;1"
+                                        keySplines="0.4 0 0.2 1"
+                                    />
+                                    <animate
+                                        attributeName="opacity"
+                                        from="0.6"
+                                        to="0"
+                                        dur="2s"
+                                        begin="0s"
+                                        repeatCount="indefinite"
+                                        keyTimes="0;0.5;1"
+                                        keySplines="0.4 0 0.2 1"
+                                    />
+                                </circle>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <circle
+                                            cx={sensor.cx}
+                                            cy={sensor.cy}
+                                            r="15"
+                                            className={cn(
+                                                "fill-gray-200 cursor-pointer relative z-10", // Ensure this circle is above
+                                                sensorData.find(
+                                                    (obj) => obj["key"] === sensor.label && obj.reading <= 22
+                                                ) && "fill-emerald-300",
+                                                sensorData.find(
+                                                    (obj) =>
+                                                        obj["key"] === sensor.label &&
+                                                        obj.reading > 22 &&
+                                                        obj.reading <= 28
+                                                ) && "fill-amber-300",
+                                                sensorData.find(
+                                                    (obj) => obj["key"] === sensor.label && obj.reading > 28
+                                                ) && "fill-red-400"
+                                            )}
+                                        />
+                                    </TooltipTrigger>
+                                    <TooltipContent
+                                        className="absolute top-[-50px] left-[10px] flex-col space-y-2 text-zinc-700 z-50"
                                     >
-                                        <animate
-                                            attributeName="r"
-                                            from="15"
-                                            to="120"
-                                            dur="2s"
-                                            begin="0s"
-                                            repeatCount="indefinite"
-                                            keyTimes="0;0.5;1"
-                                            keySplines="0.4 0 0.2 1"
-                                        />
-                                        <animate
-                                            attributeName="opacity"
-                                            from="0.6"
-                                            to="0"
-                                            dur="2s"
-                                            begin="0s"
-                                            repeatCount="indefinite"
-                                            keyTimes="0;0.5;1"
-                                            keySplines="0.4 0 0.2 1"
-                                        />
-                                    </circle>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <circle
-                                                cx={sensor.cx}
-                                                cy={sensor.cy}
-                                                r="15"
+                                        <p className="font-semibold text-zinc-900">{sensor.label}</p>
+                                        <div className="flex items-center space-x-2 font-medium text-xs">
+                                            <div
                                                 className={cn(
-                                                    "fill-gray-200 cursor-pointer relative z-10", // Ensure this circle is above
-                                                    sensorData.find(
-                                                        (obj) => obj["key"] === sensor.label && obj.reading <= 22
-                                                    ) && "fill-emerald-300",
-                                                    sensorData.find(
-                                                        (obj) =>
-                                                            obj["key"] === sensor.label &&
-                                                            obj.reading > 22 &&
-                                                            obj.reading <= 28
-                                                    ) && "fill-amber-300",
-                                                    sensorData.find(
-                                                        (obj) => obj["key"] === sensor.label && obj.reading > 28
-                                                    ) && "fill-red-400"
+                                                    "rounded-[2px] w-2.5 h-2.5"
                                                 )}
-                                            />
-                                        </TooltipTrigger>
-                                        <TooltipContent
-                                            className="absolute top-[-50px] left-[10px] flex-col space-y-2 text-zinc-700 z-50"
-                                        >
-                                            <p className="font-semibold text-zinc-900">{sensor.label}</p>
-                                            <div className="flex items-center space-x-2 font-medium text-xs">
-                                                <div
-                                                    className={cn(
-                                                        "rounded-[2px] w-2.5 h-2.5"
-                                                    )}
-                                                    //USING STYLES AS TAILWIND DOES NOT SUPPORT DYNAMIC BG STYLING
-                                                    style={{ backgroundColor: findByLabel(sensor.label)?.color || "transparent" }}
-                                                ></div>
-                                                <p>{sensorData.find((obj) => obj["key"] === sensor.label)?.reading ?? "N/A"} °C</p>
-                                            </div>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </Fragment>
-                            ))
-                        }
+                                                //USING STYLES AS TAILWIND DOES NOT SUPPORT DYNAMIC BG STYLING
+                                                style={{ backgroundColor: findByLabel(sensor.label)?.color || "transparent" }}
+                                            ></div>
+                                            <p>{sensorData.find((obj) => obj["key"] === sensor.label)?.reading ?? "N/A"} °C</p>
+                                        </div>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </Fragment>
+                        ))
+                    }
                 </g>
                 {
-                        sensorData && sensorData.length > 0 &&
-                        <g>
-                            <defs>
-                                <mask id="rotating-beam-mask_1">
-                                    <rect x="0" y="0" width="100%" height="100%" fill="black" />
-                                    <rect x="630" y="350" width="120" height="30" fill="white" transform-origin="0 0">
-                                        <animateTransform
-                                            attributeName="transform"
-                                            type="rotate"
-                                            from="0 640 360"
-                                            to="360 640 360"
-                                            dur="7s"
-                                            repeatCount="indefinite" />
-                                    </rect>
-                                </mask>
-                                <mask id="rotating-beam-mask_2">
-                                    <rect x="0" y="0" width="100%" height="100%" fill="black" />
-                                    <rect x="630" y="350" width="120" height="30" fill="white" fill-opacity="1" transform-origin="0 0">
-                                        <animateTransform
-                                            attributeName="transform"
-                                            type="rotate"
-                                            from="180 640 360"
-                                            to="540 640 360"
-                                            dur="7s"
-                                            repeatCount="indefinite" />
-                                    </rect>
-                                </mask>
-                                <linearGradient id="linear-gradient-1" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" stopColor="white"/>
-                                    <stop offset="100%" stopColor="#3B82F6" />
-                                </linearGradient>
-                                <linearGradient id="linear-gradient-2" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" stopColor="#3B82F6"/>
-                                    <stop offset="100%" stopColor="white" />
-                                </linearGradient>
-                            </defs>
-                            <rect x="549.5" y="333.5" width="181" height="53" rx="4.5" fill="#3B82F6" fill-opacity="0.10" />
-                            <rect x="549.5" y="333.5" width="181" height="53" rx="4.5" fill="none" stroke="#3B82F6" strokeWidth="2" strokeOpacity="0.30" />
-                            <rect x="549.5" y="333.5" width="181" height="53" rx="4.5" stroke="url(#linear-gradient-1)" strokeWidth="2" mask="url(#rotating-beam-mask_1)" />
-                            <rect x="549.5" y="333.5" width="181" height="53" rx="4.5" stroke="url(#linear-gradient-2)" strokeWidth="2" mask="url(#rotating-beam-mask_2" />
-                            <path d="M593.967 359.67C593.904 359.362 593.755 359.077 593.537 358.85C593.32 358.622 593.042 358.461 592.737 358.385L581.303 355.525L585.532 345.657C585.678 345.314 585.706 344.932 585.61 344.572C585.515 344.212 585.301 343.894 585.003 343.67C584.706 343.445 584.341 343.326 583.968 343.333C583.595 343.34 583.235 343.473 582.947 343.71L564.613 358.71C564.374 358.906 564.194 359.164 564.093 359.456C563.992 359.748 563.975 360.062 564.042 360.364C564.11 360.665 564.259 360.942 564.475 361.163C564.691 361.385 564.964 361.542 565.263 361.617L576.462 364.418L570.887 374.175C570.742 374.428 570.667 374.715 570.668 375.007C570.669 375.298 570.747 375.585 570.893 375.837C571.04 376.089 571.25 376.298 571.503 376.444C571.755 376.59 572.042 376.666 572.333 376.667C572.694 376.667 573.045 376.55 573.333 376.333L593.333 361.333C593.585 361.144 593.779 360.888 593.891 360.593C594.003 360.299 594.029 359.979 593.967 359.67Z" fill="#3B82F6" />
-                            <text x="605" y="369" fill="#3B82F6" fontSize="22" fontFamily="sans-serif" fontWeight="600" className="font-[family-name:var(--font-geist-sans)]">{(() => {
-                                const powerSensor = sensorData.find((obj) => obj.key === "power");
-    
-                                return powerSensor
-                                    ? `${powerSensor.reading.toFixed(3)}${powerSensor.symbol}`
-                                    : "N/A";
-                            })()}</text>
-                        </g>
-                    }
+                    sensorData && sensorData.length > 0 &&
+                    <g>
+                        <defs>
+                            <mask id="rotating-beam-mask_1">
+                                <rect x="0" y="0" width="100%" height="100%" fill="black" />
+                                <rect x="630" y="350" width="120" height="30" fill="white" transform-origin="0 0">
+                                    <animateTransform
+                                        attributeName="transform"
+                                        type="rotate"
+                                        from="0 640 360"
+                                        to="360 640 360"
+                                        dur="7s"
+                                        repeatCount="indefinite" />
+                                </rect>
+                            </mask>
+                            <mask id="rotating-beam-mask_2">
+                                <rect x="0" y="0" width="100%" height="100%" fill="black" />
+                                <rect x="630" y="350" width="120" height="30" fill="white" fill-opacity="1" transform-origin="0 0">
+                                    <animateTransform
+                                        attributeName="transform"
+                                        type="rotate"
+                                        from="180 640 360"
+                                        to="540 640 360"
+                                        dur="7s"
+                                        repeatCount="indefinite" />
+                                </rect>
+                            </mask>
+                            <linearGradient id="linear-gradient-1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="white" />
+                                <stop offset="100%" stopColor="#3B82F6" />
+                            </linearGradient>
+                            <linearGradient id="linear-gradient-2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#3B82F6" />
+                                <stop offset="100%" stopColor="white" />
+                            </linearGradient>
+                        </defs>
+                        <rect x="549.5" y="333.5" width="181" height="53" rx="4.5" fill="#3B82F6" fill-opacity="0.10" />
+                        <rect x="549.5" y="333.5" width="181" height="53" rx="4.5" fill="none" stroke="#3B82F6" strokeWidth="2" strokeOpacity="0.30" />
+                        <rect x="549.5" y="333.5" width="181" height="53" rx="4.5" stroke="url(#linear-gradient-1)" strokeWidth="2" mask="url(#rotating-beam-mask_1)" />
+                        <rect x="549.5" y="333.5" width="181" height="53" rx="4.5" stroke="url(#linear-gradient-2)" strokeWidth="2" mask="url(#rotating-beam-mask_2" />
+                        <path d="M593.967 359.67C593.904 359.362 593.755 359.077 593.537 358.85C593.32 358.622 593.042 358.461 592.737 358.385L581.303 355.525L585.532 345.657C585.678 345.314 585.706 344.932 585.61 344.572C585.515 344.212 585.301 343.894 585.003 343.67C584.706 343.445 584.341 343.326 583.968 343.333C583.595 343.34 583.235 343.473 582.947 343.71L564.613 358.71C564.374 358.906 564.194 359.164 564.093 359.456C563.992 359.748 563.975 360.062 564.042 360.364C564.11 360.665 564.259 360.942 564.475 361.163C564.691 361.385 564.964 361.542 565.263 361.617L576.462 364.418L570.887 374.175C570.742 374.428 570.667 374.715 570.668 375.007C570.669 375.298 570.747 375.585 570.893 375.837C571.04 376.089 571.25 376.298 571.503 376.444C571.755 376.59 572.042 376.666 572.333 376.667C572.694 376.667 573.045 376.55 573.333 376.333L593.333 361.333C593.585 361.144 593.779 360.888 593.891 360.593C594.003 360.299 594.029 359.979 593.967 359.67Z" fill="#3B82F6" />
+                        <text x="605" y="369" fill="#3B82F6" fontSize="22" fontFamily="sans-serif" fontWeight="600" className="font-[family-name:var(--font-geist-sans)]">{(() => {
+                            const powerSensor = sensorData.find((obj) => obj.key === "power");
+
+                            return powerSensor
+                                ? `${powerSensor.reading.toFixed(3)}${powerSensor.symbol}`
+                                : "N/A";
+                        })()}</text>
+                    </g>
+                }
 
                 <defs>
                     <clipPath id="clip0_46_2">
