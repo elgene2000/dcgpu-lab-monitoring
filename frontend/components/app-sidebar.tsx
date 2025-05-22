@@ -49,6 +49,16 @@ const items = [
         url: '/opendc/dh3',
         activeIndicator: ''
       },
+      {
+        title: 'Data Hall 4',
+        url: '/opendc/dh4',
+        activeIndicator: ''
+      },
+      {
+        title: 'Data Hall 5',
+        url: '/opendc/dh5',
+        activeIndicator: ''
+      },
     ]
   },
   {

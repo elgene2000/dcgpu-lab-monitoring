@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card"
 import { TempInfo } from "@/components/temp-info";
 import { useTheme } from "next-themes"
-import { OpenDCDH3 } from "@/components/room-visualizer/opedc-dh3";
+import { OpenDCDH3 } from "@/components/room-visualizer/opendc-dh3";
 
 export default function OpenDCRoom3() {
     const { theme, setTheme } = useTheme()
@@ -25,7 +25,7 @@ export default function OpenDCRoom3() {
                             <CardDescription>
                                 {/* Last checked */}
                             </CardDescription>
-                            <div className="w-full h-full relative rounded-lg p-2 border-slate-200 dark:border-[#424C5E] border">
+                            <div className="w-full h-full relative rounded-lg p-2 bg-background/40 dark:bg-secondary-dark/40 border-slate-200 dark:border-[#424C5E] border">
                                 <OpenDCDH3 theme={theme} />
                             </div>
                         </CardHeader>
