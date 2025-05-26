@@ -10,7 +10,7 @@ import {
 import { TempInfo } from "@/components/temp-info";
 import { useTheme } from "next-themes"
 
-export default function OpenDCRoom4() {
+export default function OpenDCRoom5() {
     const { theme, setTheme } = useTheme()
 
     return (
