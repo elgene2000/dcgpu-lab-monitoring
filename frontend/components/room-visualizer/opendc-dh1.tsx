@@ -26,6 +26,9 @@ const OpenDCDH1: React.FC<RoomVisualizerProps> = ({ theme }) => {
     return (
         <svg className="w-full h-full max-h-[950px]" width="424" height="508" viewBox="0 0 424 508" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
+                <clipPath id="semiClip">
+                    <path d="M370,450 A75,75 0 1,0 75,150 Z" />
+                </clipPath>
                 <mask id="semicircle-mask-1">
                     <path d="M196,42 A130,200 0 0,1 96,42 Z" fill="white" />
                 </mask>
@@ -668,11 +671,6 @@ const OpenDCDH1: React.FC<RoomVisualizerProps> = ({ theme }) => {
             <path d="M366.761 115.967C366.672 115.967 366.6 116.04 366.6 116.13C366.6 116.22 366.672 116.294 366.761 116.294H370.838C370.928 116.294 371 116.22 371 116.13C371 116.04 370.928 115.967 370.838 115.967H366.761Z" fill={colorConfig.grill} />
             <path d="M368.638 105.163V109.289C368.638 109.379 368.711 109.452 368.8 109.452C368.889 109.452 368.961 109.379 368.961 109.289V105.163C368.961 105.073 368.889 105 368.8 105C368.711 105 368.638 105.073 368.638 105.163Z" fill={colorConfig.grill} />
             <path d="M366.761 107.063C366.672 107.063 366.6 107.136 366.6 107.226C366.6 107.316 366.672 107.39 366.761 107.39H370.838C370.928 107.39 371 107.316 371 107.226C371 107.136 370.928 107.063 370.838 107.063H366.761Z" fill={colorConfig.grill} />
-            <defs>
-                <clipPath id="semiClip">
-                    <path d="M370,450 A75,75 0 1,0 75,150 Z" />
-                </clipPath>
-            </defs>
         </svg>
     )
 }

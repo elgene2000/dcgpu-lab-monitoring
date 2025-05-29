@@ -26,6 +26,12 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({ theme }) => {
     return (
         <svg className="w-full h-full max-h-[950px]" width="343" height="493" viewBox="0 0 343 493" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
+                <clipPath id="clip0_1039_19">
+                    <path d="M224 110H249V381H224V110Z" fill="white" />
+                </clipPath>
+                <clipPath id="clip1_1039_19">
+                    <path d="M68 110H93V381H68V110Z" fill="white" />
+                </clipPath>
                 <mask id="semicircle-mask-1">
                     <path d="M230,42 A130,200 0 0,1 130,42 Z" fill="white" />
                 </mask>
@@ -677,14 +683,6 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({ theme }) => {
                 <path d="M85.6486 112.707C85.5741 112.707 85.5136 112.768 85.5136 112.843C85.5136 112.917 85.5741 112.978 85.6486 112.978H89.0544C89.1289 112.978 89.1893 112.917 89.1893 112.843C89.1893 112.768 89.1289 112.707 89.0544 112.707H85.6486Z" fill={colorConfig.grill} />
             </g>
             <path d="M68 110V109H67V110H68ZM68 381H67V382H68V381ZM68 110V111H93V110V109H68V110ZM93 381V380H68V381V382H93V381ZM68 381H69V110H68H67V381H68Z" fill={colorConfig.block_stroke} mask="url(#path-66-inside-29_1039_19)" />
-            <defs>
-                <clipPath id="clip0_1039_19">
-                    <path d="M224 110H249V381H224V110Z" fill="white" />
-                </clipPath>
-                <clipPath id="clip1_1039_19">
-                    <path d="M68 110H93V381H68V110Z" fill="white" />
-                </clipPath>
-            </defs>
         </svg>
 
     )

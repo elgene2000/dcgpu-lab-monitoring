@@ -37,7 +37,7 @@ const OpenDCDH2: React.FC<RoomVisualizerProps> = ({ theme }) => {
                     <path d="M335,42 A130,200 0 0,1 245,42 Z" fill="white" />
                 </mask>
                 <mask id="semicircle-mask-4">
-                    <path d="M107,42 A130,200 0 0,1 17,42 Z"  fill="white" />
+                    <path d="M107,42 A130,200 0 0,1 17,42 Z" fill="white" />
                 </mask>
                 <mask id="semicircle-mask-5">
                     <path d="M123,465 A130,200 0 0,0 35,465 Z" fill="white" />
@@ -53,7 +53,7 @@ const OpenDCDH2: React.FC<RoomVisualizerProps> = ({ theme }) => {
                 </mask>
             </defs>
             <path d="M0 1H502V507H0V1Z" fill={colorConfig.canvas_fill} />
-            <path d="M502 1H502.5V0.5H502V1ZM502 507V507.5H502.5V507H502ZM0 1V1.5H502V1V0.5H0V1ZM502 1H501.5V507H502H502.5V1H502ZM502 507V506.5H0V507V507.5H502V507Z" fill={colorConfig.block_stroke} />
+            <path d="M1 1V0.5H0.5V1H1ZM503 1H503.5V0.5H503V1ZM503 507V507.5H503.5V507H503ZM1 507H0.5V507.5H1V507ZM1 1V1.5H503V1V0.5H1V1ZM503 1H502.5V507H503H503.5V1H503ZM503 507V506.5H1V507V507.5H503V507ZM1 507H1.5V1H1H0.5V507H1Z" fill={colorConfig.block_stroke} />
             <mask id="path-3-inside-1_1077_273" fill="white">
                 <path d="M367 91H409V114H367V91Z" />
             </mask>
