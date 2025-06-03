@@ -21,7 +21,8 @@ export default function RootLayout({
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange>
+          disableTransitionOnChange
+        >
           <SidebarProvider>
             <AppSidebar />
             <main className="w-full min-h-screen bg-background dark:bg-background-dark text-text dark:text-text-dark">
@@ -29,9 +30,9 @@ export default function RootLayout({
                 {children}
               </div>
             </main>
-        </SidebarProvider>
-      </ThemeProvider>
-    </body>
-    </html >
+          </SidebarProvider>
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }

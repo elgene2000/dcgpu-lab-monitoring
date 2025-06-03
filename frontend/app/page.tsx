@@ -1,25 +1,25 @@
-"use client"
+"use client";
 import Image from "next/image";
-import axios from 'axios';
-import { useState, useEffect } from "react"
+import axios from "axios";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart"
-import { motion } from "framer-motion"
+} from "@/components/ui/chart";
+import { motion } from "framer-motion";
 import { TempInfo } from "@/components/temp-info";
 import { USTLab3 } from "@/components/room-visualizer/ust-lab3";
 import { OpenDC } from "@/components/room-visualizer/opendc";
-import { useTheme } from "next-themes"
+import { useTheme } from "next-themes";
 
 //CHART COLORS, CONFIGS, ETC.
 const chartConfig = {
@@ -56,77 +56,77 @@ const chartConfig = {
   power: {
     label: "power",
     color: "#a78bfa",
-  }
-} satisfies ChartConfig
+  },
+} satisfies ChartConfig;
 
 //INTERFACES
-type DateRange = "24h" | "7d" | "1mnth"
+type DateRange = "24h" | "7d" | "1mnth";
 
 //UTILS FUNCTION
 const findByLabel = (label: string) => {
   return Object.values(chartConfig).find((config) => config.label === label);
-}
-
+};
 
 const formatDate = (rawDate: Date | string) => {
-  if (rawDate === 'NA') return 'NA';
+  if (rawDate === "NA") return "NA";
   const date = new Date(rawDate);
 
   const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(date.getUTCDate()).padStart(2, '0');
-  const hours = String(date.getUTCHours()).padStart(2, '0');
-  const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const hours = String(date.getUTCHours()).padStart(2, "0");
+  const minutes = String(date.getUTCMinutes()).padStart(2, "0");
 
   return `${year}-${month}-${day} ${hours}:${minutes}`;
-}
+};
 
 export default function Home() {
-
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme } = useTheme();
   // STATES
-  const [currData, setCurrData] = useState<any[]>([])
-  const [tempData, setTempData] = useState<any[]>([])
-  const [ssbData, setSSBData] = useState<any[]>([])
+  const [currData, setCurrData] = useState<any[]>([]);
+  const [tempData, setTempData] = useState<any[]>([]);
+  const [ssbData, setSSBData] = useState<any[]>([]);
 
-  const [tempTicks, setTempTicks] = useState<string[]>([])
-  const [ssbTicks, setSSBTicks] = useState<string[]>([])
+  const [tempTicks, setTempTicks] = useState<string[]>([]);
+  const [ssbTicks, setSSBTicks] = useState<string[]>([]);
 
-  const [selectedTempRange, setSelectedTempRange] = useState<DateRange>("24h")
-  const [selectedSSBRange, setSelectedSSBRange] = useState<DateRange>("24h")
+  const [selectedTempRange, setSelectedTempRange] = useState<DateRange>("24h");
+  const [selectedSSBRange, setSelectedSSBRange] = useState<DateRange>("24h");
 
   // FUNCTIONS
   const getCurrUSTData = async () => {
     try {
-      const currDataList = []
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/dashboard/current_read`)
+      const currDataList = [];
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/dashboard/current_read`,
+      );
       if (response && response.status === 200) {
         //temp = Temporary data
-        const tempData = response.data.data
+        const tempData = response.data.data;
         for (const currTemp of Object.keys(tempData)) {
-          currDataList.push({ "key": currTemp, ...tempData[currTemp] })
+          currDataList.push({ key: currTemp, ...tempData[currTemp] });
         }
-        setCurrData(currDataList)
+        setCurrData(currDataList);
       } else {
-        console.error('Failed to fetch data');
+        console.error("Failed to fetch data");
       }
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
-  }
+  };
 
   //EFFECTS
   useEffect(() => {
     const fetchDashboardData = async () => {
       getCurrUSTData();
-    }
+    };
     fetchDashboardData();
 
     const intervalId = setInterval(fetchDashboardData, 60000);
     return () => clearInterval(intervalId);
   }, []);
 
-  console.log(currData)
+  console.log(currData);
 
   return (
     <>
@@ -136,9 +136,7 @@ export default function Home() {
           <Card className="w-full p-2">
             <CardHeader className="text-left">
               <CardTitle>OpenDC</CardTitle>
-              <CardDescription>
-                {/* Last checked */}
-              </CardDescription>
+              <CardDescription>{/* Last checked */}</CardDescription>
               <div className="mx-auto w-full h-auto relative overflow-hidden rounded-lg p-2 border-slate-200 dark:border-[#424C5E] border">
                 <OpenDC theme={theme} />
               </div>
@@ -147,10 +145,13 @@ export default function Home() {
           <Card className="w-full p-2" delay={0.4}>
             <CardHeader className="text-left">
               <CardTitle>UST - Lab 3</CardTitle>
-              <CardDescription>
-              </CardDescription>
+              <CardDescription></CardDescription>
               <div className="mx-auto w-full h-auto relative overflow-hidden rounded-lg p-2 border-slate-200 dark:border-[#424C5E] border">
-                <USTLab3 theme={theme} chartConfig={chartConfig} sensorData={currData} />
+                <USTLab3
+                  theme={theme}
+                  chartConfig={chartConfig}
+                  sensorData={currData}
+                />
               </div>
             </CardHeader>
           </Card>
