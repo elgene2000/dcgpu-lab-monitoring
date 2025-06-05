@@ -43,7 +43,6 @@ services:
       - ./frontend/.env
     depends_on:
       - backend
-
   mongodb:
     image: mongo:latest
     container_name: mongodb
@@ -54,5 +53,17 @@ services:
       - .env
     volumes:
       - mongo-data:/data/db
+  redis:
+    image: redis:8-alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    env_file:
+      - .env
+    command: redis-server --requirepass "${REDIS_PASSWORD}"
+    volumes:
+      - redis-data:/data
 volumes:
   mongo-data:
+  redis-data:
