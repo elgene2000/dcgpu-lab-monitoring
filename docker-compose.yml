@@ -29,6 +29,7 @@ services:
       - ./backend/.env
     depends_on:
       - mongodb
+      - redis
   
   celery:
     container_name: celery
@@ -36,6 +37,8 @@ services:
     command: celery -A celery_app worker -B --loglevel=INFO
     env_file:
       - ./celery/.env
+    depends_on:
+      - redis
 
   frontend:
     container_name: frontend
