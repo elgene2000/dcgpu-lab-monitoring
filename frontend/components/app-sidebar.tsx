@@ -177,7 +177,7 @@ export function AppSidebar() {
                           strokeLinejoin="round"
                         >
                           <motion.path
-                            d="M20 6 9 17l-5-5\"
+                            d="M20 6 9 17l-5-5"
                             initial={{ pathLength: 0, pathOffset: 1 }}
                             animate={{ pathLength: 1, pathOffset: 0 }}
                             transition={{ duration: 0.2, ease: "easeInOut" }}

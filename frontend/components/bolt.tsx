@@ -11,7 +11,7 @@ const Bolt = ({ theme, power, size, x, y }: BoltProps) => {
   const boltColorConfig = {
     gray: theme === "dark" ? "#556177" : "#D1D7E0",
     green: "#6EDBA8",
-    yellow: "#FFF085",
+    yellow: "#F8A64E",
     red: "#FFA2A2",
   };
 

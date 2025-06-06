@@ -126,8 +126,6 @@ export default function Home() {
     return () => clearInterval(intervalId);
   }, []);
 
-  console.log(currData);
-
   return (
     <>
       <p className="flex text-xl font-bold text-left pb-3">Home</p>
