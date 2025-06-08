@@ -11,9 +11,9 @@ CORS(
     origins="*",
 )
 
-app.register_blueprint(power, url_prefix="/api/power")
-# app.register_blueprint(dashboard, url_prefix="/api/dashboard")
-# app.register_blueprint(temp_sensor, url_prefix="/api/temp")
+app.register_blueprint(power, url_prefix="/power")
+# app.register_blueprint(dashboard, url_prefix="/dashboard")
+# app.register_blueprint(temp_sensor, url_prefix="/temp")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

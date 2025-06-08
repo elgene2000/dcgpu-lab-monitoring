@@ -30,7 +30,15 @@ services:
     depends_on:
       - mongodb
       - redis
-  
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`dcgpu-lab.amd.com`) && PathPrefix(`/api/`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=myresolver"
+      - "traefik.http.services.backend.loadbalancer.server.port=5000"
+      - "traefik.http.routers.backend.middlewares=strip-api"
+      - "traefik.http.middlewares.strip-api.stripprefix.prefixes=/api"
+
   celery:
     container_name: celery
     build: ./celery
