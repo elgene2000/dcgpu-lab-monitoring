@@ -20,8 +20,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .  
 
 # Set build-time environment variables if needed (e.g., NEXT_PUBLIC_ ones)  
-# ARG NEXT_PUBLIC_API_URL  
-# ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}  
+ARG NEXT_PUBLIC_BACKEND_URL  
+ENV NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL}
 
 # Build the application  
 RUN npm run build  
