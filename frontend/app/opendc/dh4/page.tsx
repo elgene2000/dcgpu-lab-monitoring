@@ -20,7 +20,6 @@ export default function OpenDCRoom4() {
   // FUNCTIONS
   const getCurrPower = async () => {
     try {
-      const currDataList = [];
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/power/latest?site=odcdh4`, // Fetching latest power data for Data Hall 3,
       );

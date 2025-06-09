@@ -9,9 +9,40 @@ import {
 } from "@/components/ui/card";
 import { TempInfo } from "@/components/temp-info";
 import { useTheme } from "next-themes";
+import { OpenDCDH5 } from "@/components/room-visualizer/opendc-dh5";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 export default function OpenDCRoom5() {
   const { theme, setTheme } = useTheme();
+  const [currPower, setCurrPower] = useState([]);
+
+  // FUNCTIONS
+  const getCurrPower = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/power/latest?site=odcdh5`, // Fetching latest power data for Data Hall 3,
+      );
+      if (response && response.status === 200) {
+        //temp = Temporary data
+        setCurrPower(response.data || []);
+      } else {
+        console.error("Failed to fetch data");
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  //EFFECTS
+  useEffect(() => {
+    const fetchCurrData = async () => {
+      getCurrPower();
+    };
+    fetchCurrData();
+    const intervalId = setInterval(fetchCurrData, 60000);
+    return () => clearInterval(intervalId);
+  }, []);
 
   return (
     <>
@@ -24,16 +55,10 @@ export default function OpenDCRoom5() {
             <CardHeader className="text-left">
               <CardTitle>Data Hall 5</CardTitle>
               <CardDescription>{/* Last checked */}</CardDescription>
+              <div className="w-full h-full relative rounded-lg p-2 bg-background/40 dark:bg-secondary-dark/40 border-slate-200 dark:border-[#424C5E] border">
+                <OpenDCDH5 theme={theme} powerData={currPower} />
+              </div>
             </CardHeader>
-            <div className="mx-auto text-center w-60 h-96 flex items-center justify-center">
-              <Image
-                alt="wip"
-                src={theme === "dark" ? "/cube-3d-dark.webp" : "/cube-3d.webp"}
-                width={100}
-                height={100}
-                className="mx-auto pb-20"
-              />
-            </div>
           </Card>
         </div>
         <TempInfo />

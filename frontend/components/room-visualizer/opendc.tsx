@@ -33,7 +33,7 @@ const OpenDC: React.FC<RoomVisualizerProps> = ({ theme }) => {
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <g clip-path="url(#clip0_709_5)">
+        <g clipPath="url(#clip0_709_5)">
           <rect width="1280" height="1071" fill={colorConfig.canvas_fill} />
           <rect
             x="937.5"
@@ -3242,7 +3242,7 @@ const OpenDC: React.FC<RoomVisualizerProps> = ({ theme }) => {
             d="M457.532 686.779C457.459 686.779 457.4 686.838 457.4 686.912C457.4 686.986 457.459 687.046 457.532 687.046H460.868C460.941 687.046 461 686.986 461 686.912C461 686.838 460.941 686.779 460.868 686.779H457.532Z"
             fill={colorConfig.grill}
           />
-          <g clip-path="url(#clip1_709_5)">
+          <g clipPath="url(#clip1_709_5)">
             <mask id="path-89-inside-37_709_5" fill="white">
               <path d="M324 676H356V708H324V676Z" />
             </mask>
@@ -3393,7 +3393,7 @@ const OpenDC: React.FC<RoomVisualizerProps> = ({ theme }) => {
             fill={colorConfig.block_stroke}
             mask="url(#path-89-inside-37_709_5)"
           />
-          <g clip-path="url(#clip2_709_5)">
+          <g clipPath="url(#clip2_709_5)">
             <mask id="path-119-inside-38_709_5" fill="white">
               <path d="M311 858H343V890H311V858Z" />
             </mask>
@@ -7435,7 +7435,7 @@ const OpenDC: React.FC<RoomVisualizerProps> = ({ theme }) => {
             stroke={colorConfig.block_stroke}
             stroke-dasharray="5 5"
           />
-          <g clip-path="url(#clip3_709_5)">
+          <g clipPath="url(#clip3_709_5)">
             <mask id="path-205-inside-62_709_5" fill="white">
               <path d="M484 699H570V997H484V699Z" />
             </mask>
@@ -7503,7 +7503,7 @@ const OpenDC: React.FC<RoomVisualizerProps> = ({ theme }) => {
             fill={colorConfig.block_stroke}
             mask="url(#path-216-inside-65_709_5)"
           />
-          <g clip-path="url(#clip4_709_5)">
+          <g clipPath="url(#clip4_709_5)">
             <mask id="path-218-inside-66_709_5" fill="white">
               <path d="M789 684H821V716H789V684Z" />
             </mask>
@@ -7654,7 +7654,7 @@ const OpenDC: React.FC<RoomVisualizerProps> = ({ theme }) => {
             fill={colorConfig.block_stroke}
             mask="url(#path-218-inside-66_709_5)"
           />
-          <g clip-path="url(#clip5_709_5)">
+          <g clipPath="url(#clip5_709_5)">
             <mask id="path-248-inside-67_709_5" fill="white">
               <path d="M789 866H821V898H789V866Z" />
             </mask>
@@ -7922,7 +7922,7 @@ const OpenDC: React.FC<RoomVisualizerProps> = ({ theme }) => {
             fill={colorConfig.block_stroke}
             mask="url(#path-302-inside-80_709_5)"
           />
-          <g clip-path="url(#clip6_709_5)">
+          <g clipPath="url(#clip6_709_5)">
             <mask id="path-304-inside-81_709_5" fill="white">
               <path d="M821 662H846V952H821V662Z" />
             </mask>
@@ -8845,7 +8845,7 @@ const OpenDC: React.FC<RoomVisualizerProps> = ({ theme }) => {
             fill={colorConfig.block_stroke}
             mask="url(#path-304-inside-81_709_5)"
           />
-          <g clip-path="url(#clip7_709_5)">
+          <g clipPath="url(#clip7_709_5)">
             <mask id="path-307-inside-82_709_5" fill="white">
               <path d="M846 662H871V952H846V662Z" />
             </mask>
@@ -11668,7 +11668,7 @@ const OpenDC: React.FC<RoomVisualizerProps> = ({ theme }) => {
             d="M684.532 686.779C684.459 686.779 684.4 686.838 684.4 686.912C684.4 686.986 684.459 687.046 684.532 687.046H687.868C687.941 687.046 688 686.986 688 686.912C688 686.838 687.941 686.779 687.868 686.779H684.532Z"
             fill={colorConfig.grill}
           />
-          <g clip-path="url(#clip8_709_5)">
+          <g clipPath="url(#clip8_709_5)">
             <path
               d="M1091.81 505V505.5H1093.5V507.833H1094V513.5H1093.5V519.167H1094V524.833H1093.5V530.5H1094V536.167H1093.5V539H1093.25V538.5H1093C1092.11 538.5 1091.24 538.466 1090.37 538.398L1090.33 538.896C1088.53 538.756 1086.77 538.474 1085.06 538.064L1085.18 537.581C1083.45 537.169 1081.78 536.624 1080.18 535.958L1079.99 536.418C1078.33 535.732 1076.74 534.92 1075.23 533.992L1075.49 533.568C1074 532.648 1072.57 531.612 1071.24 530.475L1070.92 530.853C1069.57 529.695 1068.3 528.433 1067.15 527.079L1067.53 526.757C1066.39 525.426 1065.35 524.005 1064.43 522.506L1064.01 522.766C1063.08 521.256 1062.27 519.668 1061.58 518.014L1062.04 517.823C1061.38 516.216 1060.83 514.546 1060.42 512.824L1059.93 512.939C1059.53 511.229 1059.24 509.469 1059.1 507.669L1059.6 507.632C1059.55 506.927 1059.52 506.216 1059.5 505.5H1061.19V505H1065.56V505.5H1069.94V505H1074.31V505.5H1078.69V505H1083.06V505.5H1087.44V505H1091.81Z"
               fill={colorConfig.room_fill}
@@ -16778,7 +16778,7 @@ const OpenDC: React.FC<RoomVisualizerProps> = ({ theme }) => {
               stroke={colorConfig.block_stroke}
               stroke-dasharray="5 5"
             />
-            <g clip-path="url(#clip9_709_5)">
+            <g clipPath="url(#clip9_709_5)">
               <mask
                 id="path-531-outside-173_709_5"
                 maskUnits="userSpaceOnUse"
