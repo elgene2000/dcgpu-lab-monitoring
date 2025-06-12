@@ -3,14 +3,21 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useState, useEffect } from "react";
 import { AnimatedCircles } from "../animated-circles";
 import { Bolt } from "@/components/bolt";
+import { TempSensor } from "@/components/temp-sensor";
 
 interface RoomVisualizerProps {
   theme?: string;
   powerData?: any[] | null | undefined;
+  temperatureData?: any[] | null | undefined;
 }
 
-const OpenDCDH3: React.FC<RoomVisualizerProps> = ({ theme, powerData }) => {
+const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
+  theme,
+  powerData,
+  temperatureData,
+}) => {
   const [rackPower, setRackPower] = useState<any>({});
+  const [rackTemperature, setRackTemperature] = useState<any>({});
 
   const colorConfig = {
     particles: theme == "dark" ? "#FFFFFF" : "#8EC5FF",
@@ -38,6 +45,23 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({ theme, powerData }) => {
     }
     setRackPower(tempRackPower);
   }, [powerData]);
+
+  useEffect(() => {
+    const tempTemperature: Record<string, number> = {};
+    if (temperatureData && temperatureData.length > 0) {
+      for (let i = 0; i < temperatureData.length; i++) {
+        const rack = temperatureData[i].location;
+        const reading = temperatureData[i].reading;
+
+        if (tempTemperature[rack]) {
+          tempTemperature[rack] += reading;
+        } else {
+          tempTemperature[rack] = reading;
+        }
+      }
+    }
+    setRackTemperature(tempTemperature);
+  }, [temperatureData]);
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -2423,6 +2447,57 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({ theme, powerData }) => {
           d="M68 110V109H67V110H68ZM68 381H67V382H68V381ZM68 110V111H93V110V109H68V110ZM93 381V380H68V381V382H93V381ZM68 381H69V110H68H67V381H68Z"
           fill={colorConfig.block_stroke}
           mask="url(#path-66-inside-29_1039_19)"
+        />
+        {/* CIRCLES */}
+        {/* A12-1-FRONT */}
+        <TempSensor
+          theme={theme}
+          cx={93.5}
+          cy={380.5}
+          temperature={rackTemperature["a12-1-front"]}
+        />
+        {/* B12-1-FRONT */}
+        <TempSensor
+          theme={theme}
+          cx={223.5}
+          cy={380.5}
+          temperature={rackTemperature["b12-1-front"]}
+        />
+        {/* A08-1-FRONT */}
+        <TempSensor
+          theme={theme}
+          cx={93.5}
+          cy={289.5}
+          temperature={rackTemperature["a08-1-front"]}
+        />
+        {/* B08-1-FRONT */}
+        <TempSensor
+          theme={theme}
+          cx={223.5}
+          cy={289.5}
+          temperature={rackTemperature["b08-1-front"]}
+        />
+
+        {/* A12-2-REAR */}
+        <TempSensor
+          theme={theme}
+          cx={134.5}
+          cy={358.5}
+          temperature={rackTemperature["a12-2-rear"]}
+        />
+        {/* A06-2-REAR */}
+        <TempSensor
+          theme={theme}
+          cx={134.5}
+          cy={220.5}
+          temperature={rackTemperature["a06-2-rear"]}
+        />
+        {/* B09-2-REAR */}
+        <TempSensor
+          theme={theme}
+          cx={182.5}
+          cy={289.5}
+          temperature={rackTemperature["b09-2-rear"]}
         />
       </svg>
     </TooltipProvider>

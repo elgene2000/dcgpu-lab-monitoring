@@ -55,7 +55,10 @@ export default function OpenDCRoom5() {
           <Card className="w-full p-2">
             <CardHeader className="text-left">
               <CardTitle>Room Visualiser</CardTitle>
-              <CardDescription>{currPower.length > 0 && "Last checked " + formatDate(currPower[0].created)}</CardDescription>
+              <CardDescription>
+                {currPower.length > 0 &&
+                  "Last checked " + formatDate(currPower[0].created)}
+              </CardDescription>
               <div className="w-full h-full relative rounded-lg p-2 bg-background/40 dark:bg-secondary-dark/40 border-slate-200 dark:border-[#424C5E] border">
                 <OpenDCDH5 theme={theme} powerData={currPower} />
               </div>
