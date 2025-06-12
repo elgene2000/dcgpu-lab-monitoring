@@ -23,7 +23,7 @@ export default function OpenDCRoom2() {
         <div className="flex flex-col items-start space-y-3 w-5/6">
           <Card className="w-full p-2">
             <CardHeader className="text-left">
-              <CardTitle>Data Hall 2</CardTitle>
+              <CardTitle>Room Visualiser</CardTitle>
               <CardDescription>{/* Last checked */}</CardDescription>
               <div className="w-full h-full relative rounded-lg p-2 bg-background/40 dark:bg-secondary-dark/40 border-slate-200 dark:border-[#424C5E] border">
                 <OpenDCDH2 theme={theme} />

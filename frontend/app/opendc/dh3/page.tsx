@@ -12,10 +12,11 @@ import { useState, useEffect } from "react";
 import { TempInfo } from "@/components/temp-info";
 import { useTheme } from "next-themes";
 import { OpenDCDH3 } from "@/components/room-visualizer/opendc-dh3";
+import { formatDate } from "@/lib/utils";
 
 export default function OpenDCRoom3() {
   const { theme, setTheme } = useTheme();
-  const [currPower, setCurrPower] = useState([]);
+  const [currPower, setCurrPower] = useState<any[]>([]);
 
   // FUNCTIONS
   const getCurrPower = async () => {
@@ -59,7 +60,7 @@ export default function OpenDCRoom3() {
           <Card className="w-full p-2">
             <CardHeader className="text-left">
               <CardTitle>Room Visualiser</CardTitle>
-              <CardDescription>{/* Last checked */}</CardDescription>
+              <CardDescription>{currPower.length > 0 && "Last checked " + formatDate(currPower[0].created)}</CardDescription>
               <div className="w-full h-full relative rounded-lg p-2 bg-background/40 dark:bg-secondary-dark/40 border-slate-200 dark:border-[#424C5E] border">
                 <OpenDCDH3 theme={theme} powerData={currPower} />
               </div>

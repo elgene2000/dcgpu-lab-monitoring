@@ -8,6 +8,8 @@ class Validator(object):
             return type(element) == str
         if desired_type == "datetime":
             return isinstance(element, datetime)
+        if desired_type == "object":
+            return isinstance(element, dict)
         if desired_type == "float":
             return type(element) == float
         if desired_type == "list":

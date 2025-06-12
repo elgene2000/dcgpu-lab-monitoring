@@ -19,8 +19,12 @@ app.conf.worker_send_task_events = True
 app.conf.enable_utc = False
 app.conf.timezone = "Asia/Kuala_Lumpur"
 app.conf.beat_schedule = {
-    "fetch_": {
+    "fetch_power": {
         "task": "tasks.cron.fetch_power_data",
         "schedule": timedelta(minutes=10),
-    }
+    },
+    "fetch_temperature": {
+        "task": "tasks.cron.fetch_temperature_data",
+        "schedule": timedelta(minutes=10),
+    },
 }

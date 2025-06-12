@@ -13,7 +13,7 @@ class PDU(object):
         self.fields = {
             "hostname": "string",
             "output_power_total_oid": "string",
-            "temp_oids": "list",
+            "temperature": "object",
             "v2c": "string",
             "site": "string",
             "location": "string",
@@ -32,24 +32,22 @@ class PDU(object):
         ]
 
         # Fields optional for CREATE
-        self.create_optional_fields = ["temp_oids"]
+        self.create_optional_fields = ["temperature"]
 
         # Fields required for UPDATE
         self.update_required_fields = []
 
         # Fields optional for UPDATE
-        self.update_optional_fields = []
+        self.update_optional_fields = ["temperature"]
 
     def create(self, pdu_data):
         # Validator will throw error if invalid
-        print("validating")
         self.validator.validate(
             pdu_data,
             self.fields,
             self.create_required_fields,
             self.create_optional_fields,
         )
-        print("validating done")
         res = self.db.insert(pdu_data, self.collection_name)
         return "Inserted Id " + res
 

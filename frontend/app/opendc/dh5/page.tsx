@@ -1,4 +1,5 @@
 "use client";
+import axios from "axios";
 import Image from "next/image";
 import {
   Card,
@@ -11,11 +12,11 @@ import { TempInfo } from "@/components/temp-info";
 import { useTheme } from "next-themes";
 import { OpenDCDH5 } from "@/components/room-visualizer/opendc-dh5";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { formatDate } from "@/lib/utils";
 
 export default function OpenDCRoom5() {
   const { theme, setTheme } = useTheme();
-  const [currPower, setCurrPower] = useState([]);
+  const [currPower, setCurrPower] = useState<any[]>([]);
 
   // FUNCTIONS
   const getCurrPower = async () => {
@@ -53,8 +54,8 @@ export default function OpenDCRoom5() {
         <div className="flex flex-col items-start space-y-3 w-5/6">
           <Card className="w-full p-2">
             <CardHeader className="text-left">
-              <CardTitle>Data Hall 5</CardTitle>
-              <CardDescription>{/* Last checked */}</CardDescription>
+              <CardTitle>Room Visualiser</CardTitle>
+              <CardDescription>{currPower.length > 0 && "Last checked " + formatDate(currPower[0].created)}</CardDescription>
               <div className="w-full h-full relative rounded-lg p-2 bg-background/40 dark:bg-secondary-dark/40 border-slate-200 dark:border-[#424C5E] border">
                 <OpenDCDH5 theme={theme} powerData={currPower} />
               </div>
