@@ -7,8 +7,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { TempInfo } from "@/components/temp-info";
 import { useTheme } from "next-themes";
+import { TempInfo } from "@/components/temp-info";
+import { PowerInfo } from "@/components/power-info";
 import { OpenDCDH1 } from "@/components/room-visualizer/opendc-dh1";
 
 export default function OpenDCRoom1() {
@@ -31,7 +32,10 @@ export default function OpenDCRoom1() {
             </CardHeader>
           </Card>
         </div>
-        <TempInfo />
+        <div className="w-1/6 xl:block space-y-3">
+          <TempInfo />
+          <PowerInfo />
+        </div>
       </div>
     </>
   );

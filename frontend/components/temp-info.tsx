@@ -2,7 +2,7 @@
 import { motion } from "framer-motion";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { BookOpen } from "lucide-react";
+import { Thermometer } from "lucide-react";
 interface TempInfoProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
 }
@@ -11,12 +11,7 @@ import { useTheme } from "next-themes";
 export function TempInfo({ className, ...props }: TempInfoProps) {
   const { theme } = useTheme();
   return (
-    <Card
-      className={cn(
-        "w-1/6 h-fit p-2 hidden xl:block relative overflow-hidden",
-        className,
-      )}
-    >
+    <Card className={cn("w-full overflow-hidden relative", className)}>
       <motion.div
         initial={{ opacity: 0, x: 30 }}
         animate={{ opacity: 1, x: 0 }}
@@ -42,12 +37,12 @@ export function TempInfo({ className, ...props }: TempInfoProps) {
       <CardTitle className="p-3">
         <div className="flex items-center space-x-3">
           <div className="dark:bg-[#363E50] bg-[#E9EDEF] rounded-md h-6 w-6 items-center flex justify-center">
-            <BookOpen
+            <Thermometer
               size={15}
               color={theme == "dark" ? "#7B8499" : "#A8ABBE"}
             />
           </div>
-          <p className="text-base">Info</p>
+          <p className="text-base">Temperature</p>
         </div>
       </CardTitle>
       <CardContent className="px-3 pt-2 text-sm dark:text-[#86899A] space-y-3">

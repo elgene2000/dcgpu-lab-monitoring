@@ -1,6 +1,9 @@
 "use client";
 import axios from "axios";
 import Image from "next/image";
+import { useTheme } from "next-themes";
+import { formatDate } from "@/lib/utils";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -9,10 +12,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { TempInfo } from "@/components/temp-info";
-import { useTheme } from "next-themes";
+import { PowerInfo } from "@/components/power-info";
 import { OpenDCDH4 } from "@/components/room-visualizer/opendc-dh4";
-import { useState, useEffect } from "react";
-import { formatDate } from "@/lib/utils";
 
 export default function OpenDCRoom4() {
   const { theme, setTheme } = useTheme();
@@ -64,7 +65,10 @@ export default function OpenDCRoom4() {
             </CardHeader>
           </Card>
         </div>
-        <TempInfo />
+        <div className="w-1/6 xl:block space-y-3">
+          <TempInfo />
+          <PowerInfo />
+        </div>
       </div>
     </>
   );

@@ -13,6 +13,7 @@ import { useTheme } from "next-themes";
 import { OpenDCDH5 } from "@/components/room-visualizer/opendc-dh5";
 import { useState, useEffect } from "react";
 import { formatDate } from "@/lib/utils";
+import { PowerInfo } from "@/components/power-info";
 
 export default function OpenDCRoom5() {
   const { theme, setTheme } = useTheme();
@@ -65,7 +66,10 @@ export default function OpenDCRoom5() {
             </CardHeader>
           </Card>
         </div>
-        <TempInfo />
+        <div className="w-1/6 xl:block space-y-3">
+          <TempInfo />
+          <PowerInfo />
+        </div>
       </div>
     </>
   );

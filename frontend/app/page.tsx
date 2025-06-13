@@ -1,7 +1,7 @@
 "use client";
-import Image from "next/image";
 import axios from "axios";
 import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 import {
   Card,
   CardContent,
@@ -9,17 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import { motion } from "framer-motion";
+import { ChartConfig } from "@/components/ui/chart";
 import { TempInfo } from "@/components/temp-info";
+import { PowerInfo } from "@/components/power-info";
 import { USTLab3 } from "@/components/room-visualizer/ust-lab3";
 import { OpenDC } from "@/components/room-visualizer/opendc";
-import { useTheme } from "next-themes";
 
 //CHART COLORS, CONFIGS, ETC.
 const chartConfig = {
@@ -154,35 +148,10 @@ export default function Home() {
             </CardHeader>
           </Card>
         </div>
-        <TempInfo />
-        {/* <Card className="w-1/6 h-60 p-2 hidden md:block relative overflow-hidden">
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{
-              type: "tween",
-              ease: "easeInOut",
-              duration: 0.8,
-              delay: 0.3
-            }}
-            className="bg-sky-400/50 h-40 w-20 absolute -right-10 -top-16 rounded-full rotate-45 blur-3xl" />
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{
-              type: "tween",
-              ease: "easeInOut",
-              duration: 0.8,
-              delay: 0.3
-            }}
-            className="bg-pink-400/70 h-16 w-16 absolute -right-0 -top-10 rounded-full rotate-45 blur-2xl" />
-          <CardContent>
-            <p>vs</p>
-          </CardContent>
-
-          <div className="mx-auto w-60 h-96">
-          </div>
-        </Card> */}
+        <div className="w-1/6 xl:block space-y-3">
+          <TempInfo />
+          <PowerInfo />
+        </div>
       </div>
     </>
   );

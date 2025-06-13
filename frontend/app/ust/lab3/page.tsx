@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import { useTheme } from "next-themes";
 import {
   Card,
   CardContent,
@@ -8,8 +9,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { TempInfo } from "@/components/temp-info";
+import { PowerInfo } from "@/components/power-info";
 import { USTLab3 } from "@/components/room-visualizer/ust-lab3";
-import { useTheme } from "next-themes";
 
 export default function Home() {
   const { theme } = useTheme();
@@ -31,7 +32,10 @@ export default function Home() {
             </CardHeader>
           </Card>
         </div>
-        <TempInfo />
+        <div className="w-1/6 xl:block space-y-3">
+          <TempInfo />
+          <PowerInfo />
+        </div>
       </div>
     </>
   );
