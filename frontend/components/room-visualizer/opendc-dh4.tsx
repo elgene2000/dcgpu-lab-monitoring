@@ -1,8 +1,8 @@
-import React from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AnimatedCircles } from "../animated-circles";
+import { AnimatedCircles } from "@/components/animated-circles";
 import { Bolt } from "@/components/bolt";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 interface RoomVisualizerProps {
   theme?: string;
@@ -10,7 +10,7 @@ interface RoomVisualizerProps {
 }
 const OpenDCDH4: React.FC<RoomVisualizerProps> = ({ theme, powerData }) => {
   const [benchPower, setBenchPower] = useState<any>({});
-
+  const router = useRouter();
   const colorConfig = {
     particles: theme == "dark" ? "#FFFFFF" : "#8EC5FF",
     grill: theme == "dark" ? "#5F6A7E" : "#C6CBD3",
@@ -392,7 +392,12 @@ const OpenDCDH4: React.FC<RoomVisualizerProps> = ({ theme, powerData }) => {
           <path d="M219 221H251V288H219V221Z" />
         </mask>
         {/* A1 */}
-        <path d="M40 106H72V173H40V106Z" fill={colorConfig.block_fill} />
+        <path
+          d="M40 106H72V173H40V106Z"
+          fill={colorConfig.block_fill}
+          className="cursor-pointer"
+          onClick={() => router.push("/opendc/dh4/power/a1")}
+        />
         <Bolt
           rack="A1"
           theme={theme}
@@ -410,7 +415,12 @@ const OpenDCDH4: React.FC<RoomVisualizerProps> = ({ theme, powerData }) => {
           <path d="M122 173H154V240H122V173Z" />
         </mask>
         {/* A2 */}
-        <path d="M40 173H72V240H40V173Z" fill={colorConfig.block_fill} />
+        <path
+          d="M40 173H72V240H40V173Z"
+          fill={colorConfig.block_fill}
+          className="cursor-pointer"
+          onClick={() => router.push("/opendc/dh4/power/a2")}
+        />
         <Bolt
           rack="A2"
           theme={theme}
@@ -428,7 +438,12 @@ const OpenDCDH4: React.FC<RoomVisualizerProps> = ({ theme, powerData }) => {
           <path d="M122 240H154V307H122V240Z" />
         </mask>
         {/* A3 */}
-        <path d="M40 240H72V307H40V240Z" fill={colorConfig.block_fill} />
+        <path
+          d="M40 240H72V307H40V240Z"
+          fill={colorConfig.block_fill}
+          className="cursor-pointer"
+          onClick={() => router.push("/opendc/dh4/power/a3")}
+        />
         <Bolt
           rack="A3"
           theme={theme}
@@ -446,7 +461,12 @@ const OpenDCDH4: React.FC<RoomVisualizerProps> = ({ theme, powerData }) => {
           <path d="M122 307H154V374H122V307Z" />
         </mask>
         {/* A4 */}
-        <path d="M40 307H72V374H40V307Z" fill={colorConfig.block_fill} />
+        <path
+          d="M40 307H72V374H40V307Z"
+          fill={colorConfig.block_fill}
+          className="cursor-pointer"
+          onClick={() => router.push("/opendc/dh4/power/a4")}
+        />
         <Bolt
           rack="A4"
           theme={theme}
@@ -461,7 +481,12 @@ const OpenDCDH4: React.FC<RoomVisualizerProps> = ({ theme, powerData }) => {
           mask="url(#path-91-inside-18_709_17)"
         />
         {/* B1 */}
-        <path d="M122 106H154V173H122V106Z" fill={colorConfig.block_fill} />
+        <path
+          d="M122 106H154V173H122V106Z"
+          fill={colorConfig.block_fill}
+          className="cursor-pointer"
+          onClick={() => router.push("/opendc/dh4/power/b1")}
+        />
         <Bolt
           rack="B1"
           theme={theme}
@@ -479,7 +504,12 @@ const OpenDCDH4: React.FC<RoomVisualizerProps> = ({ theme, powerData }) => {
           <path d="M40 106H72V173H40V106Z" />
         </mask>
         {/* B2 */}
-        <path d="M122 173H154V240H122V173Z" fill={colorConfig.block_fill} />
+        <path
+          d="M122 173H154V240H122V173Z"
+          fill={colorConfig.block_fill}
+          className="cursor-pointer"
+          onClick={() => router.push("/opendc/dh4/power/b2")}
+        />
         <Bolt
           rack="B2"
           theme={theme}
@@ -497,7 +527,12 @@ const OpenDCDH4: React.FC<RoomVisualizerProps> = ({ theme, powerData }) => {
           <path d="M40 173H72V240H40V173Z" />
         </mask>
         {/* B3 */}
-        <path d="M122 240H154V307H122V240Z" fill={colorConfig.block_fill} />
+        <path
+          d="M122 240H154V307H122V240Z"
+          fill={colorConfig.block_fill}
+          className="cursor-pointer"
+          onClick={() => router.push("/opendc/dh4/power/b3")}
+        />
         <Bolt
           rack="B3"
           theme={theme}
@@ -515,7 +550,12 @@ const OpenDCDH4: React.FC<RoomVisualizerProps> = ({ theme, powerData }) => {
           <path d="M40 240H72V307H40V240Z" />
         </mask>
         {/* B4 */}
-        <path d="M122 307H154V374H122V307Z" fill={colorConfig.block_fill} />
+        <path
+          d="M122 307H154V374H122V307Z"
+          fill={colorConfig.block_fill}
+          className="cursor-pointer"
+          onClick={() => router.push("/opendc/dh4/power/b4")}
+        />
         <Bolt
           rack="B4"
           theme={theme}
@@ -533,7 +573,12 @@ const OpenDCDH4: React.FC<RoomVisualizerProps> = ({ theme, powerData }) => {
           <path d="M40 307H72V374H40V307Z" />
         </mask>
         {/* C1 */}
-        <path d="M219 154H251V221H219V154Z" fill={colorConfig.block_fill} />
+        <path
+          d="M219 154H251V221H219V154Z"
+          fill={colorConfig.block_fill}
+          className="cursor-pointer"
+          onClick={() => router.push("/opendc/dh4/power/c1")}
+        />
         <Bolt
           rack="C1"
           theme={theme}
@@ -548,7 +593,12 @@ const OpenDCDH4: React.FC<RoomVisualizerProps> = ({ theme, powerData }) => {
           mask="url(#path-5-inside-3_709_17)"
         />
         {/* C2 */}
-        <path d="M219 221H251V288H219V221Z" fill={colorConfig.block_fill} />
+        <path
+          d="M219 221H251V288H219V221Z"
+          fill={colorConfig.block_fill}
+          className="cursor-pointer"
+          onClick={() => router.push("/opendc/dh4/power/c2")}
+        />
         <Bolt
           rack="C2"
           theme={theme}
@@ -566,7 +616,12 @@ const OpenDCDH4: React.FC<RoomVisualizerProps> = ({ theme, powerData }) => {
           <path d="M301 173H333V240H301V173Z" />
         </mask>
         {/* C3 */}
-        <path d="M219 333H251V400H219V333Z" fill={colorConfig.block_fill} />
+        <path
+          d="M219 333H251V400H219V333Z"
+          fill={colorConfig.block_fill}
+          className="cursor-pointer"
+          onClick={() => router.push("/opendc/dh4/power/c3")}
+        />
         <Bolt
           rack="C3"
           theme={theme}
@@ -584,7 +639,12 @@ const OpenDCDH4: React.FC<RoomVisualizerProps> = ({ theme, powerData }) => {
           <path d="M122 106H154V173H122V106Z" />
         </mask>
         {/* D1 */}
-        <path d="M301 106H333V173H301V106Z" fill={colorConfig.block_fill} />
+        <path
+          d="M301 106H333V173H301V106Z"
+          fill={colorConfig.block_fill}
+          className="cursor-pointer"
+          onClick={() => router.push("/opendc/dh4/power/d1")}
+        />
         <Bolt
           rack="D1"
           theme={theme}
@@ -602,7 +662,12 @@ const OpenDCDH4: React.FC<RoomVisualizerProps> = ({ theme, powerData }) => {
           <path d="M219 154H251V221H219V154Z" />
         </mask>
         {/* D2 */}
-        <path d="M301 173H333V240H301V173Z" fill={colorConfig.block_fill} />
+        <path
+          d="M301 173H333V240H301V173Z"
+          fill={colorConfig.block_fill}
+          className="cursor-pointer"
+          onClick={() => router.push("/opendc/dh4/power/d2")}
+        />
         <Bolt
           rack="D2"
           theme={theme}
@@ -620,7 +685,12 @@ const OpenDCDH4: React.FC<RoomVisualizerProps> = ({ theme, powerData }) => {
           <path d="M301 240H333V307H301V240Z" />
         </mask>
         {/* D3 */}
-        <path d="M301 240H333V307H301V240Z" fill={colorConfig.block_fill} />
+        <path
+          d="M301 240H333V307H301V240Z"
+          fill={colorConfig.block_fill}
+          className="cursor-pointer"
+          onClick={() => router.push("/opendc/dh4/power/d3")}
+        />
         <Bolt
           rack="D3"
           theme={theme}
@@ -638,7 +708,12 @@ const OpenDCDH4: React.FC<RoomVisualizerProps> = ({ theme, powerData }) => {
           <path d="M301 307H333V374H301V307Z" />
         </mask>
         {/* D4 */}
-        <path d="M301 307H333V374H301V307Z" fill={colorConfig.block_fill} />
+        <path
+          d="M301 307H333V374H301V307Z"
+          fill={colorConfig.block_fill}
+          className="cursor-pointer"
+          onClick={() => router.push("/opendc/dh4/power/d4")}
+        />
         <Bolt
           rack="D4"
           theme={theme}

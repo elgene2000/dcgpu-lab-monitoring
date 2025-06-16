@@ -22,7 +22,7 @@ const TempSensor = ({ theme, cx, cy, temperature }: TempSensorProps) => {
           temperature == null
             ? "fill-gray-200"
             : temperature <= 18
-              ? "fill-emerald-300"
+              ? "fill-sky-400"
               : temperature <= 24
                 ? "fill-amber-300"
                 : "fill-red-400"
@@ -60,7 +60,7 @@ const TempSensor = ({ theme, cx, cy, temperature }: TempSensorProps) => {
               temperature == null
                 ? "fill-gray-200"
                 : temperature <= 18
-                  ? "fill-emerald-300"
+                  ? "fill-sky-400"
                   : temperature <= 24
                     ? "fill-amber-300"
                     : "fill-red-400"

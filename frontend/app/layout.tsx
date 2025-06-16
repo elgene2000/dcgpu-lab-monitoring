@@ -19,9 +19,8 @@ export default function RootLayout({
       <body className="font-manrope font-medium">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
+          defaultTheme="dark"
+          disableTransitionOnChange={true}
         >
           <SidebarProvider>
             <AppSidebar />

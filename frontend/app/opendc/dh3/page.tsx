@@ -14,7 +14,7 @@ import { TempInfo } from "@/components/temp-info";
 import { PowerInfo } from "@/components/power-info";
 
 export default function OpenDCRoom3() {
-  const { theme, setTheme } = useTheme();
+  const { theme } = useTheme();
   const [currPower, setCurrPower] = useState<any[]>([]);
   const [currTemperature, setCurrTemperature] = useState<any[]>([]);
 

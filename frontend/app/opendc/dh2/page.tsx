@@ -1,8 +1,6 @@
 "use client";
-import Image from "next/image";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -13,7 +11,7 @@ import { useTheme } from "next-themes";
 import { OpenDCDH2 } from "@/components/room-visualizer/opendc-dh2";
 
 export default function OpenDCRoom2() {
-  const { theme, setTheme } = useTheme();
+  const { theme } = useTheme();
 
   return (
     <>

@@ -8,7 +8,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ChartConfig } from "@/components/ui/chart";
-import { AnimatedCircles } from "../animated-circles";
+import { AnimatedCircles } from "@/components/animated-circles";
 
 interface RoomVisualizerProps {
   theme?: string;

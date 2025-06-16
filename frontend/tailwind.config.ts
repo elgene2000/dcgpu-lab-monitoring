@@ -74,7 +74,56 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      keyframes: {
+        shimmer: {
+          "0%": {
+            transform: "translateX(-100%)",
+          },
+          "100%": {
+            transform: "translateX(100%)",
+          },
+        },
+        scan: {
+          "0%": { top: "-100%" },
+          "100%": { top: "100%" },
+        },
+        flicker: {
+          "0%, 100%": {
+            opacity: "1",
+            transform: "none",
+          },
+          "5%": {
+            opacity: "0.6",
+            transform: "translate(1px, -1px) skew(0.5deg)",
+          },
+          "10%": {
+            opacity: "0.8",
+            transform: "translate(-1px, 1px) skew(-0.5deg)",
+          },
+          "15%": {
+            opacity: "0.7",
+            transform: "translate(0.5px, -0.5px) skew(1deg)",
+          },
+          "20%": {
+            opacity: "0.7",
+            transform: "translate(-0.5px, 0.5px) skew(-1deg)",
+          },
+          "25%": {
+            opacity: "0.7",
+            transform: "translate(1px, 1px) skew(1.5deg)",
+          },
+          "30%": {
+            opacity: "0.9",
+            transform: "none",
+          },
+        },
+      },
+      animation: {
+        flicker: "flicker 3s infinite",
+        scan: "scan 2s linear infinite",
+      },
     },
   },
+
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;

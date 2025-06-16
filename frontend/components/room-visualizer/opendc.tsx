@@ -23,6 +23,7 @@ const OpenDC: React.FC<RoomVisualizerProps> = ({ theme }) => {
     ramp: theme == "dark" ? "#2D3447" : "#EFF2F5",
     canvas_fill: theme == "dark" ? "#1F2430" : "#FFFFFF",
   };
+
   return (
     <TooltipProvider delayDuration={100}>
       <svg
@@ -3250,142 +3251,142 @@ const OpenDC: React.FC<RoomVisualizerProps> = ({ theme }) => {
             <path
               d="M319.603 708.035L361.226 669.162"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M312.801 700.501L354.424 661.628"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M326.404 715.569L368.027 676.696"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M334.339 724.358L375.962 685.485"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M309.401 696.734L351.024 657.861"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M323.003 711.802L364.626 672.929"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M316.202 704.268L357.825 665.395"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M329.804 719.336L350.616 699.899L371.427 680.463"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M337.739 728.125L379.362 689.252"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M307.133 694.223L348.756 655.35"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M320.736 709.291L362.359 670.418"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M313.935 701.757L355.558 662.884"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M327.538 716.825L369.161 677.951"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M335.472 725.614L377.095 686.741"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M310.534 697.99L352.157 659.117"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M324.137 713.058L365.76 674.185"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M317.335 705.524L358.959 666.651"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M330.938 720.591L372.562 681.718"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M308.267 695.479L349.89 656.606"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M321.87 710.546L363.493 671.673"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M315.068 703.013L356.691 664.139"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M328.671 718.08L370.294 679.207"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M336.606 726.87L378.229 687.997"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M311.668 699.246L353.291 660.373"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M325.27 714.313L366.893 675.44"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M333.205 723.103L374.828 684.23"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M318.469 706.78L360.092 667.906"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M332.072 721.847L373.695 682.974"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
           </g>
           <path
@@ -3401,142 +3402,142 @@ const OpenDC: React.FC<RoomVisualizerProps> = ({ theme }) => {
             <path
               d="M306.603 890.035L348.226 851.162"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M299.801 882.501L341.424 843.628"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M313.404 897.569L355.027 858.696"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M321.339 906.358L362.962 867.485"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M296.401 878.734L338.024 839.861"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M310.003 893.802L351.626 854.929"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M303.202 886.268L344.825 847.395"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M316.804 901.336L337.616 881.899L358.427 862.463"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M324.739 910.125L366.362 871.252"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M294.133 876.223L335.756 837.35"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M307.736 891.291L349.359 852.418"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M300.935 883.757L342.558 844.884"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M314.538 898.825L356.161 859.951"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M322.472 907.614L364.095 868.741"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M297.534 879.99L339.157 841.117"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M311.137 895.058L352.76 856.185"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M304.335 887.524L345.959 848.651"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M317.938 902.591L359.562 863.718"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M295.267 877.479L336.89 838.606"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M308.87 892.546L350.493 853.673"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M302.068 885.013L343.691 846.139"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M315.671 900.08L357.294 861.207"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M323.606 908.87L365.229 869.997"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M298.668 881.246L340.291 842.373"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M312.27 896.313L353.893 857.44"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M320.205 905.103L361.828 866.23"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M305.469 888.78L347.092 849.906"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M319.072 903.847L360.695 864.974"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
           </g>
           <path
@@ -7403,37 +7404,37 @@ const OpenDC: React.FC<RoomVisualizerProps> = ({ theme }) => {
             d="M194.812 578.5V578H190.438V578.5H186.062V578H181.688V578.5H177.312V578H172.938V578.5H168.562V578H164.188V578.5H161.5V575.167H162V569.5H161.5V563.833H162V558.167H161.5V552.5H162V546.833H161.5V543.5H162.25V544H162.75V543.5H163C163.912 543.5 164.815 543.535 165.709 543.604L165.67 544.104V544.104C167.47 544.244 169.23 544.526 170.94 544.936V544.933L171.057 544.446C172.83 544.871 174.551 545.432 176.206 546.118L176.015 546.58V546.582C177.669 547.268 179.256 548.08 180.767 549.008V549.006L181.028 548.58C182.572 549.528 184.036 550.594 185.406 551.766L185.081 552.146L185.08 552.147C186.434 553.305 187.696 554.567 188.854 555.921L188.854 555.919L189.234 555.594C190.406 556.964 191.472 558.428 192.42 559.972L191.994 560.233L191.993 560.234C192.92 561.744 193.733 563.332 194.419 564.986L194.42 564.985L194.882 564.794C195.568 566.449 196.129 568.17 196.554 569.943L196.067 570.06L196.065 570.061C196.475 571.771 196.757 573.531 196.896 575.331V575.33L197.396 575.291C197.465 576.185 197.5 577.088 197.5 578V578.5H194.812Z"
             fill={colorConfig.room_fill}
             stroke={colorConfig.block_stroke}
-            stroke-dasharray="5 5"
+            strokeDasharray="5 5"
           />
           <path
             d="M199.188 578.5V578H203.562V578.5H207.938V578H212.312V578.5H216.688V578H221.062V578.5H225.438V578H229.812V578.5H232.5V575.167H232V569.5H232.5V563.833H232V558.167H232.5V552.5H232V546.833H232.5V543.5H231.75V544H231.25V543.5H231C230.088 543.5 229.185 543.535 228.291 543.604L228.33 544.104V544.104C226.53 544.244 224.77 544.526 223.06 544.936V544.933L222.943 544.446C221.17 544.871 219.449 545.432 217.794 546.118L217.985 546.58V546.582C216.331 547.268 214.744 548.08 213.233 549.008V549.006L212.972 548.58C211.428 549.528 209.964 550.594 208.594 551.766L208.919 552.146L208.92 552.147C207.566 553.305 206.304 554.567 205.146 555.921L205.146 555.919L204.766 555.594C203.594 556.964 202.528 558.428 201.58 559.972L202.006 560.233L202.007 560.234C201.08 561.744 200.267 563.332 199.581 564.986L199.58 564.985L199.118 564.794C198.432 566.449 197.871 568.17 197.446 569.943L197.933 570.06L197.935 570.061C197.525 571.771 197.243 573.531 197.104 575.331V575.33L196.604 575.291C196.535 576.185 196.5 577.088 196.5 578V578.5H199.188Z"
             fill={colorConfig.room_fill}
             stroke={colorConfig.block_stroke}
-            stroke-dasharray="5 5"
+            strokeDasharray="5 5"
           />
           <path
             d="M892.812 578.5V578H888.438V578.5H884.062V578H879.688V578.5H875.312V578H870.938V578.5H866.562V578H862.188V578.5H859.5V575.167H860V569.5H859.5V563.833H860V558.167H859.5V552.5H860V546.833H859.5V543.5H860.25V544H860.75V543.5H861C861.912 543.5 862.815 543.535 863.709 543.604L863.67 544.104V544.104C865.47 544.244 867.23 544.526 868.94 544.936V544.933L869.057 544.446C870.83 544.871 872.551 545.432 874.206 546.118L874.015 546.58V546.582C875.669 547.268 877.256 548.08 878.767 549.008V549.006L879.028 548.58C880.572 549.528 882.036 550.594 883.406 551.766L883.081 552.146L883.08 552.147C884.434 553.305 885.696 554.567 886.854 555.921L886.854 555.919L887.234 555.594C888.406 556.964 889.472 558.428 890.42 559.972L889.994 560.233L889.993 560.234C890.92 561.744 891.733 563.332 892.419 564.986L892.42 564.985L892.882 564.794C893.568 566.449 894.129 568.17 894.554 569.943L894.067 570.06L894.065 570.061C894.475 571.771 894.757 573.531 894.896 575.331V575.33L895.396 575.291C895.465 576.185 895.5 577.088 895.5 578V578.5H892.812Z"
             fill={colorConfig.room_fill}
             stroke={colorConfig.block_stroke}
-            stroke-dasharray="5 5"
+            strokeDasharray="5 5"
           />
           <path
             d="M897.188 578.5V578H901.562V578.5H905.938V578H910.312V578.5H914.688V578H919.062V578.5H923.438V578H927.812V578.5H930.5V575.167H930V569.5H930.5V563.833H930V558.167H930.5V552.5H930V546.833H930.5V543.5H929.75V544H929.25V543.5H929C928.088 543.5 927.185 543.535 926.291 543.604L926.33 544.104V544.104C924.53 544.244 922.77 544.526 921.06 544.936V544.933L920.943 544.446C919.17 544.871 917.449 545.432 915.794 546.118L915.985 546.58V546.582C914.331 547.268 912.744 548.08 911.233 549.008V549.006L910.972 548.58C909.428 549.528 907.964 550.594 906.594 551.766L906.919 552.146L906.92 552.147C905.566 553.305 904.304 554.567 903.146 555.921L903.146 555.919L902.766 555.594C901.594 556.964 900.528 558.428 899.58 559.972L900.006 560.233L900.007 560.234C899.08 561.744 898.267 563.332 897.581 564.986L897.58 564.985L897.118 564.794C896.432 566.449 895.871 568.17 895.446 569.943L895.933 570.06L895.935 570.061C895.525 571.771 895.243 573.531 895.104 575.331V575.33L894.604 575.291C894.535 576.185 894.5 577.088 894.5 578V578.5H897.188Z"
             fill={colorConfig.room_fill}
             stroke={colorConfig.block_stroke}
-            stroke-dasharray="5 5"
+            strokeDasharray="5 5"
           />
           <path
             d="M976.812 578.5V578H972.438V578.5H968.062V578H963.688V578.5H959.312V578H954.938V578.5H950.562V578H946.188V578.5H943.5V575.167H944V569.5H943.5V563.833H944V558.167H943.5V552.5H944V546.833H943.5V543.5H944.25V544H944.75V543.5H945C945.912 543.5 946.815 543.535 947.709 543.604L947.67 544.104V544.104C949.47 544.244 951.23 544.526 952.94 544.936V544.933L953.057 544.446C954.83 544.871 956.551 545.432 958.206 546.118L958.015 546.58V546.582C959.669 547.268 961.256 548.08 962.767 549.008V549.006L963.028 548.58C964.572 549.528 966.036 550.594 967.406 551.766L967.081 552.146L967.08 552.147C968.434 553.305 969.696 554.567 970.854 555.921L970.854 555.919L971.234 555.594C972.406 556.964 973.472 558.428 974.42 559.972L973.994 560.233L973.993 560.234C974.92 561.744 975.733 563.332 976.419 564.986L976.42 564.985L976.882 564.794C977.568 566.449 978.129 568.17 978.554 569.943L978.067 570.06L978.065 570.061C978.475 571.771 978.757 573.531 978.896 575.331V575.33L979.396 575.291C979.465 576.185 979.5 577.088 979.5 578V578.5H976.812Z"
             fill={colorConfig.room_fill}
             stroke={colorConfig.block_stroke}
-            stroke-dasharray="5 5"
+            strokeDasharray="5 5"
           />
           <path
             d="M981.188 578.5V578H985.562V578.5H989.938V578H994.312V578.5H998.688V578H1003.06V578.5H1007.44V578H1011.81V578.5H1014.5V575.167H1014V569.5H1014.5V563.833H1014V558.167H1014.5V552.5H1014V546.833H1014.5V543.5H1013.75V544H1013.25V543.5H1013C1012.09 543.5 1011.18 543.535 1010.29 543.604L1010.33 544.104V544.104C1008.53 544.244 1006.77 544.526 1005.06 544.936V544.933L1004.94 544.446C1003.17 544.871 1001.45 545.432 999.794 546.118L999.985 546.58V546.582C998.331 547.268 996.744 548.08 995.233 549.008V549.006L994.972 548.58C993.428 549.528 991.964 550.594 990.594 551.766L990.919 552.146L990.92 552.147C989.566 553.305 988.304 554.567 987.146 555.921L987.146 555.919L986.766 555.594C985.594 556.964 984.528 558.428 983.58 559.972L984.006 560.233L984.007 560.234C983.08 561.744 982.267 563.332 981.581 564.986L981.58 564.985L981.118 564.794C980.432 566.449 979.871 568.17 979.446 569.943L979.933 570.06L979.935 570.061C979.525 571.771 979.243 573.531 979.104 575.331V575.33L978.604 575.291C978.535 576.185 978.5 577.088 978.5 578V578.5H981.188Z"
             fill={colorConfig.room_fill}
             stroke={colorConfig.block_stroke}
-            stroke-dasharray="5 5"
+            strokeDasharray="5 5"
           />
           <g clipPath="url(#clip3_709_5)">
             <mask id="path-205-inside-62_709_5" fill="white">
@@ -7443,32 +7444,32 @@ const OpenDC: React.FC<RoomVisualizerProps> = ({ theme }) => {
             <path
               d="M578 742L526.5 724L475 742"
               stroke={colorConfig.ramp}
-              stroke-width="16"
-              stroke-miterlimit="10"
+              strokeWidth="16"
+              strokeMiterlimit="10"
             />
             <path
               d="M578 858L526.5 840L475 858"
               stroke={colorConfig.ramp}
-              stroke-width="16"
-              stroke-miterlimit="10"
+              strokeWidth="16"
+              strokeMiterlimit="10"
             />
             <path
               d="M578 800L526.5 782L475 800"
               stroke={colorConfig.ramp}
-              stroke-width="16"
-              stroke-miterlimit="10"
+              strokeWidth="16"
+              strokeMiterlimit="10"
             />
             <path
               d="M578 916L526.5 898L475 916"
               stroke={colorConfig.ramp}
-              stroke-width="16"
-              stroke-miterlimit="10"
+              strokeWidth="16"
+              strokeMiterlimit="10"
             />
             <path
               d="M578 974L526.5 956L475 974"
               stroke={colorConfig.ramp}
-              stroke-width="16"
-              stroke-miterlimit="10"
+              strokeWidth="16"
+              strokeMiterlimit="10"
             />
           </g>
           <path
@@ -7511,142 +7512,142 @@ const OpenDC: React.FC<RoomVisualizerProps> = ({ theme }) => {
             <path
               d="M784.603 716.035L826.226 677.162"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M777.801 708.501L819.424 669.628"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M791.404 723.569L833.027 684.696"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M799.339 732.358L840.962 693.485"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M774.401 704.734L816.024 665.861"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M788.003 719.802L829.626 680.929"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M781.202 712.268L822.825 673.395"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M794.804 727.336L815.616 707.899L836.427 688.463"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M802.739 736.125L844.362 697.252"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M772.133 702.223L813.756 663.35"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M785.736 717.291L827.359 678.418"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M778.935 709.757L820.558 670.884"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M792.538 724.825L834.161 685.951"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M800.472 733.614L842.095 694.741"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M775.534 705.99L817.157 667.117"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M789.137 721.058L830.76 682.185"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M782.335 713.524L823.959 674.651"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M795.938 728.591L837.562 689.718"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M773.267 703.479L814.89 664.606"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M786.87 718.546L828.493 679.673"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M780.068 711.013L821.691 672.139"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M793.671 726.08L835.294 687.207"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M801.606 734.87L843.229 695.997"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M776.668 707.246L818.291 668.373"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M790.27 722.313L831.893 683.44"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M798.205 731.103L839.828 692.23"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M783.469 714.78L825.092 675.906"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M797.072 729.847L838.695 690.974"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
           </g>
           <path
@@ -7662,142 +7663,142 @@ const OpenDC: React.FC<RoomVisualizerProps> = ({ theme }) => {
             <path
               d="M784.603 898.035L826.226 859.162"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M777.801 890.501L819.424 851.628"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M791.404 905.569L833.027 866.696"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M799.339 914.358L840.962 875.485"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M774.401 886.734L816.024 847.861"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M788.003 901.802L829.626 862.929"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M781.202 894.268L822.825 855.395"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M794.804 909.336L815.616 889.899L836.427 870.463"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M802.739 918.125L844.362 879.252"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M772.133 884.223L813.756 845.35"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M785.736 899.291L827.359 860.418"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M778.935 891.757L820.558 852.884"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M792.538 906.825L834.161 867.951"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M800.472 915.614L842.095 876.741"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M775.534 887.99L817.157 849.117"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M789.137 903.058L830.76 864.185"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M782.335 895.524L823.959 856.651"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M795.938 910.591L837.562 871.718"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M773.267 885.479L814.89 846.606"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M786.87 900.546L828.493 861.673"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M780.068 893.013L821.691 854.139"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M793.671 908.08L835.294 869.207"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M801.606 916.87L843.229 877.997"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M776.668 889.246L818.291 850.373"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M790.27 904.313L831.893 865.44"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M798.205 913.103L839.828 874.23"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M783.469 896.78L825.092 857.906"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
             <path
               d="M797.072 911.847L838.695 872.974"
               stroke={colorConfig.block_stroke}
-              stroke-width="0.5"
+              strokeWidth="0.5"
             />
           </g>
           <path
@@ -11673,19 +11674,19 @@ const OpenDC: React.FC<RoomVisualizerProps> = ({ theme }) => {
               d="M1091.81 505V505.5H1093.5V507.833H1094V513.5H1093.5V519.167H1094V524.833H1093.5V530.5H1094V536.167H1093.5V539H1093.25V538.5H1093C1092.11 538.5 1091.24 538.466 1090.37 538.398L1090.33 538.896C1088.53 538.756 1086.77 538.474 1085.06 538.064L1085.18 537.581C1083.45 537.169 1081.78 536.624 1080.18 535.958L1079.99 536.418C1078.33 535.732 1076.74 534.92 1075.23 533.992L1075.49 533.568C1074 532.648 1072.57 531.612 1071.24 530.475L1070.92 530.853C1069.57 529.695 1068.3 528.433 1067.15 527.079L1067.53 526.757C1066.39 525.426 1065.35 524.005 1064.43 522.506L1064.01 522.766C1063.08 521.256 1062.27 519.668 1061.58 518.014L1062.04 517.823C1061.38 516.216 1060.83 514.546 1060.42 512.824L1059.93 512.939C1059.53 511.229 1059.24 509.469 1059.1 507.669L1059.6 507.632C1059.55 506.927 1059.52 506.216 1059.5 505.5H1061.19V505H1065.56V505.5H1069.94V505H1074.31V505.5H1078.69V505H1083.06V505.5H1087.44V505H1091.81Z"
               fill={colorConfig.room_fill}
               stroke={colorConfig.block_stroke}
-              stroke-dasharray="5 5"
+              strokeDasharray="5 5"
             />
             <path
               d="M1025.19 505V505.5H1023.5V507.833H1023V513.5H1023.5V519.167H1023V524.833H1023.5V530.5H1023V536.167H1023.5V539H1023.75V538.5H1024C1024.89 538.5 1025.76 538.466 1026.63 538.398L1026.67 538.896C1028.47 538.756 1030.23 538.474 1031.94 538.064L1031.82 537.581C1033.55 537.169 1035.22 536.624 1036.82 535.958L1037.01 536.418C1038.67 535.732 1040.26 534.92 1041.77 533.992L1041.51 533.568C1043 532.648 1044.43 531.612 1045.76 530.475L1046.08 530.853C1047.43 529.695 1048.7 528.433 1049.85 527.079L1049.47 526.757C1050.61 525.426 1051.65 524.005 1052.57 522.506L1052.99 522.766C1053.92 521.256 1054.73 519.668 1055.42 518.014L1054.96 517.823C1055.62 516.216 1056.17 514.546 1056.58 512.824L1057.07 512.939C1057.47 511.229 1057.76 509.469 1057.9 507.669L1057.4 507.632C1057.45 506.927 1057.48 506.216 1057.5 505.5H1055.81V505H1051.44V505.5H1047.06V505H1042.69V505.5H1038.31V505H1033.94V505.5H1029.56V505H1025.19Z"
               fill={colorConfig.room_fill}
               stroke={colorConfig.block_stroke}
-              stroke-dasharray="5 5"
+              strokeDasharray="5 5"
             />
             <path
               d="M603.188 505V505.5H601.5V507.833H601V513.5H601.5V519.167H601V524.833H601.5V530.5H601V536.167H601.5V539H601.75V538.5H602C602.886 538.5 603.764 538.466 604.632 538.398L604.67 538.896C606.47 538.756 608.23 538.474 609.94 538.064L609.824 537.581C611.546 537.169 613.216 536.624 614.823 535.958L615.015 536.418C616.669 535.732 618.256 534.92 619.767 533.992L619.506 533.568C621.005 532.648 622.426 531.612 623.757 530.475L624.08 530.853C625.434 529.695 626.696 528.433 627.854 527.079L627.475 526.757C628.612 525.426 629.648 524.005 630.568 522.506L630.993 522.766C631.92 521.256 632.733 519.668 633.419 518.014L632.958 517.823C633.624 516.216 634.169 514.546 634.581 512.824L635.065 512.939C635.475 511.229 635.757 509.469 635.896 507.669L635.398 507.632C635.453 506.927 635.485 506.216 635.495 505.5H633.812V505H629.438V505.5H625.062V505H620.688V505.5H616.312V505H611.938V505.5H607.562V505H603.188Z"
               fill={colorConfig.room_fill}
               stroke={colorConfig.block_stroke}
-              stroke-dasharray="5 5"
+              strokeDasharray="5 5"
             />
             <path d="M778 0H1280V506H778V0Z" fill={colorConfig.room_fill} />
             <path
@@ -14737,7 +14738,7 @@ const OpenDC: React.FC<RoomVisualizerProps> = ({ theme }) => {
               d="M668.812 505V505.5H670.5V507.75H671V513.25H670.5V518.75H671V524.25H670.5V529.75H671V535.25H670.5V538H669.5V537.5H669C668.141 537.5 667.289 537.467 666.447 537.401L666.408 537.898C664.661 537.763 662.953 537.49 661.293 537.093L661.409 536.609C659.739 536.21 658.119 535.681 656.56 535.034L656.368 535.493C654.763 534.827 653.221 534.04 651.756 533.14L652.018 532.715C650.563 531.822 649.184 530.818 647.893 529.714L647.568 530.092C646.255 528.969 645.03 527.744 643.907 526.431L644.286 526.107C643.182 524.816 642.178 523.437 641.285 521.982L640.859 522.243C639.959 520.778 639.172 519.236 638.506 517.631L638.966 517.44C638.319 515.881 637.79 514.261 637.391 512.591L636.906 512.706C636.509 511.046 636.236 509.338 636.101 507.591L636.599 507.553C636.546 506.874 636.515 506.19 636.505 505.5H638.188V505H642.562V505.5H646.938V505H651.312V505.5H655.688V505H660.062V505.5H664.438V505H668.812Z"
               fill={colorConfig.room_fill}
               stroke={colorConfig.block_stroke}
-              stroke-dasharray="5 5"
+              strokeDasharray="5 5"
             />
             <path
               d="M433 0H778V506H356V344.5H433V0Z"
@@ -16758,25 +16759,25 @@ const OpenDC: React.FC<RoomVisualizerProps> = ({ theme }) => {
               d="M137.188 344.5V345H141.562V344.5H145.938V345H150.312V344.5H154.688V345H159.062V344.5H163.438V345H167.812V344.5H170.5V347.833H170V353.5H170.5V359.167H170V364.833H170.5V370.5H170V376.167H170.5V379.5H169.75V379H169.25V379.5H169C168.088 379.5 167.185 379.465 166.291 379.396L166.33 378.896V378.896C164.53 378.756 162.77 378.474 161.06 378.064V378.067L160.943 378.554C159.17 378.129 157.449 377.568 155.794 376.882L155.985 376.42V376.418C154.331 375.732 152.744 374.92 151.233 373.992V373.994L150.972 374.42C149.428 373.472 147.964 372.406 146.594 371.234L146.919 370.854L146.92 370.853C145.566 369.695 144.304 368.433 143.146 367.079L143.146 367.081L142.766 367.406C141.594 366.036 140.528 364.572 139.58 363.028L140.006 362.767L140.007 362.766C139.08 361.256 138.267 359.668 137.581 358.014L137.58 358.015L137.118 358.206C136.432 356.551 135.871 354.83 135.446 353.057L135.933 352.94L135.935 352.939C135.525 351.229 135.243 349.469 135.104 347.669V347.67L134.604 347.709C134.535 346.815 134.5 345.912 134.5 345V344.5H137.188Z"
               fill={colorConfig.room_fill}
               stroke={colorConfig.block_stroke}
-              stroke-dasharray="5 5"
+              strokeDasharray="5 5"
             />
             <path
               d="M164.188 425.5V426H168.562V425.5H172.938V426H177.312V425.5H181.688V426H186.062V425.5H190.438V426H194.812V425.5H197.5V428.833H197V434.5H197.5V440.167H197V445.833H197.5V451.5H197V457.167H197.5V460.5H196.75V460H196.25V460.5H196C195.088 460.5 194.185 460.465 193.291 460.396L193.33 459.896V459.896C191.53 459.756 189.77 459.474 188.06 459.064V459.067L187.943 459.554C186.17 459.129 184.449 458.568 182.794 457.882L182.985 457.42V457.418C181.331 456.732 179.744 455.92 178.233 454.992V454.994L177.972 455.42C176.428 454.472 174.964 453.406 173.594 452.234L173.919 451.854L173.92 451.853C172.566 450.695 171.304 449.433 170.146 448.079L170.146 448.081L169.766 448.406C168.594 447.036 167.528 445.572 166.58 444.028L167.006 443.767L167.007 443.766C166.08 442.256 165.267 440.668 164.581 439.014L164.58 439.015L164.118 439.206C163.432 437.551 162.871 435.83 162.446 434.057L162.933 433.94L162.935 433.939C162.525 432.229 162.243 430.469 162.104 428.669V428.67L161.604 428.709C161.535 427.815 161.5 426.912 161.5 426V425.5H164.188Z"
               fill={colorConfig.room_fill}
               stroke={colorConfig.block_stroke}
-              stroke-dasharray="5 5"
+              strokeDasharray="5 5"
             />
             <path
               d="M164.188 494.5V494H168.562V494.5H172.938V494H177.312V494.5H181.688V494H186.062V494.5H190.438V494H194.812V494.5H197.5V491.167H197V485.5H197.5V479.833H197V474.167H197.5V468.5H197V462.833H197.5V459.5H196.75V460H196.25V459.5H196C195.088 459.5 194.185 459.535 193.291 459.604L193.33 460.104V460.104C191.53 460.244 189.77 460.526 188.06 460.936V460.933L187.943 460.446C186.17 460.871 184.449 461.432 182.794 462.118L182.985 462.58V462.582C181.331 463.268 179.744 464.08 178.233 465.008V465.006L177.972 464.58C176.428 465.528 174.964 466.594 173.594 467.766L173.919 468.146L173.92 468.147C172.566 469.305 171.304 470.567 170.146 471.921L170.146 471.919L169.766 471.594C168.594 472.964 167.528 474.428 166.58 475.972L167.006 476.233L167.007 476.234C166.08 477.744 165.267 479.332 164.581 480.986L164.58 480.985L164.118 480.794C163.432 482.449 162.871 484.17 162.446 485.943L162.933 486.06L162.935 486.061C162.525 487.771 162.243 489.531 162.104 491.331V491.33L161.604 491.291C161.535 492.185 161.5 493.088 161.5 494V494.5H164.188Z"
               fill={colorConfig.room_fill}
               stroke={colorConfig.block_stroke}
-              stroke-dasharray="5 5"
+              strokeDasharray="5 5"
             />
             <path
               d="M131.812 344.5V345H127.438V344.5H123.062V345H118.688V344.5H114.312V345H109.938V344.5H105.562V345H101.188V344.5H98.5V347.833H99V353.5H98.5V359.167H99V364.833H98.5V370.5H99V376.167H98.5V379.5H99.25V379H99.75V379.5H100C100.912 379.5 101.815 379.465 102.709 379.396L102.67 378.896V378.896C104.47 378.756 106.23 378.474 107.94 378.064V378.067L108.057 378.554C109.83 378.129 111.551 377.568 113.206 376.882L113.015 376.42V376.418C114.669 375.732 116.256 374.92 117.767 373.992V373.994L118.028 374.42C119.572 373.472 121.036 372.406 122.406 371.234L122.081 370.854L122.08 370.853C123.434 369.695 124.696 368.433 125.854 367.079L125.854 367.081L126.234 367.406C127.406 366.036 128.472 364.572 129.42 363.028L128.994 362.767L128.993 362.766C129.92 361.256 130.733 359.668 131.419 358.014L131.42 358.015L131.882 358.206C132.568 356.551 133.129 354.83 133.554 353.057L133.067 352.94L133.065 352.939C133.475 351.229 133.757 349.469 133.896 347.669V347.67L134.396 347.709C134.465 346.815 134.5 345.912 134.5 345V344.5H131.812Z"
               fill={colorConfig.room_fill}
               stroke={colorConfig.block_stroke}
-              stroke-dasharray="5 5"
+              strokeDasharray="5 5"
             />
             <g clipPath="url(#clip9_709_5)">
               <mask
@@ -16795,32 +16796,32 @@ const OpenDC: React.FC<RoomVisualizerProps> = ({ theme }) => {
               <path
                 d="M-8 347L39 365L82 347"
                 stroke={colorConfig.ramp}
-                stroke-width="16"
-                stroke-miterlimit="10"
+                strokeWidth="16"
+                strokeMiterlimit="10"
               />
               <path
                 d="M-8 295L39 313L82 295"
                 stroke={colorConfig.ramp}
-                stroke-width="16"
-                stroke-miterlimit="10"
+                strokeWidth="16"
+                strokeMiterlimit="10"
               />
               <path
                 d="M-8 243L39 261L82 243"
                 stroke={colorConfig.ramp}
-                stroke-width="16"
-                stroke-miterlimit="10"
+                strokeWidth="16"
+                strokeMiterlimit="10"
               />
               <path
                 d="M-8 191L39 209L82 191"
                 stroke={colorConfig.ramp}
-                stroke-width="16"
-                stroke-miterlimit="10"
+                strokeWidth="16"
+                strokeMiterlimit="10"
               />
               <path
                 d="M-8 139L39 157L82 139"
                 stroke={colorConfig.ramp}
-                stroke-width="16"
-                stroke-miterlimit="10"
+                strokeWidth="16"
+                strokeMiterlimit="10"
               />
             </g>
             <path
