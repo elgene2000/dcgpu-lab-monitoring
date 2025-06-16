@@ -16,6 +16,7 @@ class PDU(object):
             "temperature": "object",
             "v2c": "string",
             "site": "string",
+            "system": "string",
             "location": "string",
             "created": "datetime",
             "updated": "datetime",
@@ -32,13 +33,13 @@ class PDU(object):
         ]
 
         # Fields optional for CREATE
-        self.create_optional_fields = ["temperature"]
+        self.create_optional_fields = ["temperature", "system"]
 
         # Fields required for UPDATE
         self.update_required_fields = []
 
         # Fields optional for UPDATE
-        self.update_optional_fields = ["temperature"]
+        self.update_optional_fields = ["temperature", "system"]
 
     def create(self, pdu_data):
         # Validator will throw error if invalid

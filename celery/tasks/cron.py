@@ -66,6 +66,7 @@ def fetch_power_data():
             site = pdu["site"]
             location = pdu["location"]
             output_power_total_oid = pdu["output_power_total_oid"]
+            system = pdu.get("system")
 
             total_power = asyncio.run(
                 snmpFetch(hostname, output_power_total_oid, "amd123", "power")
@@ -79,6 +80,7 @@ def fetch_power_data():
                     "pdu_hostname": hostname,
                     "reading": total_power,
                     "symbol": "W",
+                    **({"system": system} if system else {})
                 }
             )
 

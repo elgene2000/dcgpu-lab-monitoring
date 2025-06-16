@@ -14,6 +14,7 @@ class Power(object):
             "location": "string",
             "pdu_hostname": "string",
             "reading": "float",
+            "system": "string",
             "symbol": "string",
             "created": "datetime",
             "updated": "datetime",
@@ -29,6 +30,7 @@ class Power(object):
             "symbol",
             "created",
             "updated",
+            "system"
         ]
 
         # Fields required for UPDATE
