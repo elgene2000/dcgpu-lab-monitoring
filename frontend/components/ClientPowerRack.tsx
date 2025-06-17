@@ -202,7 +202,9 @@ export default function ClientPowerRack({
                         <ExternalLink className="w-4 h-4" />
                       </a>
                     </p>
-                    <p className="text-sm font-light">System: {power.system ? power.system : "NA"}</p>
+                    <p className="text-sm font-light">
+                      System: {power.system ? power.system : "NA"}
+                    </p>
                   </div>
                 </div>
               </CardHeader>
