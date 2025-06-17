@@ -392,344 +392,344 @@ const OpenDCDH4: React.FC<RoomVisualizerProps> = ({ theme, powerData }) => {
           <path d="M219 221H251V288H219V221Z" />
         </mask>
         {/* A1 */}
-        <path
-          d="M40 106H72V173H40V106Z"
-          fill={colorConfig.block_fill}
-          className="cursor-pointer"
+        <g
+          className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
           onClick={() => router.push("/opendc/dh4/power/a1")}
-        />
-        <Bolt
-          rack="A1"
-          theme={theme}
-          power={benchPower["a1"]}
-          size={0.17857}
-          x={51.5}
-          y={135.5}
-        />
-        <path
-          d="M40 106V105H39V106H40ZM72 106H73V105H72V106ZM40 106V107H72V106V105H40V106ZM72 106H71V173H72H73V106H72ZM40 173H41V106H40H39V173H40Z"
-          fill={colorConfig.block_stroke}
-          mask="url(#path-79-inside-12_709_17)"
-        />
-        <mask id="path-81-inside-13_709_17" fill="white">
-          <path d="M122 173H154V240H122V173Z" />
-        </mask>
+        >
+          <path d="M40 106H72V173H40V106Z" fill={colorConfig.block_fill} />
+          <Bolt
+            rack="A1"
+            theme={theme}
+            power={benchPower["a1"]}
+            size={0.17857}
+            x={51.5}
+            y={135.5}
+          />
+          <path
+            d="M40 106V105H39V106H40ZM72 106H73V105H72V106ZM40 106V107H72V106V105H40V106ZM72 106H71V173H72H73V106H72ZM40 173H41V106H40H39V173H40Z"
+            fill={colorConfig.block_stroke}
+            mask="url(#path-79-inside-12_709_17)"
+          />
+          <mask id="path-81-inside-13_709_17" fill="white">
+            <path d="M122 173H154V240H122V173Z" />
+          </mask>
+        </g>
         {/* A2 */}
-        <path
-          d="M40 173H72V240H40V173Z"
-          fill={colorConfig.block_fill}
-          className="cursor-pointer"
+        <g
+          className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
           onClick={() => router.push("/opendc/dh4/power/a2")}
-        />
-        <Bolt
-          rack="A2"
-          theme={theme}
-          power={benchPower["a2"]}
-          size={0.17857}
-          x={51.5}
-          y={201.5}
-        />
-        <path
-          d="M40 173V172H39V173H40ZM72 173H73V172H72V173ZM40 173V174H72V173V172H40V173ZM72 173H71V240H72H73V173H72ZM40 240H41V173H40H39V240H40Z"
-          fill={colorConfig.block_stroke}
-          mask="url(#path-83-inside-14_709_17)"
-        />
-        <mask id="path-85-inside-15_709_17" fill="white">
-          <path d="M122 240H154V307H122V240Z" />
-        </mask>
+        >
+          <path d="M40 173H72V240H40V173Z" fill={colorConfig.block_fill} />
+          <Bolt
+            rack="A2"
+            theme={theme}
+            power={benchPower["a2"]}
+            size={0.17857}
+            x={51.5}
+            y={201.5}
+          />
+          <path
+            d="M40 173V172H39V173H40ZM72 173H73V172H72V173ZM40 173V174H72V173V172H40V173ZM72 173H71V240H72H73V173H72ZM40 240H41V173H40H39V240H40Z"
+            fill={colorConfig.block_stroke}
+            mask="url(#path-83-inside-14_709_17)"
+          />
+          <mask id="path-85-inside-15_709_17" fill="white">
+            <path d="M122 240H154V307H122V240Z" />
+          </mask>
+        </g>
         {/* A3 */}
-        <path
-          d="M40 240H72V307H40V240Z"
-          fill={colorConfig.block_fill}
-          className="cursor-pointer"
+        <g
+          className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
           onClick={() => router.push("/opendc/dh4/power/a3")}
-        />
-        <Bolt
-          rack="A3"
-          theme={theme}
-          power={benchPower["a3"]}
-          size={0.17857}
-          x={51.5}
-          y={268.5}
-        />
-        <path
-          d="M40 240V239H39V240H40ZM72 240H73V239H72V240ZM40 240V241H72V240V239H40V240ZM72 240H71V307H72H73V240H72ZM40 307H41V240H40H39V307H40Z"
-          fill={colorConfig.block_stroke}
-          mask="url(#path-87-inside-16_709_17)"
-        />
-        <mask id="path-89-inside-17_709_17" fill="white">
-          <path d="M122 307H154V374H122V307Z" />
-        </mask>
+        >
+          <path d="M40 240H72V307H40V240Z" fill={colorConfig.block_fill} />
+          <Bolt
+            rack="A3"
+            theme={theme}
+            power={benchPower["a3"]}
+            size={0.17857}
+            x={51.5}
+            y={268.5}
+          />
+          <path
+            d="M40 240V239H39V240H40ZM72 240H73V239H72V240ZM40 240V241H72V240V239H40V240ZM72 240H71V307H72H73V240H72ZM40 307H41V240H40H39V307H40Z"
+            fill={colorConfig.block_stroke}
+            mask="url(#path-87-inside-16_709_17)"
+          />
+          <mask id="path-89-inside-17_709_17" fill="white">
+            <path d="M122 307H154V374H122V307Z" />
+          </mask>
+        </g>
         {/* A4 */}
-        <path
-          d="M40 307H72V374H40V307Z"
-          fill={colorConfig.block_fill}
-          className="cursor-pointer"
+        <g
+          className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
           onClick={() => router.push("/opendc/dh4/power/a4")}
-        />
-        <Bolt
-          rack="A4"
-          theme={theme}
-          power={benchPower["a4"]}
-          size={0.17857}
-          x={51.5}
-          y={335.5}
-        />
-        <path
-          d="M40 307V306H39V307H40ZM72 307H73V306H72V307ZM72 374V375H73V374H72ZM40 374H39V375H40V374ZM40 307V308H72V307V306H40V307ZM72 307H71V374H72H73V307H72ZM72 374V373H40V374V375H72V374ZM40 374H41V307H40H39V374H40Z"
-          fill={colorConfig.block_stroke}
-          mask="url(#path-91-inside-18_709_17)"
-        />
+        >
+          <path d="M40 307H72V374H40V307Z" fill={colorConfig.block_fill} />
+          <Bolt
+            rack="A4"
+            theme={theme}
+            power={benchPower["a4"]}
+            size={0.17857}
+            x={51.5}
+            y={335.5}
+          />
+          <path
+            d="M40 307V306H39V307H40ZM72 307H73V306H72V307ZM72 374V375H73V374H72ZM40 374H39V375H40V374ZM40 307V308H72V307V306H40V307ZM72 307H71V374H72H73V307H72ZM72 374V373H40V374V375H72V374ZM40 374H41V307H40H39V374H40Z"
+            fill={colorConfig.block_stroke}
+            mask="url(#path-91-inside-18_709_17)"
+          />
+        </g>
         {/* B1 */}
-        <path
-          d="M122 106H154V173H122V106Z"
-          fill={colorConfig.block_fill}
-          className="cursor-pointer"
+        <g
+          className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
           onClick={() => router.push("/opendc/dh4/power/b1")}
-        />
-        <Bolt
-          rack="B1"
-          theme={theme}
-          power={benchPower["b1"]}
-          size={0.17857}
-          x={133}
-          y={135.5}
-        />
-        <path
-          d="M122 106V105H121V106H122ZM154 106H155V105H154V106ZM122 106V107H154V106V105H122V106ZM154 106H153V173H154H155V106H154ZM122 173H123V106H122H121V173H122Z"
-          fill={colorConfig.block_stroke}
-          mask="url(#path-77-inside-11_709_17)"
-        />
-        <mask id="path-79-inside-12_709_17" fill="white">
-          <path d="M40 106H72V173H40V106Z" />
-        </mask>
+        >
+          <path d="M122 106H154V173H122V106Z" fill={colorConfig.block_fill} />
+          <Bolt
+            rack="B1"
+            theme={theme}
+            power={benchPower["b1"]}
+            size={0.17857}
+            x={133}
+            y={135.5}
+          />
+          <path
+            d="M122 106V105H121V106H122ZM154 106H155V105H154V106ZM122 106V107H154V106V105H122V106ZM154 106H153V173H154H155V106H154ZM122 173H123V106H122H121V173H122Z"
+            fill={colorConfig.block_stroke}
+            mask="url(#path-77-inside-11_709_17)"
+          />
+          <mask id="path-79-inside-12_709_17" fill="white">
+            <path d="M40 106H72V173H40V106Z" />
+          </mask>
+        </g>
         {/* B2 */}
-        <path
-          d="M122 173H154V240H122V173Z"
-          fill={colorConfig.block_fill}
-          className="cursor-pointer"
+        <g
+          className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
           onClick={() => router.push("/opendc/dh4/power/b2")}
-        />
-        <Bolt
-          rack="B2"
-          theme={theme}
-          power={benchPower["b2"]}
-          size={0.17857}
-          x={133}
-          y={201.5}
-        />
-        <path
-          d="M122 173V172H121V173H122ZM154 173H155V172H154V173ZM122 173V174H154V173V172H122V173ZM154 173H153V240H154H155V173H154ZM122 240H123V173H122H121V240H122Z"
-          fill={colorConfig.block_stroke}
-          mask="url(#path-81-inside-13_709_17)"
-        />
-        <mask id="path-83-inside-14_709_17" fill="white">
-          <path d="M40 173H72V240H40V173Z" />
-        </mask>
+        >
+          <path d="M122 173H154V240H122V173Z" fill={colorConfig.block_fill} />
+          <Bolt
+            rack="B2"
+            theme={theme}
+            power={benchPower["b2"]}
+            size={0.17857}
+            x={133}
+            y={201.5}
+          />
+          <path
+            d="M122 173V172H121V173H122ZM154 173H155V172H154V173ZM122 173V174H154V173V172H122V173ZM154 173H153V240H154H155V173H154ZM122 240H123V173H122H121V240H122Z"
+            fill={colorConfig.block_stroke}
+            mask="url(#path-81-inside-13_709_17)"
+          />
+          <mask id="path-83-inside-14_709_17" fill="white">
+            <path d="M40 173H72V240H40V173Z" />
+          </mask>
+        </g>
         {/* B3 */}
-        <path
-          d="M122 240H154V307H122V240Z"
-          fill={colorConfig.block_fill}
-          className="cursor-pointer"
+        <g
+          className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
           onClick={() => router.push("/opendc/dh4/power/b3")}
-        />
-        <Bolt
-          rack="B3"
-          theme={theme}
-          power={benchPower["b3"]}
-          size={0.17857}
-          x={133}
-          y={268.5}
-        />
-        <path
-          d="M122 240V239H121V240H122ZM154 240H155V239H154V240ZM122 240V241H154V240V239H122V240ZM154 240H153V307H154H155V240H154ZM122 307H123V240H122H121V307H122Z"
-          fill={colorConfig.block_stroke}
-          mask="url(#path-85-inside-15_709_17)"
-        />
-        <mask id="path-87-inside-16_709_17" fill="white">
-          <path d="M40 240H72V307H40V240Z" />
-        </mask>
+        >
+          <path d="M122 240H154V307H122V240Z" fill={colorConfig.block_fill} />
+          <Bolt
+            rack="B3"
+            theme={theme}
+            power={benchPower["b3"]}
+            size={0.17857}
+            x={133}
+            y={268.5}
+          />
+          <path
+            d="M122 240V239H121V240H122ZM154 240H155V239H154V240ZM122 240V241H154V240V239H122V240ZM154 240H153V307H154H155V240H154ZM122 307H123V240H122H121V307H122Z"
+            fill={colorConfig.block_stroke}
+            mask="url(#path-85-inside-15_709_17)"
+          />
+          <mask id="path-87-inside-16_709_17" fill="white">
+            <path d="M40 240H72V307H40V240Z" />
+          </mask>
+        </g>
         {/* B4 */}
-        <path
-          d="M122 307H154V374H122V307Z"
-          fill={colorConfig.block_fill}
-          className="cursor-pointer"
+        <g
+          className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
           onClick={() => router.push("/opendc/dh4/power/b4")}
-        />
-        <Bolt
-          rack="B4"
-          theme={theme}
-          power={benchPower["b4"]}
-          size={0.17857}
-          x={133}
-          y={335.5}
-        />
-        <path
-          d="M122 307V306H121V307H122ZM154 307H155V306H154V307ZM154 374V375H155V374H154ZM122 374H121V375H122V374ZM122 307V308H154V307V306H122V307ZM154 307H153V374H154H155V307H154ZM154 374V373H122V374V375H154V374ZM122 374H123V307H122H121V374H122Z"
-          fill={colorConfig.block_stroke}
-          mask="url(#path-89-inside-17_709_17)"
-        />
-        <mask id="path-91-inside-18_709_17" fill="white">
-          <path d="M40 307H72V374H40V307Z" />
-        </mask>
+        >
+          <path d="M122 307H154V374H122V307Z" fill={colorConfig.block_fill} />
+          <Bolt
+            rack="B4"
+            theme={theme}
+            power={benchPower["b4"]}
+            size={0.17857}
+            x={133}
+            y={335.5}
+          />
+          <path
+            d="M122 307V306H121V307H122ZM154 307H155V306H154V307ZM154 374V375H155V374H154ZM122 374H121V375H122V374ZM122 307V308H154V307V306H122V307ZM154 307H153V374H154H155V307H154ZM154 374V373H122V374V375H154V374ZM122 374H123V307H122H121V374H122Z"
+            fill={colorConfig.block_stroke}
+            mask="url(#path-89-inside-17_709_17)"
+          />
+          <mask id="path-91-inside-18_709_17" fill="white">
+            <path d="M40 307H72V374H40V307Z" />
+          </mask>
+        </g>
         {/* C1 */}
-        <path
-          d="M219 154H251V221H219V154Z"
-          fill={colorConfig.block_fill}
-          className="cursor-pointer"
+        <g
+          className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
           onClick={() => router.push("/opendc/dh4/power/c1")}
-        />
-        <Bolt
-          rack="C1"
-          theme={theme}
-          power={benchPower["c1"]}
-          size={0.17857}
-          x={231.5}
-          y={182.5}
-        />
-        <path
-          d="M219 154V153H218V154H219ZM219 154V155H251V154V153H219V154ZM219 221H220V154H219H218V221H219Z"
-          fill={colorConfig.block_stroke}
-          mask="url(#path-5-inside-3_709_17)"
-        />
+        >
+          <path d="M219 154H251V221H219V154Z" fill={colorConfig.block_fill} />
+          <Bolt
+            rack="C1"
+            theme={theme}
+            power={benchPower["c1"]}
+            size={0.17857}
+            x={231.5}
+            y={182.5}
+          />
+          <path
+            d="M219 154V153H218V154H219ZM219 154V155H251V154V153H219V154ZM219 221H220V154H219H218V221H219Z"
+            fill={colorConfig.block_stroke}
+            mask="url(#path-5-inside-3_709_17)"
+          />
+        </g>
         {/* C2 */}
-        <path
-          d="M219 221H251V288H219V221Z"
-          fill={colorConfig.block_fill}
-          className="cursor-pointer"
+        <g
+          className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
           onClick={() => router.push("/opendc/dh4/power/c2")}
-        />
-        <Bolt
-          rack="C2"
-          theme={theme}
-          power={benchPower["c2"]}
-          size={0.17857}
-          x={231.5}
-          y={249.5}
-        />
-        <path
-          d="M219 221V220H218V221H219ZM219 221V222H251V221V220H219V221ZM219 288H220V221H219H218V288H219Z"
-          fill={colorConfig.block_stroke}
-          mask="url(#path-67-inside-6_709_17)"
-        />
-        <mask id="path-69-inside-7_709_17" fill="white">
-          <path d="M301 173H333V240H301V173Z" />
-        </mask>
+        >
+          <path d="M219 221H251V288H219V221Z" fill={colorConfig.block_fill} />
+          <Bolt
+            rack="C2"
+            theme={theme}
+            power={benchPower["c2"]}
+            size={0.17857}
+            x={231.5}
+            y={249.5}
+          />
+          <path
+            d="M219 221V220H218V221H219ZM219 221V222H251V221V220H219V221ZM219 288H220V221H219H218V288H219Z"
+            fill={colorConfig.block_stroke}
+            mask="url(#path-67-inside-6_709_17)"
+          />
+          <mask id="path-69-inside-7_709_17" fill="white">
+            <path d="M301 173H333V240H301V173Z" />
+          </mask>
+        </g>
         {/* C3 */}
-        <path
-          d="M219 333H251V400H219V333Z"
-          fill={colorConfig.block_fill}
-          className="cursor-pointer"
+        <g
+          className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
           onClick={() => router.push("/opendc/dh4/power/c3")}
-        />
-        <Bolt
-          rack="C3"
-          theme={theme}
-          power={benchPower["c3"]}
-          size={0.17857}
-          x={230.5}
-          y={361.5}
-        />
-        <path
-          d="M219 333V332H218V333H219ZM251 333H252V332H251V333ZM251 400V401H252V400H251ZM219 400H218V401H219V400ZM219 333V334H251V333V332H219V333ZM251 333H250V400H251H252V333H251ZM251 400V399H219V400V401H251V400ZM219 400H220V333H219H218V400H219Z"
-          fill={colorConfig.block_stroke}
-          mask="url(#path-75-inside-10_709_17)"
-        />
-        <mask id="path-77-inside-11_709_17" fill="white">
-          <path d="M122 106H154V173H122V106Z" />
-        </mask>
+        >
+          <path d="M219 333H251V400H219V333Z" fill={colorConfig.block_fill} />
+          <Bolt
+            rack="C3"
+            theme={theme}
+            power={benchPower["c3"]}
+            size={0.17857}
+            x={230.5}
+            y={361.5}
+          />
+          <path
+            d="M219 333V332H218V333H219ZM251 333H252V332H251V333ZM251 400V401H252V400H251ZM219 400H218V401H219V400ZM219 333V334H251V333V332H219V333ZM251 333H250V400H251H252V333H251ZM251 400V399H219V400V401H251V400ZM219 400H220V333H219H218V400H219Z"
+            fill={colorConfig.block_stroke}
+            mask="url(#path-75-inside-10_709_17)"
+          />
+          <mask id="path-77-inside-11_709_17" fill="white">
+            <path d="M122 106H154V173H122V106Z" />
+          </mask>
+        </g>
         {/* D1 */}
-        <path
-          d="M301 106H333V173H301V106Z"
-          fill={colorConfig.block_fill}
-          className="cursor-pointer"
+        <g
+          className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
           onClick={() => router.push("/opendc/dh4/power/d1")}
-        />
-        <Bolt
-          rack="D1"
-          theme={theme}
-          power={benchPower["d1"]}
-          size={0.17857}
-          x={312}
-          y={135.5}
-        />
-        <path
-          d="M333 106H334V105H333V106ZM301 106V107H333V106V105H301V106ZM333 106H332V173H333H334V106H333Z"
-          fill={colorConfig.block_stroke}
-          mask="url(#path-3-inside-2_709_17)"
-        />
-        <mask id="path-5-inside-3_709_17" fill="white">
-          <path d="M219 154H251V221H219V154Z" />
-        </mask>
+        >
+          <path d="M301 106H333V173H301V106Z" fill={colorConfig.block_fill} />
+          <Bolt
+            rack="D1"
+            theme={theme}
+            power={benchPower["d1"]}
+            size={0.17857}
+            x={312}
+            y={135.5}
+          />
+          <path
+            d="M333 106H334V105H333V106ZM301 106V107H333V106V105H301V106ZM333 106H332V173H333H334V106H333Z"
+            fill={colorConfig.block_stroke}
+            mask="url(#path-3-inside-2_709_17)"
+          />
+          <mask id="path-5-inside-3_709_17" fill="white">
+            <path d="M219 154H251V221H219V154Z" />
+          </mask>
+        </g>
         {/* D2 */}
-        <path
-          d="M301 173H333V240H301V173Z"
-          fill={colorConfig.block_fill}
-          className="cursor-pointer"
+        <g
+          className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
           onClick={() => router.push("/opendc/dh4/power/d2")}
-        />
-        <Bolt
-          rack="D2"
-          theme={theme}
-          power={benchPower["d2"]}
-          size={0.17857}
-          x={312}
-          y={201.5}
-        />
-        <path
-          d="M333 173H334V172H333V173ZM301 173V174H333V173V172H301V173ZM333 173H332V240H333H334V173H333Z"
-          fill={colorConfig.block_stroke}
-          mask="url(#path-69-inside-7_709_17)"
-        />
-        <mask id="path-71-inside-8_709_17" fill="white">
-          <path d="M301 240H333V307H301V240Z" />
-        </mask>
+        >
+          <path d="M301 173H333V240H301V173Z" fill={colorConfig.block_fill} />
+          <Bolt
+            rack="D2"
+            theme={theme}
+            power={benchPower["d2"]}
+            size={0.17857}
+            x={312}
+            y={201.5}
+          />
+          <path
+            d="M333 173H334V172H333V173ZM301 173V174H333V173V172H301V173ZM333 173H332V240H333H334V173H333Z"
+            fill={colorConfig.block_stroke}
+            mask="url(#path-69-inside-7_709_17)"
+          />
+          <mask id="path-71-inside-8_709_17" fill="white">
+            <path d="M301 240H333V307H301V240Z" />
+          </mask>
+        </g>
         {/* D3 */}
-        <path
-          d="M301 240H333V307H301V240Z"
-          fill={colorConfig.block_fill}
-          className="cursor-pointer"
+        <g
+          className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
           onClick={() => router.push("/opendc/dh4/power/d3")}
-        />
-        <Bolt
-          rack="D3"
-          theme={theme}
-          power={benchPower["d3"]}
-          size={0.17857}
-          x={312}
-          y={268.5}
-        />
-        <path
-          d="M333 240H334V239H333V240ZM301 240V241H333V240V239H301V240ZM333 240H332V307H333H334V240H333Z"
-          fill={colorConfig.block_stroke}
-          mask="url(#path-71-inside-8_709_17)"
-        />
-        <mask id="path-73-inside-9_709_17" fill="white">
-          <path d="M301 307H333V374H301V307Z" />
-        </mask>
+        >
+          <path d="M301 240H333V307H301V240Z" fill={colorConfig.block_fill} />
+          <Bolt
+            rack="D3"
+            theme={theme}
+            power={benchPower["d3"]}
+            size={0.17857}
+            x={312}
+            y={268.5}
+          />
+          <path
+            d="M333 240H334V239H333V240ZM301 240V241H333V240V239H301V240ZM333 240H332V307H333H334V240H333Z"
+            fill={colorConfig.block_stroke}
+            mask="url(#path-71-inside-8_709_17)"
+          />
+          <mask id="path-73-inside-9_709_17" fill="white">
+            <path d="M301 307H333V374H301V307Z" />
+          </mask>
+        </g>
         {/* D4 */}
-        <path
-          d="M301 307H333V374H301V307Z"
-          fill={colorConfig.block_fill}
-          className="cursor-pointer"
+        <g
+          className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
           onClick={() => router.push("/opendc/dh4/power/d4")}
-        />
-        <Bolt
-          rack="D4"
-          theme={theme}
-          power={benchPower["d4"]}
-          size={0.17857}
-          x={312}
-          y={335.5}
-        />
-        <path
-          d="M333 307H334V306H333V307ZM333 374V375H334V374H333ZM301 307V308H333V307V306H301V307ZM333 307H332V374H333H334V307H333ZM333 374V373H301V374V375H333V374Z"
-          fill={colorConfig.block_stroke}
-          mask="url(#path-73-inside-9_709_17)"
-        />
-        <mask id="path-75-inside-10_709_17" fill="white">
-          <path d="M219 333H251V400H219V333Z" />
-        </mask>
+        >
+          <path d="M301 307H333V374H301V307Z" fill={colorConfig.block_fill} />
+          <Bolt
+            rack="D4"
+            theme={theme}
+            power={benchPower["d4"]}
+            size={0.17857}
+            x={312}
+            y={335.5}
+          />
+          <path
+            d="M333 307H334V306H333V307ZM333 374V375H334V374H333ZM301 307V308H333V307V306H301V307ZM333 307H332V374H333H334V307H333ZM333 374V373H301V374V375H333V374Z"
+            fill={colorConfig.block_stroke}
+            mask="url(#path-73-inside-9_709_17)"
+          />
+          <mask id="path-75-inside-10_709_17" fill="white">
+            <path d="M219 333H251V400H219V333Z" />
+          </mask>
+        </g>
         <g clipPath="url(#clip2_709_17)">
           <mask id="path-93-inside-19_709_17" fill="white">
             <path d="M251 84H276V374H251V84Z" />
