@@ -1,4 +1,4 @@
-import ClientPowerRack from "@/components/ClientPowerRack";
+import ClientPowerRack from "@/components/client-power-rack";
 
 export default async function PowerRack({
   params,

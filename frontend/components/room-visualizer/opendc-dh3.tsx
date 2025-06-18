@@ -2557,6 +2557,8 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           theme={theme}
           cx={93.5}
           cy={380.5}
+          datahall="dh3"
+          location="a12-1-front"
           temperature={rackTemperature["a12-1-front"]}
         />
         {/* B12-1-FRONT */}
@@ -2564,6 +2566,8 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           theme={theme}
           cx={223.5}
           cy={380.5}
+          datahall="dh3"
+          location="b12-1-front"
           temperature={rackTemperature["b12-1-front"]}
         />
         {/* A08-1-FRONT */}
@@ -2571,6 +2575,8 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           theme={theme}
           cx={93.5}
           cy={289.5}
+          datahall="dh3"
+          location="a08-1-front"
           temperature={rackTemperature["a08-1-front"]}
         />
         {/* B08-1-FRONT */}
@@ -2578,6 +2584,8 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           theme={theme}
           cx={223.5}
           cy={289.5}
+          datahall="dh3"
+          location="b08-1-front"
           temperature={rackTemperature["b08-1-front"]}
         />
 
@@ -2586,6 +2594,8 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           theme={theme}
           cx={134.5}
           cy={358.5}
+          datahall="dh3"
+          location="a12-2-rear"
           temperature={rackTemperature["a12-2-rear"]}
         />
         {/* A06-2-REAR */}
@@ -2593,6 +2603,8 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           theme={theme}
           cx={134.5}
           cy={220.5}
+          datahall="dh3"
+          location="a06-2-rear"
           temperature={rackTemperature["a06-2-rear"]}
         />
         {/* B09-2-REAR */}
@@ -2600,6 +2612,8 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           theme={theme}
           cx={182.5}
           cy={289.5}
+          datahall="dh3"
+          location="b09-2-rear"
           temperature={rackTemperature["b09-2-rear"]}
         />
       </svg>

@@ -4,14 +4,25 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useRouter } from "next/navigation";
 
-interface TempSensorProps {
+interface TempSensorProps extends React.HTMLAttributes<SVGCircleElement> {
   theme?: string;
+  datahall: string;
+  location: string;
   cx: number;
   cy: number;
   temperature: number | null | undefined;
 }
-const TempSensor = ({ theme, cx, cy, temperature }: TempSensorProps) => {
+const TempSensor = ({
+  theme,
+  cx,
+  cy,
+  datahall,
+  location,
+  temperature,
+}: TempSensorProps) => {
+  const router = useRouter();
   return (
     <Fragment>
       <circle
@@ -58,12 +69,15 @@ const TempSensor = ({ theme, cx, cy, temperature }: TempSensorProps) => {
             opacity={theme == "dark" ? 0.6 : 1}
             className={
               temperature == null
-                ? "fill-gray-200"
+                ? "fill-gray-200 cursor-pointer"
                 : temperature <= 18
-                  ? "fill-sky-400"
+                  ? "fill-sky-400 cursor-pointer"
                   : temperature <= 24
-                    ? "fill-amber-300"
-                    : "fill-red-400"
+                    ? "fill-amber-300 cursor-pointer"
+                    : "fill-red-400 cursor-pointer"
+            }
+            onClick={() =>
+              router.push(`/opendc/${datahall}/temperature/${location}`)
             }
           />
         </TooltipTrigger>

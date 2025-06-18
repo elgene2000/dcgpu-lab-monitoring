@@ -1,6 +1,7 @@
 from flask import Flask
 from routes.power import power
 from routes.temperature import temperature
+from routes.dashboard import dashboard
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -11,6 +12,7 @@ CORS(
 
 app.register_blueprint(power, url_prefix="/power")
 app.register_blueprint(temperature, url_prefix="/temperature")
+app.register_blueprint(dashboard, url_prefix="/dashboard")
 
 # app.register_blueprint(dashboard, url_prefix="/dashboard")
 

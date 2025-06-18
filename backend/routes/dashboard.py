@@ -1,42 +1,35 @@
-# from flask import Blueprint, request
-# from utils.models.temp_sensor import TempSensor
-# from utils.models.ssb import SSB
-# dashboard = Blueprint("dashboard", __name__)
+from flask import Blueprint
+from collections import defaultdict
+from utils.models.power import Power
 
-# @dashboard.route("current_read", methods=["GET"])
-# def get_current_read():
-#     try:
-#         res = {}
-#         temp_sensor = TempSensor()
-#         ssb = SSB()
+dashboard = Blueprint("dashboard", __name__)
 
-#         sensor_names = [
-#             "Sensor0013",
-#             "Sensor0111",
-#             "Sensor0019",
-#             "Sensor0114",
-#             "Sensor0118",
-#         ]
 
-#         current_ssb = ssb.find({}, sort=[("created", -1)], limit=1)
-#         if current_ssb:
-#             res["power"] = {
-#                 "reading": current_ssb[0]["reading"],
-#                 "created": current_ssb[0]["created"],
-#                 "symbol": current_ssb[0]["symbol"]
-#             }
+@dashboard.route("", methods=["GET"])
+def get_total_power():
+    try:
+        power = Power()
+        latest = power.find({}, sort=[("created", -1)], limit=1)
 
-#         for sensor_name in sensor_names:
-#             current_temp = temp_sensor.find(
-#                 {"sensor_id": sensor_name}, sort=[("created", -1)], limit=1
-#             )
+        if not latest:
+            return {}
 
-#             if current_temp:
-#                 res[sensor_name] = {
-#                     "reading": current_temp[0]["reading"],
-#                     "created": current_temp[0]["created"],
-#                     "symbol": current_temp[0]["symbol"],
-#                 }
-#         return {"status": "success", "data": res}
-#     except Exception as e:
-#         return {"status": "error", "data": str(e)}
+        query_filter = {}
+        query_filter["created"] = latest[0]["created"]
+
+        total_power = power.find(query_filter, sort=[("created", -1)])
+
+        if not total_power:
+            return {}
+
+        result = defaultdict(int)
+        for power in total_power:
+            result[power["site"]] += power["reading"]
+
+        ##remove afterwards DH1 and DH2 is ready!
+        for site in ["odcdh1", "odcdh2"]:
+            result[site] += 0
+
+        return result
+    except Exception as e:
+        return {"status": "error", "data": str(e)}
