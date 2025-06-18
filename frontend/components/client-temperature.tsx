@@ -88,7 +88,7 @@ export default function ClientTemperature({
   const getAllTemperature = async (dateRange: DateRange) => {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/temperature?site=${site}&location=${location}&timeline=${dateRange}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/temperature?site=${site}&location=${location}&timeline=${dateRange}`,
       );
       if (response && response.status === 200) {
         setAllTemperature(response.data || []);

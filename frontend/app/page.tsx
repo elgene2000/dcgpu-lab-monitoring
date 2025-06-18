@@ -31,7 +31,7 @@ export default function Home() {
   const getTotalPowerUsage = async () => {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/dashboard`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/dashboard`,
       );
       if (response && response.status === 200) {
         setTotalPowerUsage(response.data || {});
