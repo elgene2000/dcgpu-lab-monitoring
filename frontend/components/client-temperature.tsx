@@ -295,6 +295,7 @@ export default function ClientTemperature({
                         month: "2-digit",
                         day: "numeric",
                         hour12: false,
+                        timeZone: "UTC",
                       });
                     }}
                   />
@@ -319,6 +320,7 @@ export default function ClientTemperature({
                             month: "short",
                             day: "numeric",
                             hour12: false,
+                            timeZone: "UTC",
                           });
                         }}
                         indicator="dot"

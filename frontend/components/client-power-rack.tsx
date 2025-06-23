@@ -294,6 +294,7 @@ export default function ClientPowerRack({
                         month: "2-digit",
                         day: "numeric",
                         hour12: false,
+                        timeZone: "UTC",
                       });
                     }}
                   />
@@ -318,6 +319,7 @@ export default function ClientPowerRack({
                             month: "short",
                             day: "numeric",
                             hour12: false,
+                            timeZone: "UTC",
                           });
                         }}
                         indicator="dot"
