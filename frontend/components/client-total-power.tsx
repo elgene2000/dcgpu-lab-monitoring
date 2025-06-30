@@ -28,6 +28,7 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart";
 import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Home } from "@/components/home";
 
 //CONSTANTS
 const chartColors = ["#3B82F6"];
@@ -170,19 +171,18 @@ export default function ClientTotalPower({
           </Card>
         ) : (
           <Card>
-            <CardHeader className="text-left min-w-96">
+            <CardHeader className="text-left min-w-72">
               <CardTitle>Total Power Usage</CardTitle>
               {/* <CardDescription>
                                 {"Last checked " + formatDate(temperature.created)}
                             </CardDescription> */}
-              <div className="pt-4 pb-0 w-full h-full flex items-center space-x-5">
-                <div className="text-blue-500 w-full">
-                  <p className="text-4xl font-extrabold mb-4">
-                    {currPowerUsage[site as keyof typeof currPowerUsage] ??
-                      0 / 1000}
-                    kW
-                  </p>
-                </div>
+              <div className="pt-4 pb-0 w-full flex flex-col items-center justify-center text-blue-500">
+                <Home />
+                <p className="text-4xl font-extrabold pt-4">
+                  {(currPowerUsage[site as keyof typeof currPowerUsage] ?? 0) /
+                    1000}{" "}
+                  kW
+                </p>
               </div>
             </CardHeader>
           </Card>
