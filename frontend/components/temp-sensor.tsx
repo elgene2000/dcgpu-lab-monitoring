@@ -25,41 +25,6 @@ const TempSensor = ({
   const router = useRouter();
   return (
     <Fragment>
-      <circle
-        cx={cx}
-        cy={cy}
-        r="15"
-        className={
-          temperature == null
-            ? "fill-gray-200"
-            : temperature <= 18
-              ? "fill-sky-400"
-              : temperature <= 24
-                ? "fill-amber-300"
-                : "fill-red-400"
-        }
-      >
-        <animate
-          attributeName="r"
-          from="15"
-          to="30"
-          dur="2s"
-          begin="0s"
-          repeatCount="indefinite"
-          keyTimes="0;0.5;1"
-          keySplines="0.4 0 0.2 1"
-        />
-        <animate
-          attributeName="opacity"
-          from={theme == "dark" ? "0.2" : "0.4"} //accessbility
-          to="0"
-          dur="2s"
-          begin="0s"
-          repeatCount="indefinite"
-          keyTimes="0;0.5;1"
-          keySplines="0.4 0 0.2 1"
-        />
-      </circle>
       <Tooltip>
         <TooltipTrigger asChild>
           <circle
@@ -70,10 +35,10 @@ const TempSensor = ({
             className={
               temperature == null
                 ? "fill-gray-200 cursor-pointer"
-                : temperature <= 18
+                : temperature < 20
                   ? "fill-sky-400 cursor-pointer"
-                  : temperature <= 24
-                    ? "fill-amber-300 cursor-pointer"
+                  : temperature <= 40
+                    ? "fill-emerald-400 cursor-pointer"
                     : "fill-red-400 cursor-pointer"
             }
             onClick={() =>
@@ -82,9 +47,10 @@ const TempSensor = ({
           />
         </TooltipTrigger>
         <TooltipContent className="dark:bg-secondary-dark dark:border-none dark:text-white bg-white border text-black">
-          <p className="">
-            {temperature ? temperature.toFixed(1) + "°C" : "- -°C"}
-          </p>
+          <div className="flex flex-col">
+            <span>{temperature ? temperature.toFixed(1) + "°C" : "- -°C"}</span>
+            <span className="text-xs text-gray-500 mt-1">Location: {location}</span>
+          </div>
         </TooltipContent>
       </Tooltip>
     </Fragment>

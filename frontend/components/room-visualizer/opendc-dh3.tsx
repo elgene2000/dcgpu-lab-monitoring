@@ -18,6 +18,7 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
   temperatureData,
 }) => {
   const [rackPower, setRackPower] = useState<any>({});
+  const [rackPDUs, setRackPDUs] = useState<any>({});
   const [rackTemperature, setRackTemperature] = useState<any>({});
 
   const router = useRouter();
@@ -34,19 +35,30 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
   //EFFECTS
   useEffect(() => {
     const tempRackPower: Record<string, number> = {};
+    const tempRackPDUs: Record<string, any[]> = {};
+    
     if (powerData && powerData.length > 0) {
       for (let i = 0; i < powerData.length; i++) {
         const rack = powerData[i].location.split("-")[0];
         const reading = powerData[i].reading;
+        const pduData = powerData[i];
 
+        // Aggregate total power for backward compatibility
         if (tempRackPower[rack]) {
           tempRackPower[rack] += reading;
         } else {
           tempRackPower[rack] = reading;
         }
+
+        // Store individual PDU data
+        if (!tempRackPDUs[rack]) {
+          tempRackPDUs[rack] = [];
+        }
+        tempRackPDUs[rack].push(pduData);
       }
     }
     setRackPower(tempRackPower);
+    setRackPDUs(tempRackPDUs);
   }, [powerData]);
 
   useEffect(() => {
@@ -228,14 +240,21 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           onClick={() => router.push("/opendc/dh3/power/a01")}
         >
           <path d="M93 110H135V142H93V110Z" fill={colorConfig.block_fill} />
-          <Bolt
-            rack={"A01-02"}
-            theme={theme}
-            power={undefined}
-            size={0.17857}
-            x={109}
-            y={121.5}
-          />
+          {rackPDUs["a01"] && rackPDUs["a01"].length > 0 && (
+            <>
+              {rackPDUs["a01"].map((pdu: any, index: number) => (
+                <Bolt
+                  key={`a01-pdu-${index}`}
+                  rack={"A01-02"}
+                  theme={theme}
+                  power={pdu.reading}
+                  size={0.17857}
+                  x={109 + (index - (rackPDUs["a01"].length - 1) / 2) * 8}
+                  y={121.5}
+                />
+              ))}
+            </>
+          )}
           <path
             d="M93 110V109H92V110H93ZM135 110H136V109H135V110ZM93 110V111H135V110V109H93V110ZM135 110H134V142H135H136V110H135ZM93 142H94V110H93H92V142H93Z"
             fill={colorConfig.block_stroke}
@@ -287,14 +306,21 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           onClick={() => router.push("/opendc/dh3/power/a05")}
         >
           <path d="M93 197H135V220H93V197Z" fill={colorConfig.block_fill} />
-          <Bolt
-            rack={"A05"}
-            theme={theme}
-            power={rackPower["a05"]}
-            size={0.17857}
-            x={109}
-            y={204}
-          />
+          {rackPDUs["a05"] && rackPDUs["a05"].length > 0 && (
+            <>
+              {rackPDUs["a05"].map((pdu: any, index: number) => (
+                <Bolt
+                  key={`a05-pdu-${index}`}
+                  rack={"A05"}
+                  theme={theme}
+                  power={pdu.reading}
+                  size={0.17857}
+                  x={109 + (index - (rackPDUs["a05"].length - 1) / 2) * 8}
+                  y={204}
+                />
+              ))}
+            </>
+          )}
           <path
             d="M93 197V196H92V197H93ZM135 197H136V196H135V197ZM93 197V198H135V197V196H93V197ZM135 197H134V220H135H136V197H135ZM93 220H94V197H93H92V220H93Z"
             fill={colorConfig.block_stroke}
@@ -310,14 +336,21 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           onClick={() => router.push("/opendc/dh3/power/a06")}
         >
           <path d="M93 220H135V243H93V220Z" fill={colorConfig.block_fill} />
-          <Bolt
-            rack={"A06"}
-            theme={theme}
-            power={rackPower["a06"]}
-            size={0.17857}
-            x={109}
-            y={227}
-          />
+          {rackPDUs["a06"] && rackPDUs["a06"].length > 0 && (
+            <>
+              {rackPDUs["a06"].map((pdu: any, index: number) => (
+                <Bolt
+                  key={`a06-pdu-${index}`}
+                  rack={"A06"}
+                  theme={theme}
+                  power={pdu.reading}
+                  size={0.17857}
+                  x={109 + (index - (rackPDUs["a06"].length - 1) / 2) * 8}
+                  y={227}
+                />
+              ))}
+            </>
+          )}
           <path
             d="M93 220V219H92V220H93ZM135 220H136V219H135V220ZM93 220V221H135V220V219H93V220ZM135 220H134V243H135H136V220H135ZM93 243H94V220H93H92V243H93Z"
             fill={colorConfig.block_stroke}
@@ -333,14 +366,21 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           onClick={() => router.push("/opendc/dh3/power/a07")}
         >
           <path d="M93 243H135V266H93V243Z" fill={colorConfig.block_fill} />
-          <Bolt
-            rack={"A07"}
-            theme={theme}
-            power={rackPower["a07"]}
-            size={0.17857}
-            x={109}
-            y={250}
-          />
+          {rackPDUs["a07"] && rackPDUs["a07"].length > 0 && (
+            <>
+              {rackPDUs["a07"].map((pdu: any, index: number) => (
+                <Bolt
+                  key={`a07-pdu-${index}`}
+                  rack={"A07"}
+                  theme={theme}
+                  power={pdu.reading}
+                  size={0.17857}
+                  x={109 + (index - (rackPDUs["a07"].length - 1) / 2) * 8}
+                  y={250}
+                />
+              ))}
+            </>
+          )}
           <path
             d="M93 243V242H92V243H93ZM135 243H136V242H135V243ZM93 243V244H135V243V242H93V243ZM135 243H134V266H135H136V243H135ZM93 266H94V243H93H92V266H93Z"
             fill={colorConfig.block_stroke}
@@ -356,14 +396,21 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           onClick={() => router.push("/opendc/dh3/power/a08")}
         >
           <path d="M93 266H135V289H93V266Z" fill={colorConfig.block_fill} />
-          <Bolt
-            rack={"A08"}
-            theme={theme}
-            power={rackPower["a08"]}
-            size={0.17857}
-            x={109}
-            y={273}
-          />
+          {rackPDUs["a08"] && rackPDUs["a08"].length > 0 && (
+            <>
+              {rackPDUs["a08"].map((pdu: any, index: number) => (
+                <Bolt
+                  key={`a08-pdu-${index}`}
+                  rack={"A08"}
+                  theme={theme}
+                  power={pdu.reading}
+                  size={0.17857}
+                  x={109 + (index - (rackPDUs["a08"].length - 1) / 2) * 8}
+                  y={273}
+                />
+              ))}
+            </>
+          )}
           <path
             d="M93 266V265H92V266H93ZM135 266H136V265H135V266ZM93 266V267H135V266V265H93V266ZM135 266H134V289H135H136V266H135ZM93 289H94V266H93H92V289H93Z"
             fill={colorConfig.block_stroke}
@@ -379,14 +426,21 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           onClick={() => router.push("/opendc/dh3/power/a09")}
         >
           <path d="M93 289H135V312H93V289Z" fill={colorConfig.block_fill} />
-          <Bolt
-            rack={"A09"}
-            theme={theme}
-            power={rackPower["a09"]}
-            size={0.17857}
-            x={109}
-            y={296}
-          />
+          {rackPDUs["a09"] && rackPDUs["a09"].length > 0 && (
+            <>
+              {rackPDUs["a09"].map((pdu: any, index: number) => (
+                <Bolt
+                  key={`a09-pdu-${index}`}
+                  rack={"A09"}
+                  theme={theme}
+                  power={pdu.reading}
+                  size={0.17857}
+                  x={109 + (index - (rackPDUs["a09"].length - 1) / 2) * 8}
+                  y={296}
+                />
+              ))}
+            </>
+          )}
           <path
             d="M93 289V288H92V289H93ZM135 289H136V288H135V289ZM93 289V290H135V289V288H93V289ZM135 289H134V312H135H136V289H135ZM93 312H94V289H93H92V312H93Z"
             fill={colorConfig.block_stroke}
@@ -402,14 +456,21 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           onClick={() => router.push("/opendc/dh3/power/a10")}
         >
           <path d="M93 312H135V335H93V312Z" fill={colorConfig.block_fill} />
-          <Bolt
-            rack={"A10"}
-            theme={theme}
-            power={rackPower["a10"]}
-            size={0.17857}
-            x={109}
-            y={319}
-          />
+          {rackPDUs["a10"] && rackPDUs["a10"].length > 0 && (
+            <>
+              {rackPDUs["a10"].map((pdu: any, index: number) => (
+                <Bolt
+                  key={`a10-pdu-${index}`}
+                  rack={"A10"}
+                  theme={theme}
+                  power={pdu.reading}
+                  size={0.17857}
+                  x={109 + (index - (rackPDUs["a10"].length - 1) / 2) * 8}
+                  y={319}
+                />
+              ))}
+            </>
+          )}
           <path
             d="M93 312V311H92V312H93ZM135 312H136V311H135V312ZM93 312V313H135V312V311H93V312ZM135 312H134V335H135H136V312H135ZM93 335H94V312H93H92V335H93Z"
             fill={colorConfig.block_stroke}
@@ -425,14 +486,21 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           onClick={() => router.push("/opendc/dh3/power/a11")}
         >
           <path d="M93 335H135V358H93V335Z" fill={colorConfig.block_fill} />
-          <Bolt
-            rack={"A11"}
-            theme={theme}
-            power={rackPower["a11"]}
-            size={0.17857}
-            x={109}
-            y={342}
-          />
+          {rackPDUs["a11"] && rackPDUs["a11"].length > 0 && (
+            <>
+              {rackPDUs["a11"].map((pdu: any, index: number) => (
+                <Bolt
+                  key={`a11-pdu-${index}`}
+                  rack={"A11"}
+                  theme={theme}
+                  power={pdu.reading}
+                  size={0.17857}
+                  x={109 + (index - (rackPDUs["a11"].length - 1) / 2) * 8}
+                  y={342}
+                />
+              ))}
+            </>
+          )}
           <path
             d="M93 335V334H92V335H93ZM135 335H136V334H135V335ZM93 335V336H135V335V334H93V335ZM135 335H134V358H135H136V335H135ZM93 358H94V335H93H92V358H93Z"
             fill={colorConfig.block_stroke}
@@ -448,14 +516,21 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           onClick={() => router.push("/opendc/dh3/power/a12")}
         >
           <path d="M93 358H135V381H93V358Z" fill={colorConfig.block_fill} />
-          <Bolt
-            rack={"A12"}
-            theme={theme}
-            power={rackPower["a12"]}
-            size={0.17857}
-            x={109}
-            y={364.5}
-          />
+          {rackPDUs["a12"] && rackPDUs["a12"].length > 0 && (
+            <>
+              {rackPDUs["a12"].map((pdu: any, index: number) => (
+                <Bolt
+                  key={`a12-pdu-${index}`}
+                  rack={"A12"}
+                  theme={theme}
+                  power={pdu.reading}
+                  size={0.17857}
+                  x={109 + (index - (rackPDUs["a12"].length - 1) / 2) * 8}
+                  y={364.5}
+                />
+              ))}
+            </>
+          )}
           <path
             d="M93 358V357H92V358H93ZM135 358H136V357H135V358ZM135 381V382H136V381H135ZM93 381H92V382H93V381ZM93 358V359H135V358V357H93V358ZM135 358H134V381H135H136V358H135ZM135 381V380H93V381V382H135V381ZM93 381H94V358H93H92V381H93Z"
             fill={colorConfig.block_stroke}
@@ -471,14 +546,21 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           onClick={() => router.push("/opendc/dh3/power/b01")}
         >
           <path d="M182 110H224V142H182V110Z" fill={colorConfig.block_fill} />
-          <Bolt
-            rack={"B01-02"}
-            theme={theme}
-            power={undefined}
-            size={0.17857}
-            x={198.5}
-            y={121.5}
-          />
+          {rackPDUs["b01"] && rackPDUs["b01"].length > 0 && (
+            <>
+              {rackPDUs["b01"].map((pdu: any, index: number) => (
+                <Bolt
+                  key={`b01-pdu-${index}`}
+                  rack={"B01-02"}
+                  theme={theme}
+                  power={pdu.reading}
+                  size={0.17857}
+                  x={198.5 + (index - (rackPDUs["b01"].length - 1) / 2) * 8}
+                  y={121.5}
+                />
+              ))}
+            </>
+          )}
           <path
             d="M182 110V109H181V110H182ZM224 110H225V109H224V110ZM182 110V111H224V110V109H182V110ZM224 110H223V142H224H225V110H224ZM182 142H183V110H182H181V142H182Z"
             fill={colorConfig.block_stroke}
@@ -530,14 +612,21 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           onClick={() => router.push("/opendc/dh3/power/b05")}
         >
           <path d="M182 197H224V220H182V197Z" fill={colorConfig.block_fill} />
-          <Bolt
-            rack={"B05"}
-            theme={theme}
-            power={rackPower["b05"]}
-            size={0.17857}
-            x={198.5}
-            y={204}
-          />
+          {rackPDUs["b05"] && rackPDUs["b05"].length > 0 && (
+            <>
+              {rackPDUs["b05"].map((pdu: any, index: number) => (
+                <Bolt
+                  key={`b05-pdu-${index}`}
+                  rack={"B05"}
+                  theme={theme}
+                  power={pdu.reading}
+                  size={0.17857}
+                  x={198.5 + (index - (rackPDUs["b05"].length - 1) / 2) * 8}
+                  y={204}
+                />
+              ))}
+            </>
+          )}
           <path
             d="M182 197V196H181V197H182ZM224 197H225V196H224V197ZM182 197V198H224V197V196H182V197ZM224 197H223V220H224H225V197H224ZM182 220H183V197H182H181V220H182Z"
             fill={colorConfig.block_stroke}
@@ -553,14 +642,21 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           onClick={() => router.push("/opendc/dh3/power/b06")}
         >
           <path d="M182 220H224V243H182V220Z" fill={colorConfig.block_fill} />
-          <Bolt
-            rack={"B06"}
-            theme={theme}
-            power={rackPower["b06"]}
-            size={0.17857}
-            x={198.5}
-            y={227}
-          />
+          {rackPDUs["b06"] && rackPDUs["b06"].length > 0 && (
+            <>
+              {rackPDUs["b06"].map((pdu: any, index: number) => (
+                <Bolt
+                  key={`b06-pdu-${index}`}
+                  rack={"B06"}
+                  theme={theme}
+                  power={pdu.reading}
+                  size={0.17857}
+                  x={198.5 + (index - (rackPDUs["b06"].length - 1) / 2) * 8}
+                  y={227}
+                />
+              ))}
+            </>
+          )}
           <path
             d="M182 220V219H181V220H182ZM224 220H225V219H224V220ZM182 220V221H224V220V219H182V220ZM224 220H223V243H224H225V220H224ZM182 243H183V220H182H181V243H182Z"
             fill={colorConfig.block_stroke}
@@ -576,14 +672,21 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           onClick={() => router.push("/opendc/dh3/power/b07")}
         >
           <path d="M182 243H224V266H182V243Z" fill={colorConfig.block_fill} />
-          <Bolt
-            rack={"B07"}
-            theme={theme}
-            power={rackPower["b07"]}
-            size={0.17857}
-            x={198.5}
-            y={250}
-          />
+          {rackPDUs["b07"] && rackPDUs["b07"].length > 0 && (
+            <>
+              {rackPDUs["b07"].map((pdu: any, index: number) => (
+                <Bolt
+                  key={`b07-pdu-${index}`}
+                  rack={"B07"}
+                  theme={theme}
+                  power={pdu.reading}
+                  size={0.17857}
+                  x={198.5 + (index - (rackPDUs["b07"].length - 1) / 2) * 8}
+                  y={250}
+                />
+              ))}
+            </>
+          )}
           <path
             d="M182 243V242H181V243H182ZM224 243H225V242H224V243ZM182 243V244H224V243V242H182V243ZM224 243H223V266H224H225V243H224ZM182 266H183V243H182H181V266H182Z"
             fill={colorConfig.block_stroke}
@@ -599,14 +702,21 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           onClick={() => router.push("/opendc/dh3/power/b08")}
         >
           <path d="M182 266H224V289H182V266Z" fill={colorConfig.block_fill} />
-          <Bolt
-            rack={"B08"}
-            theme={theme}
-            power={rackPower["b08"]}
-            size={0.17857}
-            x={198.5}
-            y={273}
-          />
+          {rackPDUs["b08"] && rackPDUs["b08"].length > 0 && (
+            <>
+              {rackPDUs["b08"].map((pdu: any, index: number) => (
+                <Bolt
+                  key={`b08-pdu-${index}`}
+                  rack={"B08"}
+                  theme={theme}
+                  power={pdu.reading}
+                  size={0.17857}
+                  x={198.5 + (index - (rackPDUs["b08"].length - 1) / 2) * 8}
+                  y={273}
+                />
+              ))}
+            </>
+          )}
           <path
             d="M182 266V265H181V266H182ZM224 266H225V265H224V266ZM182 266V267H224V266V265H182V266ZM224 266H223V289H224H225V266H224ZM182 289H183V266H182H181V289H182Z"
             fill={colorConfig.block_stroke}
@@ -622,14 +732,21 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           onClick={() => router.push("/opendc/dh3/power/b09")}
         >
           <path d="M182 289H224V312H182V289Z" fill={colorConfig.block_fill} />
-          <Bolt
-            rack={"B09"}
-            theme={theme}
-            power={rackPower["b09"]}
-            size={0.17857}
-            x={198.5}
-            y={296}
-          />
+          {rackPDUs["b09"] && rackPDUs["b09"].length > 0 && (
+            <>
+              {rackPDUs["b09"].map((pdu: any, index: number) => (
+                <Bolt
+                  key={`b09-pdu-${index}`}
+                  rack={"B09"}
+                  theme={theme}
+                  power={pdu.reading}
+                  size={0.17857}
+                  x={198.5 + (index - (rackPDUs["b09"].length - 1) / 2) * 8}
+                  y={296}
+                />
+              ))}
+            </>
+          )}
           <path
             d="M182 289V288H181V289H182ZM224 289H225V288H224V289ZM182 289V290H224V289V288H182V289ZM224 289H223V312H224H225V289H224ZM182 312H183V289H182H181V312H182Z"
             fill={colorConfig.block_stroke}
@@ -645,14 +762,21 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           onClick={() => router.push("/opendc/dh3/power/b10")}
         >
           <path d="M182 312H224V335H182V312Z" fill={colorConfig.block_fill} />
-          <Bolt
-            rack={"B10"}
-            theme={theme}
-            power={rackPower["b10"]}
-            size={0.17857}
-            x={198.5}
-            y={319}
-          />
+          {rackPDUs["b10"] && rackPDUs["b10"].length > 0 && (
+            <>
+              {rackPDUs["b10"].map((pdu: any, index: number) => (
+                <Bolt
+                  key={`b10-pdu-${index}`}
+                  rack={"B10"}
+                  theme={theme}
+                  power={pdu.reading}
+                  size={0.17857}
+                  x={198.5 + (index - (rackPDUs["b10"].length - 1) / 2) * 8}
+                  y={319}
+                />
+              ))}
+            </>
+          )}
           <path
             d="M182 312V311H181V312H182ZM224 312H225V311H224V312ZM182 312V313H224V312V311H182V312ZM224 312H223V335H224H225V312H224ZM182 335H183V312H182H181V335H182Z"
             fill={colorConfig.block_stroke}
@@ -668,14 +792,21 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           onClick={() => router.push("/opendc/dh3/power/b11")}
         >
           <path d="M182 335H224V358H182V335Z" fill={colorConfig.block_fill} />
-          <Bolt
-            rack={"B11"}
-            theme={theme}
-            power={rackPower["b11"]}
-            size={0.17857}
-            x={198.5}
-            y={342}
-          />
+          {rackPDUs["b11"] && rackPDUs["b11"].length > 0 && (
+            <>
+              {rackPDUs["b11"].map((pdu: any, index: number) => (
+                <Bolt
+                  key={`b11-pdu-${index}`}
+                  rack={"B11"}
+                  theme={theme}
+                  power={pdu.reading}
+                  size={0.17857}
+                  x={198.5 + (index - (rackPDUs["b11"].length - 1) / 2) * 8}
+                  y={342}
+                />
+              ))}
+            </>
+          )}
           <path
             d="M182 335V334H181V335H182ZM224 335H225V334H224V335ZM182 335V336H224V335V334H182V335ZM224 335H223V358H224H225V335H224ZM182 358H183V335H182H181V358H182Z"
             fill={colorConfig.block_stroke}
@@ -691,14 +822,21 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           onClick={() => router.push("/opendc/dh3/power/b12")}
         >
           <path d="M182 358H224V381H182V358Z" fill={colorConfig.block_fill} />
-          <Bolt
-            rack={"B12"}
-            theme={theme}
-            power={rackPower["b12"]}
-            size={0.17857}
-            x={198.5}
-            y={364.5}
-          />
+          {rackPDUs["b12"] && rackPDUs["b12"].length > 0 && (
+            <>
+              {rackPDUs["b12"].map((pdu: any, index: number) => (
+                <Bolt
+                  key={`b12-pdu-${index}`}
+                  rack={"B12"}
+                  theme={theme}
+                  power={pdu.reading}
+                  size={0.17857}
+                  x={198.5 + (index - (rackPDUs["b12"].length - 1) / 2) * 8}
+                  y={364.5}
+                />
+              ))}
+            </>
+          )}
           <path
             d="M182 358V357H181V358H182ZM224 358H225V357H224V358ZM224 381V382H225V381H224ZM182 381H181V382H182V381ZM182 358V359H224V358V357H182V358ZM224 358H223V381H224H225V358H224ZM224 381V380H182V381V382H224V381ZM182 381H183V358H182H181V381H182Z"
             fill={colorConfig.block_stroke}
@@ -2552,70 +2690,133 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           mask="url(#path-66-inside-29_1039_19)"
         />
         {/* CIRCLES */}
-        {/* A12-1-FRONT */}
-        <TempSensor
-          theme={theme}
-          cx={93.5}
-          cy={380.5}
-          datahall="dh3"
-          location="a12-1-front"
-          temperature={rackTemperature["a12-1-front"]}
-        />
-        {/* B12-1-FRONT */}
-        <TempSensor
-          theme={theme}
-          cx={223.5}
-          cy={380.5}
-          datahall="dh3"
-          location="b12-1-front"
-          temperature={rackTemperature["b12-1-front"]}
-        />
-        {/* A08-1-FRONT */}
-        <TempSensor
-          theme={theme}
-          cx={93.5}
-          cy={289.5}
-          datahall="dh3"
-          location="a08-1-front"
-          temperature={rackTemperature["a08-1-front"]}
-        />
-        {/* B08-1-FRONT */}
-        <TempSensor
-          theme={theme}
-          cx={223.5}
-          cy={289.5}
-          datahall="dh3"
-          location="b08-1-front"
-          temperature={rackTemperature["b08-1-front"]}
-        />
-
-        {/* A12-2-REAR */}
-        <TempSensor
-          theme={theme}
-          cx={134.5}
-          cy={358.5}
-          datahall="dh3"
-          location="a12-2-rear"
-          temperature={rackTemperature["a12-2-rear"]}
-        />
-        {/* A06-2-REAR */}
+        {/* a06-2-up */}
         <TempSensor
           theme={theme}
           cx={134.5}
           cy={220.5}
           datahall="dh3"
-          location="a06-2-rear"
-          temperature={rackTemperature["a06-2-rear"]}
+          location="a06-2-up"
+          temperature={rackTemperature["a06-2-up"]}
         />
-        {/* B09-2-REAR */}
+        {/* a06-1-down */}
+        <TempSensor
+          theme={theme}
+          cx={93.5}
+          cy={243.5}
+          datahall="dh3"
+          location="a06-1-down"
+          temperature={rackTemperature["a06-1-down"]}
+        />
+        {/* a07-1-up */}
+        <TempSensor
+          theme={theme}
+          cx={134.5}
+          cy={267}
+          datahall="dh3"
+          location="a07-1-up"
+          temperature={rackTemperature["a07-1-up"]}
+        />
+        {/* a09-1-up */}
+        <TempSensor
+          theme={theme}
+          cx={134.5}
+          cy={313.5}
+          datahall="dh3"
+          location="a09-1-up"
+          temperature={rackTemperature["a09-1-up"]}
+        />
+        {/* a09-2-down */}
+        <TempSensor
+          theme={theme}
+          cx={93.5}
+          cy={290}
+          datahall="dh3"
+          location="a09-2-down"
+          temperature={rackTemperature["a09-2-down"]}
+        />
+        {/* a12-2-up */}
+        <TempSensor
+          theme={theme}
+          cx={134.5}
+          cy={358}
+          datahall="dh3"
+          location="a12-2-up"
+          temperature={rackTemperature["a12-2-up"]}
+        />
+        {/* a12-1-down */}
+        <TempSensor
+          theme={theme}
+          cx={93.5}
+          cy={381}
+          datahall="dh3"
+          location="a12-1-down"
+          temperature={rackTemperature["a12-1-down"]}
+        />
+        {/* b06-2-up */}
         <TempSensor
           theme={theme}
           cx={182.5}
-          cy={289.5}
+          cy={220.5}
           datahall="dh3"
-          location="b09-2-rear"
-          temperature={rackTemperature["b09-2-rear"]}
+          location="b06-2-up"
+          temperature={rackTemperature["b06-2-up"]}
         />
+        {/* b06-1-down */}
+        <TempSensor
+          theme={theme}
+          cx={223.5}
+          cy={243.5}
+          datahall="dh3"
+          location="b06-1-down"
+          temperature={rackTemperature["b06-1-down"]}
+        />
+        {/* b07-1-up */}
+        <TempSensor
+          theme={theme}
+          cx={182.5}
+          cy={267}
+          datahall="dh3"
+          location="b07-1-up"
+          temperature={rackTemperature["b07-1-up"]}
+        />
+        {/* b09-1-up */}
+        <TempSensor
+          theme={theme}
+          cx={182.5}
+          cy={313.5}
+          datahall="dh3"
+          location="b09-1-up"
+          temperature={rackTemperature["b09-1-up"]}
+        />
+        {/* b09-2-down */}
+        <TempSensor
+          theme={theme}
+          cx={223.5}
+          cy={290}
+          datahall="dh3"
+          location="b09-2-down"
+          temperature={rackTemperature["b09-2-down"]}
+        />
+        {/* b12-2-up */}
+        <TempSensor
+          theme={theme}
+          cx={182.5}
+          cy={358}
+          datahall="dh3"
+          location="b12-2-up"
+          temperature={rackTemperature["b12-2-up"]}
+        />
+        {/* b12-1-down */}
+        <TempSensor
+          theme={theme}
+          cx={223.5}
+          cy={381}
+          datahall="dh3"
+          location="b12-1-down"
+          temperature={rackTemperature["b12-1-down"]}
+        />
+
       </svg>
     </TooltipProvider>
   );
