@@ -31,6 +31,12 @@ const items = [
     activeIndicator: "",
   },
   {
+    title: "Overall view",
+    url: "/overall-view",
+    icon: Home,
+    activeIndicator: "",
+  },
+  {
     title: "OpenDC",
     icon: Factory,
     subitems: [

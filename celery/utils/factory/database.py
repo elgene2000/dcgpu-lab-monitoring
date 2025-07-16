@@ -4,6 +4,8 @@ from pymongo import MongoClient
 from bson import ObjectId
 from dotenv import load_dotenv
 
+# from config import config
+
 load_dotenv()
 
 
@@ -17,7 +19,7 @@ class Database(object):
         self.db = self.client[MONGODB_DB]  # configure db name
 
     def insert(self, element, collection_name):
-        # element["created"] = datetime.now()
+        element["created"] = datetime.now()
         element["updated"] = datetime.now()
         inserted = self.db[collection_name].insert_one(element)  # insert data to db
         return str(inserted.inserted_id)

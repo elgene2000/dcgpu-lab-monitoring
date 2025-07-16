@@ -25,7 +25,7 @@ const Thermometer = ({ reading }: ThermometerProps) => {
           fill="url(#paint0_linear_1261_5)"
           stroke={ThermometerColorConfig.stroke}
           strokeWidth="11"
-          stroke-linejoin="round"
+          strokeLinejoin="round"
         />
         <path
           d="M57 72.3V138.6"
@@ -39,15 +39,15 @@ const Thermometer = ({ reading }: ThermometerProps) => {
           fill={
             reading == null
               ? "#D1D5DB"
-              : reading <= 18
+              : reading < 20
                 ? "#43CCF8"
-                : reading <= 24
-                  ? "#FFD230"
+                : reading <= 40
+                  ? "#4ADE80"
                   : "#FB2C36"
           }
           stroke="white"
           strokeWidth="11"
-          stroke-linejoin="round"
+          strokeLinejoin="round"
         />
         <defs>
           <linearGradient
@@ -62,10 +62,10 @@ const Thermometer = ({ reading }: ThermometerProps) => {
               stopColor={
                 reading == null
                   ? "#D1D5DB"
-                  : reading <= 18
+                  : reading < 20
                     ? "#00A6F4"
-                    : reading <= 24
-                      ? "#FFD230"
+                    : reading <= 40
+                      ? "#4ADE80"
                       : "#FB2C36"
               }
             />
@@ -74,10 +74,10 @@ const Thermometer = ({ reading }: ThermometerProps) => {
               stopColor={
                 reading == null
                   ? "#D1D5DB"
-                  : reading <= 18
+                  : reading < 20
                     ? "#73D4FF"
-                    : reading <= 24
-                      ? "#FEE685"
+                    : reading <= 40
+                      ? "#A7F3D0"
                       : "#FF6467"
               }
             />

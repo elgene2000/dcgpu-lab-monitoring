@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 class Database(object):
     def __init__(self):
         MONGODB_URL = os.environ.get("MONGODB_URL")
@@ -21,12 +22,22 @@ class Database(object):
         inserted = self.db[collection_name].insert_one(element)  # insert data to db
         return str(inserted.inserted_id)
 
-    def find(self, criteria, collection_name, projection=None, sort=None, limit=0, cursor=False):  # find all from db
+    def find(
+        self,
+        criteria,
+        collection_name,
+        projection=None,
+        sort=None,
+        limit=0,
+        cursor=False,
+    ):  # find all from db
 
         if "_id" in criteria:
             criteria["_id"] = ObjectId(criteria["_id"])
 
-        found = self.db[collection_name].find(filter=criteria, projection=projection, limit=limit, sort=sort)
+        found = self.db[collection_name].find(
+            filter=criteria, projection=projection, limit=limit, sort=sort
+        )
 
         if cursor:
             return found
@@ -41,12 +52,12 @@ class Database(object):
 
     def find_by_id(self, id, collection_name):
         found = self.db[collection_name].find_one({"_id": ObjectId(id)})
-        
+
         if found is None:
             return not found
-        
+
         if "_id" in found:
-             found["_id"] = str(found["_id"])
+            found["_id"] = str(found["_id"])
 
         return found
 
@@ -63,4 +74,3 @@ class Database(object):
     def delete(self, id, collection_name):
         deleted = self.db[collection_name].delete_one({"_id": ObjectId(id)})
         return bool(deleted.deleted_count)
-

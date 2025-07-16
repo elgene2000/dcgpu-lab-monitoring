@@ -104,10 +104,13 @@ def fetch_power_data():
 @shared_task
 def fetch_temperature_data():
     try:
+        redis_host = str(os.environ.get("REDIS_HOST") or "localhost")
+        redis_port = int(os.environ.get("REDIS_PORT") or 6379)
+        redis_password = str(os.environ.get("REDIS_PASSWORD") or "")
         r = redis.Redis(
-            host=os.environ.get("REDIS_HOST"),
-            port=os.environ.get("REDIS_PORT"),
-            password=os.environ.get("REDIS_PASSWORD"),
+            host=redis_host,
+            port=redis_port,
+            password=redis_password if redis_password else None,
             db=0,
         )
         temperature_pdu = r.get("temperature_pdu")
@@ -116,16 +119,22 @@ def fetch_temperature_data():
             pdu = PDU()
             temperature_pdu = pdu.find({"temperature": {"$exists": True}})
             # serialize the datetime
-            for pdu in temperature_pdu:
-                if "created" in pdu:
-                    pdu["created"] = pdu["created"].isoformat()
-                if "updated" in pdu:
-                    pdu["updated"] = pdu["updated"].isoformat()
+            for pdu_item in temperature_pdu:
+                if "created" in pdu_item:
+                    pdu_item["created"] = pdu_item["created"].isoformat()
+                if "updated" in pdu_item:
+                    pdu_item["updated"] = pdu_item["updated"].isoformat()
 
             # store in Redis with 3 days TTL
             r.setex("temperature_pdu", 259200, json.dumps(temperature_pdu))
         else:
-            temperature_pdu = json.loads(temperature_pdu)
+            # Only decode if it's bytes or str, not Awaitable
+            if isinstance(temperature_pdu, bytes):
+                temperature_pdu = json.loads(temperature_pdu.decode("utf-8"))
+            elif isinstance(temperature_pdu, str):
+                temperature_pdu = json.loads(temperature_pdu)
+            else:
+                raise TypeError("Unexpected type for temperature_pdu from Redis")
 
         temperature_list = []
         created_time = datetime.now()
@@ -137,9 +146,13 @@ def fetch_temperature_data():
             temperature_oid = pdu["temperature"]["oid"]
             position = pdu["temperature"]["position"]
 
+            print(f"Processing: {hostname} ({location}-{position})")  # Debug print
+
             curr_temperature = asyncio.run(
                 snmpFetch(hostname, temperature_oid, "amd123", "temp")
             )
+
+            print(f"SNMP result for {hostname} ({location}-{position}): {curr_temperature}")  # Debug print
 
             curr_temperature = curr_temperature or None
 

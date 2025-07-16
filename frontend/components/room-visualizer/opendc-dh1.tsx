@@ -7,13 +7,25 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useState, useEffect } from "react";
 import { ChartConfig } from "@/components/ui/chart";
 import { AnimatedCircles } from "@/components/animated-circles";
+import { Bolt } from "@/components/bolt";
+import { TempSensor } from "@/components/temp-sensor";
+import { useRouter } from "next/navigation";
 
 interface RoomVisualizerProps {
   theme?: string;
+  powerData?: any[];
+  temperatureData?: any[];
 }
-const OpenDCDH1: React.FC<RoomVisualizerProps> = ({ theme }) => {
+const OpenDCDH1: React.FC<RoomVisualizerProps> = ({ theme, powerData, temperatureData }) => {
+
+  const [rackPower, setRackPower] = useState<any>({});
+  const [rackTemperature, setRackTemperature] = useState<any>({});
+
+  const router = useRouter();
+
   const colorConfig = {
     particles: theme == "dark" ? "#FFFFFF" : "#8EC5FF",
     grill: theme == "dark" ? "#5F6A7E" : "#C6CBD3",
@@ -23,7 +35,43 @@ const OpenDCDH1: React.FC<RoomVisualizerProps> = ({ theme }) => {
     canvas_fill: theme == "dark" ? "#1F2430" : "#FFFFFF",
   };
 
+  //EFFECTS
+  useEffect(() => {
+    const tempRackPower: Record<string, number> = {};
+    if (powerData && powerData.length > 0) {
+      for (let i = 0; i < powerData.length; i++) {
+        const rack = powerData[i].location.split("-")[0];
+        const reading = powerData[i].reading;
+
+        if (tempRackPower[rack]) {
+          tempRackPower[rack] += reading;
+        } else {
+          tempRackPower[rack] = reading;
+        }
+      }
+    }
+    setRackPower(tempRackPower);
+  }, [powerData]);
+
+  useEffect(() => {
+    const tempTemperature: Record<string, number> = {};
+    if (temperatureData && temperatureData.length > 0) {
+      for (let i = 0; i < temperatureData.length; i++) {
+        const rack = temperatureData[i].location;
+        const reading = temperatureData[i].reading;
+
+        if (tempTemperature[rack]) {
+          tempTemperature[rack] += reading;
+        } else {
+          tempTemperature[rack] = reading;
+        }
+      }
+    }
+    setRackTemperature(tempTemperature);
+  }, [temperatureData]);
+
   return (
+    <TooltipProvider delayDuration={0}>
     <svg
       className="w-full h-full max-h-[950px]"
       width="424"
@@ -188,15 +236,30 @@ const OpenDCDH1: React.FC<RoomVisualizerProps> = ({ theme }) => {
         d="M89.3116 485.181H87.9835C87.9456 484.963 87.8758 484.77 87.774 484.602C87.6722 484.432 87.5455 484.287 87.394 484.169C87.2425 484.051 87.0697 483.962 86.8755 483.903C86.6838 483.841 86.4766 483.81 86.2541 483.81C85.8587 483.81 85.5083 483.91 85.2029 484.109C84.8975 484.305 84.6584 484.594 84.4856 484.975C84.3128 485.354 84.2264 485.817 84.2264 486.364C84.2264 486.92 84.3128 487.389 84.4856 487.77C84.6608 488.149 84.8999 488.435 85.2029 488.629C85.5083 488.821 85.8575 488.917 86.2505 488.917C86.4683 488.917 86.6719 488.888 86.8613 488.832C87.0531 488.772 87.2247 488.686 87.3762 488.572C87.5301 488.459 87.6592 488.319 87.7633 488.153C87.8699 487.988 87.9432 487.798 87.9835 487.585L89.3116 487.592C89.2619 487.938 89.1542 488.262 88.9885 488.565C88.8251 488.868 88.6109 489.136 88.3457 489.368C88.0806 489.598 87.7704 489.777 87.4153 489.908C87.0602 490.036 86.666 490.099 86.2328 490.099C85.5936 490.099 85.023 489.951 84.5211 489.656C84.0192 489.36 83.6239 488.932 83.335 488.374C83.0462 487.815 82.9018 487.145 82.9018 486.364C82.9018 485.58 83.0474 484.91 83.3386 484.354C83.6298 483.795 84.0263 483.368 84.5282 483.072C85.0301 482.776 85.5983 482.628 86.2328 482.628C86.6376 482.628 87.014 482.685 87.362 482.798C87.71 482.912 88.0202 483.079 88.2924 483.299C88.5647 483.517 88.7884 483.784 88.9636 484.102C89.1412 484.416 89.2572 484.776 89.3116 485.181ZM90.5181 490V482.727H93.2454C93.8041 482.727 94.2728 482.824 94.6516 483.018C95.0328 483.213 95.3204 483.485 95.5146 483.835C95.7111 484.183 95.8093 484.589 95.8093 485.053C95.8093 485.52 95.7099 485.924 95.511 486.268C95.3145 486.609 95.0245 486.873 94.641 487.06C94.2575 487.244 93.7863 487.337 93.2276 487.337H91.2852V486.243H93.0501C93.3768 486.243 93.6443 486.198 93.8526 486.108C94.061 486.016 94.2148 485.882 94.3143 485.707C94.4161 485.529 94.467 485.311 94.467 485.053C94.467 484.795 94.4161 484.575 94.3143 484.393C94.2125 484.208 94.0574 484.068 93.8491 483.974C93.6407 483.877 93.372 483.828 93.043 483.828H91.8356V490H90.5181ZM94.2752 486.705L96.0756 490H94.6055L92.837 486.705H94.2752ZM97.956 490H96.5497L99.1101 482.727H100.737L103.3 490H101.894L99.9517 484.219H99.8949L97.956 490ZM98.0021 487.148H101.837V488.207H98.0021V487.148ZM110.142 485.181H108.814C108.776 484.963 108.706 484.77 108.604 484.602C108.502 484.432 108.376 484.287 108.224 484.169C108.073 484.051 107.9 483.962 107.706 483.903C107.514 483.841 107.307 483.81 107.084 483.81C106.689 483.81 106.338 483.91 106.033 484.109C105.728 484.305 105.489 484.594 105.316 484.975C105.143 485.354 105.056 485.817 105.056 486.364C105.056 486.92 105.143 487.389 105.316 487.77C105.491 488.149 105.73 488.435 106.033 488.629C106.338 488.821 106.688 488.917 107.081 488.917C107.298 488.917 107.502 488.888 107.691 488.832C107.883 488.772 108.055 488.686 108.206 488.572C108.36 488.459 108.489 488.319 108.593 488.153C108.7 487.988 108.773 487.798 108.814 487.585L110.142 487.592C110.092 487.938 109.984 488.262 109.819 488.565C109.655 488.868 109.441 489.136 109.176 489.368C108.911 489.598 108.6 489.777 108.245 489.908C107.89 490.036 107.496 490.099 107.063 490.099C106.424 490.099 105.853 489.951 105.351 489.656C104.849 489.36 104.454 488.932 104.165 488.374C103.876 487.815 103.732 487.145 103.732 486.364C103.732 485.58 103.877 484.91 104.169 484.354C104.46 483.795 104.856 483.368 105.358 483.072C105.86 482.776 106.428 482.628 107.063 482.628C107.468 482.628 107.844 482.685 108.192 482.798C108.54 482.912 108.85 483.079 109.123 483.299C109.395 483.517 109.618 483.784 109.794 484.102C109.971 484.416 110.087 484.776 110.142 485.181Z"
         fill={colorConfig.text}
       />
+      {/* A01 */}
+      <g
+          className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+          onClick={() => router.push("/opendc/dh1/power/a01")}
+      >
       <mask id="path-20-inside-7_1078_341" fill="white">
         <path d="M194 105H236V128H194V105Z" />
-      </mask>
+      </mask>      
       <path d="M194 105H236V128H194V105Z" fill={colorConfig.block_fill} />
+      <Bolt
+            rack={"A01"}
+            theme={theme}
+            power={rackPower["a01"]}
+            size={0.17857}
+            x={210}
+            y={112}
+      />
       <path
         d="M194 105V104H193V105H194ZM236 105H237V104H236V105ZM194 105V106H236V105V104H194V105ZM236 105H235V128H236H237V105H236ZM194 128H195V105H194H193V128H194Z"
         fill={colorConfig.block_stroke}
         mask="url(#path-20-inside-7_1078_341)"
       />
+      </g>
+      {/* A02 */}
       <mask id="path-22-inside-8_1078_341" fill="white">
         <path d="M194 128H236V151H194V128Z" />
       </mask>
@@ -2121,6 +2184,7 @@ const OpenDCDH1: React.FC<RoomVisualizerProps> = ({ theme }) => {
         fill={colorConfig.grill}
       />
     </svg>
+    </TooltipProvider>
   );
 };
 
