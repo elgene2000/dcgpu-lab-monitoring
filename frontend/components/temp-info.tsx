@@ -48,15 +48,15 @@ export function TempInfo({ className, ...props }: TempInfoProps) {
       <CardContent className="px-3 pt-2 text-sm dark:text-[#86899A] space-y-3">
         <div className="flex items-center space-x-3">
           <div className="bg-gradient-to-br from-[#5ac8e7] to-[#B7E8F5] w-6 h-6 rounded-md" />
-          <p>Below 18°C</p>
+          <p>Below 20°C</p>
         </div>
         <div className="flex items-center space-x-3">
-          <div className="bg-gradient-to-br from-[#FFE15E] to-[#FFF2B6] w-6 h-6 rounded-md" />
-          <p>18°C-24°C</p>
+          <div className="bg-gradient-to-br from-[#4ADE80] to-[#A7F3D0] w-6 h-6 rounded-md" />
+          <p>20°C-40°C</p>
         </div>
         <div className="flex items-center space-x-3">
           <div className="bg-gradient-to-br from-[#FB7979] to-[#FFCBCB] w-6 h-6 rounded-md" />
-          <p>Above 24°C</p>
+          <p>Above 40°C</p>
         </div>
       </CardContent>
     </Card>
