@@ -266,10 +266,12 @@ const ChartLegendContent = React.forwardRef<
     Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
       hideIcon?: boolean;
       nameKey?: string;
+      onLegendHover?: (key: string | undefined) => void;
+      highlightedKey?: string;
     }
 >(
   (
-    { className, hideIcon = false, payload, verticalAlign = "bottom", nameKey },
+    { className, hideIcon = false, payload, verticalAlign = "bottom", nameKey, onLegendHover, highlightedKey },
     ref,
   ) => {
     const { config } = useChart();
@@ -282,7 +284,7 @@ const ChartLegendContent = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "flex items-center justify-center gap-4",
+          "flex flex-wrap items-center justify-center gap-4", // add flex-wrap
           verticalAlign === "top" ? "pb-3" : "pt-3",
           className,
         )}
@@ -290,13 +292,18 @@ const ChartLegendContent = React.forwardRef<
         {payload.map((item) => {
           const key = `${nameKey || item.dataKey || "value"}`;
           const itemConfig = getPayloadConfigFromPayload(config, item, key);
+          const isHighlighted = highlightedKey === key;
 
           return (
             <div
               key={item.value}
+              data-legend-key={key}
               className={cn(
-                "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-zinc-500 dark:[&>svg]:text-zinc-400",
+                "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-zinc-500 dark:[&>svg]:text-zinc-400 cursor-pointer transition-opacity",
+                isHighlighted ? "opacity-100" : highlightedKey ? "opacity-50" : "opacity-100"
               )}
+              onMouseEnter={() => onLegendHover?.(key)}
+              onMouseLeave={() => onLegendHover?.(undefined)}
             >
               {itemConfig?.icon && !hideIcon ? (
                 <itemConfig.icon />

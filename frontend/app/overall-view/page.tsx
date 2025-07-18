@@ -17,6 +17,8 @@ export default function OverallView() {
   const [powerChartConfig, setPowerChartConfig] = useState<any>({});
   const [temperatureChartConfig, setTemperatureChartConfig] = useState<any>({});
   const [selectedRange, setSelectedRange] = useState<"24h"|"7d"|"1mnth">("24h");
+  const [highlightedPowerKey, setHighlightedPowerKey] = useState<string | undefined>(undefined);
+  const [highlightedTempKey, setHighlightedTempKey] = useState<string | undefined>(undefined);
 
   // Fetch all power and temperature data for DH3
   const fetchData = async () => {
@@ -104,6 +106,7 @@ export default function OverallView() {
                       month: "2-digit",
                       day: "numeric",
                       hour12: false,
+                      timeZone: "UTC",
                     });
                   }}
                 />
@@ -124,23 +127,34 @@ export default function OverallView() {
                           month: "short",
                           day: "numeric",
                           hour12: false,
+                          timeZone: "UTC",
                         });
                       }}
                       indicator="dot"
                     />
                   }
                 />
-                {Object.keys(powerChartConfig).map((location, index) => (
-                  <Line
-                    key={location}
-                    dataKey={location}
-                    type="monotone"
-                    stroke={chartColors[index % chartColors.length]}
-                    strokeWidth={2}
-                    dot={false}
+                {Object.keys(powerChartConfig).map((location, index) => {
+                  const isHighlighted = !highlightedPowerKey || highlightedPowerKey === location;
+                  return (
+                    <Line
+                      key={location}
+                      dataKey={location}
+                      type="monotone"
+                      stroke={chartColors[index % chartColors.length]}
+                      strokeWidth={highlightedPowerKey === location ? 4 : 2}
+                      dot={false}
+                      opacity={isHighlighted ? 1 : 0.3}
+                      style={{ transition: 'opacity 0.2s, stroke-width 0.2s' }}
+                    />
+                  );
+                })}
+                <ChartLegend content={
+                  <ChartLegendContent
+                    onLegendHover={setHighlightedPowerKey}
+                    highlightedKey={highlightedPowerKey}
                   />
-                ))}
-                <ChartLegend content={<ChartLegendContent />} />
+                } />
               </LineChart>
             </ChartContainer>
           </CardContent>
@@ -172,6 +186,7 @@ export default function OverallView() {
                       month: "2-digit",
                       day: "numeric",
                       hour12: false,
+                      timeZone: "UTC",
                     });
                   }}
                 />
@@ -192,23 +207,34 @@ export default function OverallView() {
                           month: "short",
                           day: "numeric",
                           hour12: false,
+                          timeZone: "UTC",
                         });
                       }}
                       indicator="dot"
                     />
                   }
                 />
-                {Object.keys(temperatureChartConfig).map((location, index) => (
-                  <Line
-                    key={location}
-                    dataKey={location}
-                    type="monotone"
-                    stroke={chartColors[index % chartColors.length]}
-                    strokeWidth={2}
-                    dot={false}
+                {Object.keys(temperatureChartConfig).map((location, index) => {
+                  const isHighlighted = !highlightedTempKey || highlightedTempKey === location;
+                  return (
+                    <Line
+                      key={location}
+                      dataKey={location}
+                      type="monotone"
+                      stroke={chartColors[index % chartColors.length]}
+                      strokeWidth={highlightedTempKey === location ? 4 : 2}
+                      dot={false}
+                      opacity={isHighlighted ? 1 : 0.3}
+                      style={{ transition: 'opacity 0.2s, stroke-width 0.2s' }}
+                    />
+                  );
+                })}
+                <ChartLegend content={
+                  <ChartLegendContent
+                    onLegendHover={setHighlightedTempKey}
+                    highlightedKey={highlightedTempKey}
                   />
-                ))}
-                <ChartLegend content={<ChartLegendContent />} />
+                } />
               </LineChart>
             </ChartContainer>
           </CardContent>
