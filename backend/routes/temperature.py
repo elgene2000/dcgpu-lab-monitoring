@@ -39,22 +39,30 @@ def get_temperature():
 @temperature.route("latest", methods=["GET"])
 def latest():
     try:
+        from flask import current_app
         site = request.args.get("site")
         location = request.args.get("location")
-        query_filter = {}
-        if site:
-            query_filter["site"] = site
+        temperature_model = Temperature()
+        collection = temperature_model.db.db[temperature_model.collection_name]
+
+        match_stage = {"site": site} if site else {}
         if location:
-            query_filter["location"] = location
-
-        temperature = Temperature()
-        latest = temperature.find(query_filter, sort=[("created", -1)], limit=1)
-
-        if latest:
-            created = latest[0]["created"]
-            query_filter["created"] = created
-
-        results = temperature.find(query_filter, sort=[("created", -1)])
+            match_stage["location"] = {"$regex": location}
+        print("match_stage:", match_stage)
+        pipeline = [
+            {"$match": match_stage},
+            {"$sort": {"location": 1, "created": -1}},
+            {"$group": {
+                "_id": "$location",
+                "latest": {"$first": "$$ROOT"}
+            }},
+            {"$replaceRoot": {"newRoot": "$latest"}}
+        ]
+        results = list(collection.aggregate(pipeline))
+        print("Aggregation results count:", len(results))
+        for doc in results:
+            if "_id" in doc:
+                doc["_id"] = str(doc["_id"])
         return results
     except Exception as e:
         return {"status": "error", "data": str(e)}
