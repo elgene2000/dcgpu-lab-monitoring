@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from puresnmp import Client, V2C, ObjectIdentifier as OID
 from utils.models.power import Power
 from utils.models.pdu import PDU
+from utils.models.systems import Systems
 
 load_dotenv()
 
@@ -163,6 +164,23 @@ def add_system_to_pdu(pdu_id, new_system):
         print(f"System '{new_system}' already exists for PDU {pdu_id}.")
 
 
+def add_system(system, site, location):
+    """
+    Add a system to the 'systems' collection with fields: system, site, location.
+    """
+    now = datetime.now()
+    systems_model = Systems()
+    doc = {
+        "system": system,
+        "site": site,
+        "location": location,
+        "created": now,
+        "updated": now,
+    }
+    result = systems_model.create(doc)
+    print(f"Added system '{system}' to systems collection. Result: {result}")
+
+
 if __name__ == "__main__":
     # test_power_oid()
     # seedPDU() #add PDU to the database
@@ -172,3 +190,4 @@ if __name__ == "__main__":
     # test_temperature_exists()
     # update_pdu_with_temp()
     # add_system_to_pdu("684251d6c644ba134955e98e", "gbt350-odcdh5-wbc2")
+     add_system("quanta325-odcdh3-b09-1", "odcdh3", "b09")
