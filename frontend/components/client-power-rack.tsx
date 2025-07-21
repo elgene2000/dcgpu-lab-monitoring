@@ -162,6 +162,11 @@ export default function ClientPowerRack({
         {datahall.toUpperCase()} - {rack.toUpperCase()}
       </p>
       <div className="flex flex-row space-x-3 mb-3">
+        <Card className="w-96 min-h-64">
+          <CardHeader className="text-left">
+            <CardTitle>Systems</CardTitle>
+          </CardHeader>
+        </Card>
         {currPowerLoading ? (
           <Card className="w-96 min-h-64 relative overflow-hidden">
             <div className="absolute inset-0 h-full w-full -translate-x-full animate-[shimmer_2s_infinite] overflow-hidden bg-gradient-to-r from-transparent via-slate-200/30 to-transparent dark:via-slate-200/10" />
