@@ -59,6 +59,8 @@ export default function ClientPowerRack({
   const [filteredPower, setFilteredPower] = useState<any[]>([]);
   const [currPowerLoading, setCurrPowerLoading] = useState<boolean>(true);
   const [allPowerLoading, setAllPowerLoading] = useState<boolean>(true);
+  const [systems, setSystems] = useState<any[]>([]);
+  const [systemsLoading, setSystemsLoading] = useState<boolean>(true);
 
   //CHARTS STATES
   const [chartConfig, setChartConfig] = useState<ChartConfig>({});
@@ -69,7 +71,7 @@ export default function ClientPowerRack({
   const getCurrPower = async () => {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/power/latest?site=${site}&location=${rack}`, // Fetching latest power data for rack,
+        `/api/power/latest?site=${site}&location=${rack}`
       );
       if (response && response.status === 200) {
         setCurrPower(response.data || []);
@@ -85,7 +87,7 @@ export default function ClientPowerRack({
   const getAllPower = async (dateRange: DateRange) => {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/power?site=${site}&location=${rack}&timeline=${dateRange}`,
+        `/api/power?site=${site}&location=${rack}&timeline=${dateRange}`
       );
       if (response && response.status === 200) {
         setAllPower(response.data || []);
@@ -133,6 +135,23 @@ export default function ClientPowerRack({
     }
   };
 
+  const getSystems = async () => {
+    try {
+      const response = await axios.get(
+        `/api/systems?site=${site}&location=${rack}`
+      );
+      if (response && response.status === 200) {
+        setSystems(response.data || []);
+      } else {
+        setSystems([]);
+      }
+      setSystemsLoading(false);
+    } catch (e) {
+      setSystems([]);
+      setSystemsLoading(false);
+    }
+  };
+
   //EFFECTS
   useEffect(() => {
     const fetchCurrData = async () => {
@@ -156,6 +175,10 @@ export default function ClientPowerRack({
     }
   }, [currPower, setCurrPower]);
 
+  useEffect(() => {
+    getSystems();
+  }, [site, rack]);
+
   return (
     <>
       <p className="flex text-xl font-bold text-left pb-3">
@@ -165,6 +188,29 @@ export default function ClientPowerRack({
         <Card className="w-96 min-h-64">
           <CardHeader className="text-left">
             <CardTitle>Systems</CardTitle>
+            <CardDescription>Systems in this rack</CardDescription>
+            <div className="pt-4 pb-0 w-full h-full">
+              {systemsLoading ? (
+                <div className="text-sm text-slate-500">Loading...</div>
+              ) : systems.length > 0 ? (
+                <ul className="list-disc pl-5">
+                  {systems.map((system, idx) => (
+                    <li key={idx} className="text-sm font-light">
+                      <a
+                        href={`https://conductor.amd.com/system/management?page=0&pageSize=25&filter=${encodeURIComponent(system.system)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline hover:text-blue-800"
+                      >
+                        {system.system}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="text-sm text-slate-500">No systems found</div>
+              )}
+            </div>
           </CardHeader>
         </Card>
         {currPowerLoading ? (
@@ -206,9 +252,6 @@ export default function ClientPowerRack({
                         <span>{power.pdu_hostname}</span>
                         <ExternalLink className="w-4 h-4" />
                       </a>
-                    </p>
-                    <p className="text-sm font-light">
-                      System: {power.system ? power.system : "NA"}
                     </p>
                   </div>
                 </div>
