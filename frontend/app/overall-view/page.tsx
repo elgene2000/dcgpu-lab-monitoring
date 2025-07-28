@@ -8,6 +8,16 @@ import { useTheme } from "next-themes";
 
 const chartColors = ["#a78bfa", "#f472b6", "#00A6F4", "#9AE600", "#FFB347", "#FF6961", "#77DD77", "#AEC6CF", "#CFCFC4", "#B39EB5"];
 
+// Function to get color based on sensor position
+const getTemperatureColor = (location: string): string => {
+  if (location.includes("-up")) {
+    return "#FF6961"; // Red for "up" position
+  } else if (location.includes("-down")) {
+    return "#00A6F4"; // Blue for "down" position
+  }
+  return chartColors[0]; // Default color for other cases
+};
+
 export default function OverallView() {
   const { theme } = useTheme();
   const [powerData, setPowerData] = useState<any[]>([]);
@@ -221,7 +231,7 @@ export default function OverallView() {
                       key={location}
                       dataKey={location}
                       type="monotone"
-                      stroke={chartColors[index % chartColors.length]}
+                      stroke={getTemperatureColor(location)}
                       strokeWidth={highlightedTempKey === location ? 4 : 2}
                       dot={false}
                       opacity={isHighlighted ? 1 : 0.3}
