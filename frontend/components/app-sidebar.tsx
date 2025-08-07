@@ -31,12 +31,6 @@ const items = [
     activeIndicator: "",
   },
   {
-    title: "Overall view",
-    url: "/overall-view",
-    icon: Home,
-    activeIndicator: "",
-  },
-  {
     title: "OpenDC",
     icon: Factory,
     subitems: [
@@ -63,17 +57,6 @@ const items = [
       {
         title: "Data Hall 5",
         url: "/opendc/dh5",
-        activeIndicator: "",
-      },
-    ],
-  },
-  {
-    title: "UST",
-    icon: Factory,
-    subitems: [
-      {
-        title: "Lab 3",
-        url: "/ust/lab3",
         activeIndicator: "",
       },
     ],
