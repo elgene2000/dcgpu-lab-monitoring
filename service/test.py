@@ -21,14 +21,68 @@ logging.basicConfig(
 
 #edit this part to add more PDU
 PDU_db = [
-    {
-        "hostname": "pdu-odcdh3-a12-2.amd.com",
-        "site": "odcdh3",
-        "location": "a12-2",
-        "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1",
-        "v2c": "amd123",
-    },
+    {"hostname": "pdu-odcdh2-a02-1.amd.com", "site": "odcdh2", "location": "a02-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-a06-1.amd.com", "site": "odcdh2", "location": "a06-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-a09-1.amd.com", "site": "odcdh2", "location": "a09-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-a10-1.amd.com", "site": "odcdh2", "location": "a10-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-a11-1.amd.com", "site": "odcdh2", "location": "a11-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-a11-2.amd.com", "site": "odcdh2", "location": "a11-2", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-a12-1.amd.com", "site": "odcdh2", "location": "a12-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-a12-2.amd.com", "site": "odcdh2", "location": "a12-2", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-a13-1.amd.com", "site": "odcdh2", "location": "a13-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-a14-1.amd.com", "site": "odcdh2", "location": "a14-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b02-1.amd.com", "site": "odcdh2", "location": "b02-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b06-1.amd.com", "site": "odcdh2", "location": "b06-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b10-1.amd.com", "site": "odcdh2", "location": "b10-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b12-1.amd.com", "site": "odcdh2", "location": "b12-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b13-1.amd.com", "site": "odcdh2", "location": "b13-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b14-1.amd.com", "site": "odcdh2", "location": "b14-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-c02-1.amd.com", "site": "odcdh2", "location": "c02-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-c06-1.amd.com", "site": "odcdh2", "location": "c06-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-c10-1.amd.com", "site": "odcdh2", "location": "c10-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-c11-1.amd.com", "site": "odcdh2", "location": "c11-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-c13-1.amd.com", "site": "odcdh2", "location": "c13-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-a05-1.amd.com", "site": "odcdh2", "location": "a05-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-a07-1.amd.com", "site": "odcdh2", "location": "a07-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-a07-2.amd.com", "site": "odcdh2", "location": "a07-2", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-a08-1.amd.com", "site": "odcdh2", "location": "a08-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-a08-2.amd.com", "site": "odcdh2", "location": "a08-2", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-a01-1.amd.com", "site": "odcdh2", "location": "a01-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-a03-1.amd.com", "site": "odcdh2", "location": "a03-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-a04-1.amd.com", "site": "odcdh2", "location": "a04-1", "output_power_total_oid": "1.3.6.1.4.1.850.1.1.3.2.2.1.1.9.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b01-1.amd.com", "site": "odcdh2", "location": "b01-1", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b01-2.amd.com", "site": "odcdh2", "location": "b01-2", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b03-1.amd.com", "site": "odcdh2", "location": "b03-1", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b03-2.amd.com", "site": "odcdh2", "location": "b03-2", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b04-1.amd.com", "site": "odcdh2", "location": "b04-1", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b04-2.amd.com", "site": "odcdh2", "location": "b04-2", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b05-1.amd.com", "site": "odcdh2", "location": "b05-1", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b05-2.amd.com", "site": "odcdh2", "location": "b05-2", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b07-1.amd.com", "site": "odcdh2", "location": "b07-1", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b07-2.amd.com", "site": "odcdh2", "location": "b07-2", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b08-1.amd.com", "site": "odcdh2", "location": "b08-1", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b08-2.amd.com", "site": "odcdh2", "location": "b08-2", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b09-1.amd.com", "site": "odcdh2", "location": "b09-1", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b09-2.amd.com", "site": "odcdh2", "location": "b09-2", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b11-1.amd.com", "site": "odcdh2", "location": "b11-1", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-b11-2.amd.com", "site": "odcdh2", "location": "b11-2", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-c03-1.amd.com", "site": "odcdh2", "location": "c03-1", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-c03-2.amd.com", "site": "odcdh2", "location": "c03-2", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-c04-1.amd.com", "site": "odcdh2", "location": "c04-1", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-c04-2.amd.com", "site": "odcdh2", "location": "c04-2", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-c05-1.amd.com", "site": "odcdh2", "location": "c05-1", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-c05-2.amd.com", "site": "odcdh2", "location": "c05-2", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-c07-1.amd.com", "site": "odcdh2", "location": "c07-1", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-c07-2.amd.com", "site": "odcdh2", "location": "c07-2", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-c08-1.amd.com", "site": "odcdh2", "location": "c08-1", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-c08-2.amd.com", "site": "odcdh2", "location": "c08-2", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-c09-1.amd.com", "site": "odcdh2", "location": "c09-1", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-c09-2.amd.com", "site": "odcdh2", "location": "c09-2", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-c12-1.amd.com", "site": "odcdh2", "location": "c12-1", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+    {"hostname": "pdu-odcdh2-c12-2.amd.com", "site": "odcdh2", "location": "c12-2", "output_power_total_oid": "1.3.6.1.4.1.38446.1.2.4.1.4.1", "v2c": "amd123"},
+
 ]
+
 
 
 async def snmpFetch(pdu_hostname: str, oid: str, v2c: str, type: str):
@@ -190,4 +244,5 @@ if __name__ == "__main__":
     # test_temperature_exists()
     # update_pdu_with_temp()
     # add_system_to_pdu("684251d6c644ba134955e98e", "gbt350-odcdh5-wbc2")
-     add_system("quanta325-odcdh3-b09-1", "odcdh3", "b09")
+    # add_system("quanta325-odcdh3-b09-1", "odcdh3", "b09")
+    pass
