@@ -7,14 +7,26 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useState, useEffect } from "react";
 import { ChartConfig } from "@/components/ui/chart";
 import { AnimatedCircles } from "@/components/animated-circles";
+import { Bolt } from "@/components/bolt";
+import { TempSensor } from "@/components/temp-sensor";
+import { useRouter } from "next/navigation";
 
 interface RoomVisualizerProps {
   theme?: string;
+  powerData?: any[];
+  temperatureData?: any[];
 }
+const OpenDCDH2: React.FC<RoomVisualizerProps> = ({ theme, powerData, temperatureData }) => {
 
-const OpenDCDH2: React.FC<RoomVisualizerProps> = ({ theme }) => {
+  const [rackPower, setRackPower] = useState<any>({});
+  const [rackPDUs, setRackPDUs] = useState<any>({});
+  const [rackTemperature, setRackTemperature] = useState<any>({});
+
+  const router = useRouter();
+
   const colorConfig = {
     particles: theme == "dark" ? "#FFFFFF" : "#8EC5FF",
     grill: theme == "dark" ? "#5F6A7E" : "#C6CBD3",
@@ -24,7 +36,53 @@ const OpenDCDH2: React.FC<RoomVisualizerProps> = ({ theme }) => {
     canvas_fill: theme == "dark" ? "#1F2430" : "#FFFFFF",
   };
 
+  //EFFECTS
+  useEffect(() => {
+    const tempRackPower: Record<string, number> = {};
+    const tempRackPDUs: Record<string, any[]> = {};
+    if (powerData && powerData.length > 0) {
+      for (let i = 0; i < powerData.length; i++) {
+        const rack = powerData[i].location.split("-")[0];
+        const reading = powerData[i].reading;
+        const pduData = powerData[i];
+
+        // Aggregate total power per rack
+        if (tempRackPower[rack]) {
+          tempRackPower[rack] += reading;
+        } else {
+          tempRackPower[rack] = reading;
+        }
+
+        // Collect individual PDU readings per rack
+        if (!tempRackPDUs[rack]) {
+          tempRackPDUs[rack] = [];
+        }
+        tempRackPDUs[rack].push(pduData);
+      }
+    }
+    setRackPower(tempRackPower);
+    setRackPDUs(tempRackPDUs);
+  }, [powerData]);
+
+  useEffect(() => {
+    const tempTemperature: Record<string, number> = {};
+    if (temperatureData && temperatureData.length > 0) {
+      for (let i = 0; i < temperatureData.length; i++) {
+        const rack = temperatureData[i].location;
+        const reading = temperatureData[i].reading;
+
+        if (tempTemperature[rack]) {
+          tempTemperature[rack] += reading;
+        } else {
+          tempTemperature[rack] = reading;
+        }
+      }
+    }
+    setRackTemperature(tempTemperature);
+  }, [temperatureData]);
+
   return (
+    <TooltipProvider delayDuration={0}>
     <svg
       className="w-full h-full max-h-[950px]"
       width="503"
@@ -64,384 +122,1147 @@ const OpenDCDH2: React.FC<RoomVisualizerProps> = ({ theme }) => {
         d="M1 1V0.5H0.5V1H1ZM503 1H503.5V0.5H503V1ZM503 507V507.5H503.5V507H503ZM1 507H0.5V507.5H1V507ZM1 1V1.5H503V1V0.5H1V1ZM503 1H502.5V507H503H503.5V1H503ZM503 507V506.5H1V507V507.5H503V507ZM1 507H1.5V1H1H0.5V507H1Z"
         fill={colorConfig.block_stroke}
       />
-      <mask id="path-3-inside-1_1077_273" fill="white">
-        <path d="M367 91H409V114H367V91Z" />
-      </mask>
-      <path d="M367 91H409V114H367V91Z" fill={colorConfig.block_fill} />
-      <path
-        d="M367 91V90H366V91H367ZM409 91H410V90H409V91ZM367 91V92H409V91V90H367V91ZM409 91H408V114H409H410V91H409ZM367 114H368V91H367H366V114H367Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-3-inside-1_1077_273)"
-      />
-      <mask id="path-5-inside-2_1077_273" fill="white">
-        <path d="M367 114H409V137H367V114Z" />
-      </mask>
-      <path d="M367 114H409V137H367V114Z" fill={colorConfig.block_fill} />
-      <path
-        d="M367 114V113H366V114H367ZM409 114H410V113H409V114ZM367 114V115H409V114V113H367V114ZM409 114H408V137H409H410V114H409ZM367 137H368V114H367H366V137H367Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-5-inside-2_1077_273)"
-      />
-      <mask id="path-7-inside-3_1077_273" fill="white">
-        <path d="M367 137H409V160H367V137Z" />
-      </mask>
-      <path d="M367 137H409V160H367V137Z" fill={colorConfig.block_fill} />
-      <path
-        d="M367 137V136H366V137H367ZM409 137H410V136H409V137ZM367 137V138H409V137V136H367V137ZM409 137H408V160H409H410V137H409ZM367 160H368V137H367H366V160H367Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-7-inside-3_1077_273)"
-      />
-      <mask id="path-9-inside-4_1077_273" fill="white">
-        <path d="M367 160H409V183H367V160Z" />
-      </mask>
-      <path d="M367 160H409V183H367V160Z" fill={colorConfig.block_fill} />
-      <path
-        d="M367 160V159H366V160H367ZM409 160H410V159H409V160ZM367 160V161H409V160V159H367V160ZM409 160H408V183H409H410V160H409ZM367 183H368V160H367H366V183H367Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-9-inside-4_1077_273)"
-      />
-      <mask id="path-11-inside-5_1077_273" fill="white">
-        <path d="M367 183H409V206H367V183Z" />
-      </mask>
-      <path d="M367 183H409V206H367V183Z" fill={colorConfig.block_fill} />
-      <path
-        d="M367 183V182H366V183H367ZM409 183H410V182H409V183ZM367 183V184H409V183V182H367V183ZM409 183H408V206H409H410V183H409ZM367 206H368V183H367H366V206H367Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-11-inside-5_1077_273)"
-      />
-      <mask id="path-13-inside-6_1077_273" fill="white">
-        <path d="M367 206H409V229H367V206Z" />
-      </mask>
-      <path d="M367 206H409V229H367V206Z" fill={colorConfig.block_fill} />
-      <path
-        d="M367 206V205H366V206H367ZM409 206H410V205H409V206ZM367 206V207H409V206V205H367V206ZM409 206H408V229H409H410V206H409ZM367 229H368V206H367H366V229H367Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-13-inside-6_1077_273)"
-      />
-      <mask id="path-15-inside-7_1077_273" fill="white">
-        <path d="M367 229H409V252H367V229Z" />
-      </mask>
-      <path d="M367 229H409V252H367V229Z" fill={colorConfig.block_fill} />
-      <path
-        d="M367 229V228H366V229H367ZM409 229H410V228H409V229ZM367 229V230H409V229V228H367V229ZM409 229H408V252H409H410V229H409ZM367 252H368V229H367H366V252H367Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-15-inside-7_1077_273)"
-      />
-      <mask id="path-17-inside-8_1077_273" fill="white">
-        <path d="M367 252H409V275H367V252Z" />
-      </mask>
-      <path d="M367 252H409V275H367V252Z" fill={colorConfig.block_fill} />
-      <path
-        d="M367 252V251H366V252H367ZM409 252H410V251H409V252ZM367 252V253H409V252V251H367V252ZM409 252H408V275H409H410V252H409ZM367 275H368V252H367H366V275H367Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-17-inside-8_1077_273)"
-      />
-      <mask id="path-19-inside-9_1077_273" fill="white">
-        <path d="M367 275H409V298H367V275Z" />
-      </mask>
-      <path d="M367 275H409V298H367V275Z" fill={colorConfig.block_fill} />
-      <path
-        d="M367 275V274H366V275H367ZM409 275H410V274H409V275ZM367 275V276H409V275V274H367V275ZM409 275H408V298H409H410V275H409ZM367 298H368V275H367H366V298H367Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-19-inside-9_1077_273)"
-      />
-      <mask id="path-21-inside-10_1077_273" fill="white">
-        <path d="M367 298H409V321H367V298Z" />
-      </mask>
-      <path d="M367 298H409V321H367V298Z" fill={colorConfig.block_fill} />
-      <path
-        d="M367 298V297H366V298H367ZM409 298H410V297H409V298ZM367 298V299H409V298V297H367V298ZM409 298H408V321H409H410V298H409ZM367 321H368V298H367H366V321H367Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-21-inside-10_1077_273)"
-      />
-      <mask id="path-23-inside-11_1077_273" fill="white">
-        <path d="M367 321H409V344H367V321Z" />
-      </mask>
-      <path d="M367 321H409V344H367V321Z" fill={colorConfig.block_fill} />
-      <path
-        d="M367 321V320H366V321H367ZM409 321H410V320H409V321ZM367 321V322H409V321V320H367V321ZM409 321H408V344H409H410V321H409ZM367 344H368V321H367H366V344H367Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-23-inside-11_1077_273)"
-      />
-      <mask id="path-25-inside-12_1077_273" fill="white">
-        <path d="M367 344H409V367H367V344Z" />
-      </mask>
-      <path d="M367 344H409V367H367V344Z" fill={colorConfig.block_fill} />
-      <path
-        d="M367 344V343H366V344H367ZM409 344H410V343H409V344ZM367 344V345H409V344V343H367V344ZM409 344H408V367H409H410V344H409ZM367 367H368V344H367H366V367H367Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-25-inside-12_1077_273)"
-      />
-      <mask id="path-27-inside-13_1077_273" fill="white">
-        <path d="M367 367H409V390H367V367Z" />
-      </mask>
-      <path d="M367 367H409V390H367V367Z" fill={colorConfig.block_fill} />
-      <path
-        d="M367 367V366H366V367H367ZM409 367H410V366H409V367ZM367 367V368H409V367V366H367V367ZM409 367H408V390H409H410V367H409ZM367 390H368V367H367H366V390H367Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-27-inside-13_1077_273)"
-      />
-      <mask id="path-29-inside-14_1077_273" fill="white">
-        <path d="M367 390H409V413H367V390Z" />
-      </mask>
-      <path d="M367 390H409V413H367V390Z" fill={colorConfig.block_fill} />
-      <path
-        d="M367 390V389H366V390H367ZM409 390H410V389H409V390ZM409 413V414H410V413H409ZM367 413H366V414H367V413ZM367 390V391H409V390V389H367V390ZM409 390H408V413H409H410V390H409ZM409 413V412H367V413V414H409V413ZM367 413H368V390H367H366V413H367Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-29-inside-14_1077_273)"
-      />
-      <mask id="path-31-inside-15_1077_273" fill="white">
-        <path d="M91 91H133V114H91V91Z" />
-      </mask>
-      <path d="M91 91H133V114H91V91Z" fill={colorConfig.block_fill} />
-      <path
-        d="M91 91V90H90V91H91ZM133 91H134V90H133V91ZM91 91V92H133V91V90H91V91ZM133 91H132V114H133H134V91H133ZM91 114H92V91H91H90V114H91Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-31-inside-15_1077_273)"
-      />
-      <mask id="path-33-inside-16_1077_273" fill="white">
-        <path d="M91 114H133V137H91V114Z" />
-      </mask>
-      <path d="M91 114H133V137H91V114Z" fill={colorConfig.block_fill} />
-      <path
-        d="M91 114V113H90V114H91ZM133 114H134V113H133V114ZM91 114V115H133V114V113H91V114ZM133 114H132V137H133H134V114H133ZM91 137H92V114H91H90V137H91Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-33-inside-16_1077_273)"
-      />
-      <mask id="path-35-inside-17_1077_273" fill="white">
-        <path d="M91 137H133V160H91V137Z" />
-      </mask>
-      <path d="M91 137H133V160H91V137Z" fill={colorConfig.block_fill} />
-      <path
-        d="M91 137V136H90V137H91ZM133 137H134V136H133V137ZM91 137V138H133V137V136H91V137ZM133 137H132V160H133H134V137H133ZM91 160H92V137H91H90V160H91Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-35-inside-17_1077_273)"
-      />
-      <mask id="path-37-inside-18_1077_273" fill="white">
-        <path d="M91 160H133V183H91V160Z" />
-      </mask>
-      <path d="M91 160H133V183H91V160Z" fill={colorConfig.block_fill} />
-      <path
-        d="M91 160V159H90V160H91ZM133 160H134V159H133V160ZM91 160V161H133V160V159H91V160ZM133 160H132V183H133H134V160H133ZM91 183H92V160H91H90V183H91Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-37-inside-18_1077_273)"
-      />
-      <mask id="path-39-inside-19_1077_273" fill="white">
-        <path d="M91 183H133V206H91V183Z" />
-      </mask>
-      <path d="M91 183H133V206H91V183Z" fill={colorConfig.block_fill} />
-      <path
-        d="M91 183V182H90V183H91ZM133 183H134V182H133V183ZM91 183V184H133V183V182H91V183ZM133 183H132V206H133H134V183H133ZM91 206H92V183H91H90V206H91Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-39-inside-19_1077_273)"
-      />
-      <mask id="path-41-inside-20_1077_273" fill="white">
-        <path d="M91 206H133V229H91V206Z" />
-      </mask>
-      <path d="M91 206H133V229H91V206Z" fill={colorConfig.block_fill} />
-      <path
-        d="M91 206V205H90V206H91ZM133 206H134V205H133V206ZM91 206V207H133V206V205H91V206ZM133 206H132V229H133H134V206H133ZM91 229H92V206H91H90V229H91Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-41-inside-20_1077_273)"
-      />
-      <mask id="path-43-inside-21_1077_273" fill="white">
-        <path d="M91 229H133V252H91V229Z" />
-      </mask>
-      <path d="M91 229H133V252H91V229Z" fill={colorConfig.block_fill} />
-      <path
-        d="M91 229V228H90V229H91ZM133 229H134V228H133V229ZM91 229V230H133V229V228H91V229ZM133 229H132V252H133H134V229H133ZM91 252H92V229H91H90V252H91Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-43-inside-21_1077_273)"
-      />
-      <mask id="path-45-inside-22_1077_273" fill="white">
-        <path d="M91 252H133V275H91V252Z" />
-      </mask>
-      <path d="M91 252H133V275H91V252Z" fill={colorConfig.block_fill} />
-      <path
-        d="M91 252V251H90V252H91ZM133 252H134V251H133V252ZM91 252V253H133V252V251H91V252ZM133 252H132V275H133H134V252H133ZM91 275H92V252H91H90V275H91Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-45-inside-22_1077_273)"
-      />
-      <mask id="path-47-inside-23_1077_273" fill="white">
-        <path d="M91 275H133V298H91V275Z" />
-      </mask>
-      <path d="M91 275H133V298H91V275Z" fill={colorConfig.block_fill} />
-      <path
-        d="M91 275V274H90V275H91ZM133 275H134V274H133V275ZM91 275V276H133V275V274H91V275ZM133 275H132V298H133H134V275H133ZM91 298H92V275H91H90V298H91Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-47-inside-23_1077_273)"
-      />
-      <mask id="path-49-inside-24_1077_273" fill="white">
-        <path d="M91 298H133V321H91V298Z" />
-      </mask>
-      <path d="M91 298H133V321H91V298Z" fill={colorConfig.block_fill} />
-      <path
-        d="M91 298V297H90V298H91ZM133 298H134V297H133V298ZM91 298V299H133V298V297H91V298ZM133 298H132V321H133H134V298H133ZM91 321H92V298H91H90V321H91Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-49-inside-24_1077_273)"
-      />
-      <mask id="path-51-inside-25_1077_273" fill="white">
-        <path d="M91 321H133V344H91V321Z" />
-      </mask>
-      <path d="M91 321H133V344H91V321Z" fill={colorConfig.block_fill} />
-      <path
-        d="M91 321V320H90V321H91ZM133 321H134V320H133V321ZM91 321V322H133V321V320H91V321ZM133 321H132V344H133H134V321H133ZM91 344H92V321H91H90V344H91Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-51-inside-25_1077_273)"
-      />
-      <mask id="path-53-inside-26_1077_273" fill="white">
-        <path d="M91 344H133V367H91V344Z" />
-      </mask>
-      <path d="M91 344H133V367H91V344Z" fill={colorConfig.block_fill} />
-      <path
-        d="M91 344V343H90V344H91ZM133 344H134V343H133V344ZM91 344V345H133V344V343H91V344ZM133 344H132V367H133H134V344H133ZM91 367H92V344H91H90V367H91Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-53-inside-26_1077_273)"
-      />
-      <mask id="path-55-inside-27_1077_273" fill="white">
-        <path d="M91 367H133V390H91V367Z" />
-      </mask>
-      <path d="M91 367H133V390H91V367Z" fill={colorConfig.block_fill} />
-      <path
-        d="M91 367V366H90V367H91ZM133 367H134V366H133V367ZM91 367V368H133V367V366H91V367ZM133 367H132V390H133H134V367H133ZM91 390H92V367H91H90V390H91Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-55-inside-27_1077_273)"
-      />
-      <mask id="path-57-inside-28_1077_273" fill="white">
-        <path d="M91 390H133V413H91V390Z" />
-      </mask>
-      <path d="M91 390H133V413H91V390Z" fill={colorConfig.block_fill} />
-      <path
-        d="M91 390V389H90V390H91ZM133 390H134V389H133V390ZM133 413V414H134V413H133ZM91 413H90V414H91V413ZM91 390V391H133V390V389H91V390ZM133 390H132V413H133H134V390H133ZM133 413V412H91V413V414H133V413ZM91 413H92V390H91H90V413H91Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-57-inside-28_1077_273)"
-      />
-      <mask id="path-59-inside-29_1077_273" fill="white">
-        <path d="M176 91H218V114H176V91Z" />
-      </mask>
-      <path d="M176 91H218V114H176V91Z" fill={colorConfig.block_fill} />
-      <path
-        d="M176 91V90H175V91H176ZM218 91H219V90H218V91ZM176 91V92H218V91V90H176V91ZM218 91H217V114H218H219V91H218ZM176 114H177V91H176H175V114H176Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-59-inside-29_1077_273)"
-      />
-      <mask id="path-61-inside-30_1077_273" fill="white">
-        <path d="M176 114H218V137H176V114Z" />
-      </mask>
-      <path d="M176 114H218V137H176V114Z" fill={colorConfig.block_fill} />
-      <path
-        d="M176 114V113H175V114H176ZM218 114H219V113H218V114ZM176 114V115H218V114V113H176V114ZM218 114H217V137H218H219V114H218ZM176 137H177V114H176H175V137H176Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-61-inside-30_1077_273)"
-      />
-      <mask id="path-63-inside-31_1077_273" fill="white">
-        <path d="M176 137H218V160H176V137Z" />
-      </mask>
-      <path d="M176 137H218V160H176V137Z" fill={colorConfig.block_fill} />
-      <path
-        d="M176 137V136H175V137H176ZM218 137H219V136H218V137ZM176 137V138H218V137V136H176V137ZM218 137H217V160H218H219V137H218ZM176 160H177V137H176H175V160H176Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-63-inside-31_1077_273)"
-      />
-      <mask id="path-65-inside-32_1077_273" fill="white">
-        <path d="M176 160H218V183H176V160Z" />
-      </mask>
-      <path d="M176 160H218V183H176V160Z" fill={colorConfig.block_fill} />
-      <path
-        d="M176 160V159H175V160H176ZM218 160H219V159H218V160ZM176 160V161H218V160V159H176V160ZM218 160H217V183H218H219V160H218ZM176 183H177V160H176H175V183H176Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-65-inside-32_1077_273)"
-      />
-      <mask id="path-67-inside-33_1077_273" fill="white">
-        <path d="M176 183H218V206H176V183Z" />
-      </mask>
-      <path d="M176 183H218V206H176V183Z" fill={colorConfig.block_fill} />
-      <path
-        d="M176 183V182H175V183H176ZM218 183H219V182H218V183ZM176 183V184H218V183V182H176V183ZM218 183H217V206H218H219V183H218ZM176 206H177V183H176H175V206H176Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-67-inside-33_1077_273)"
-      />
-      <mask id="path-69-inside-34_1077_273" fill="white">
-        <path d="M176 206H218V229H176V206Z" />
-      </mask>
-      <path d="M176 206H218V229H176V206Z" fill={colorConfig.block_fill} />
-      <path
-        d="M176 206V205H175V206H176ZM218 206H219V205H218V206ZM176 206V207H218V206V205H176V206ZM218 206H217V229H218H219V206H218ZM176 229H177V206H176H175V229H176Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-69-inside-34_1077_273)"
-      />
-      <mask id="path-71-inside-35_1077_273" fill="white">
-        <path d="M176 229H218V252H176V229Z" />
-      </mask>
-      <path d="M176 229H218V252H176V229Z" fill={colorConfig.block_fill} />
-      <path
-        d="M176 229V228H175V229H176ZM218 229H219V228H218V229ZM176 229V230H218V229V228H176V229ZM218 229H217V252H218H219V229H218ZM176 252H177V229H176H175V252H176Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-71-inside-35_1077_273)"
-      />
-      <mask id="path-73-inside-36_1077_273" fill="white">
-        <path d="M176 252H218V275H176V252Z" />
-      </mask>
-      <path d="M176 252H218V275H176V252Z" fill={colorConfig.block_fill} />
-      <path
-        d="M176 252V251H175V252H176ZM218 252H219V251H218V252ZM176 252V253H218V252V251H176V252ZM218 252H217V275H218H219V252H218ZM176 275H177V252H176H175V275H176Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-73-inside-36_1077_273)"
-      />
-      <mask id="path-75-inside-37_1077_273" fill="white">
-        <path d="M176 275H218V298H176V275Z" />
-      </mask>
-      <path d="M176 275H218V298H176V275Z" fill={colorConfig.block_fill} />
-      <path
-        d="M176 275V274H175V275H176ZM218 275H219V274H218V275ZM176 275V276H218V275V274H176V275ZM218 275H217V298H218H219V275H218ZM176 298H177V275H176H175V298H176Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-75-inside-37_1077_273)"
-      />
-      <mask id="path-77-inside-38_1077_273" fill="white">
-        <path d="M176 298H218V321H176V298Z" />
-      </mask>
-      <path d="M176 298H218V321H176V298Z" fill={colorConfig.block_fill} />
-      <path
-        d="M176 298V297H175V298H176ZM218 298H219V297H218V298ZM176 298V299H218V298V297H176V298ZM218 298H217V321H218H219V298H218ZM176 321H177V298H176H175V321H176Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-77-inside-38_1077_273)"
-      />
-      <mask id="path-79-inside-39_1077_273" fill="white">
-        <path d="M176 321H218V344H176V321Z" />
-      </mask>
-      <path d="M176 321H218V344H176V321Z" fill={colorConfig.block_fill} />
-      <path
-        d="M176 321V320H175V321H176ZM218 321H219V320H218V321ZM176 321V322H218V321V320H176V321ZM218 321H217V344H218H219V321H218ZM176 344H177V321H176H175V344H176Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-79-inside-39_1077_273)"
-      />
-      <mask id="path-81-inside-40_1077_273" fill="white">
-        <path d="M176 344H218V367H176V344Z" />
-      </mask>
-      <path d="M176 344H218V367H176V344Z" fill={colorConfig.block_fill} />
-      <path
-        d="M176 344V343H175V344H176ZM218 344H219V343H218V344ZM176 344V345H218V344V343H176V344ZM218 344H217V367H218H219V344H218ZM176 367H177V344H176H175V367H176Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-81-inside-40_1077_273)"
-      />
-      <mask id="path-83-inside-41_1077_273" fill="white">
-        <path d="M176 367H218V390H176V367Z" />
-      </mask>
-      <path d="M176 367H218V390H176V367Z" fill={colorConfig.block_fill} />
-      <path
-        d="M176 367V366H175V367H176ZM218 367H219V366H218V367ZM176 367V368H218V367V366H176V367ZM218 367H217V390H218H219V367H218ZM176 390H177V367H176H175V390H176Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-83-inside-41_1077_273)"
-      />
-      <mask id="path-85-inside-42_1077_273" fill="white">
-        <path d="M176 390H218V413H176V390Z" />
-      </mask>
-      <path d="M176 390H218V413H176V390Z" fill={colorConfig.block_fill} />
-      <path
-        d="M176 390V389H175V390H176ZM218 390H219V389H218V390ZM218 413V414H219V413H218ZM176 413H175V414H176V413ZM176 390V391H218V390V389H176V390ZM218 390H217V413H218H219V390H218ZM218 413V412H176V413V414H218V413ZM176 413H177V390H176H175V413H176Z"
-        fill={colorConfig.block_stroke}
-        mask="url(#path-85-inside-42_1077_273)"
-      />
+      
+      {/* ====================== ROW A (A01 - A14) ====================== */}
+
+      {/* A01 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/a01")}
+      >
+        <mask id="path-31-inside-15_1077_273" fill="white">
+          <path d="M91 91H133V114H91V91Z" />
+        </mask>
+        <path d="M91 91H133V114H91V91Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="A01"
+          theme={theme}
+          power={rackPDUs["a01"] && rackPDUs["a01"][0] ? rackPDUs["a01"][0].reading : undefined}
+          size={0.17857}
+          x={107}
+          y={97.5}
+        />
+        <path
+          d="M91 91V90H90V91H91ZM133 91H134V90H133V91ZM91 91V92H133V91V90H91V91ZM133 91H132V114H133H134V91H133ZM91 114H92V91H91H90V114H91Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-31-inside-15_1077_273)"
+        />
+      </g>
+
+      {/* A02 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/a02")}
+      >
+        <mask id="path-33-inside-16_1077_273" fill="white">
+          <path d="M91 114H133V137H91V114Z" />
+        </mask>
+        <path d="M91 114H133V137H91V114Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="A02"
+          theme={theme}
+          power={rackPDUs["a02"] && rackPDUs["a02"][0] ? rackPDUs["a02"][0].reading : undefined}
+          size={0.17857}
+          x={107}
+          y={120.5}
+        />
+        <path
+          d="M91 114V113H90V114H91ZM133 114H134V113H133V114ZM91 114V115H133V114V113H91V114ZM133 114H132V137H133H134V114H133ZM91 137H92V114H91H90V137H91Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-33-inside-16_1077_273)"
+        />
+      </g>
+
+      {/* A03 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/a03")}
+      >
+        <mask id="path-35-inside-17_1077_273" fill="white">
+          <path d="M91 137H133V160H91V137Z" />
+        </mask>
+        <path d="M91 137H133V160H91V137Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="A03"
+          theme={theme}
+          power={rackPDUs["a03"] && rackPDUs["a03"][0] ? rackPDUs["a03"][0].reading : undefined}
+          size={0.17857}
+          x={107}
+          y={143.5}
+        />
+        <path
+          d="M91 137V136H90V137H91ZM133 137H134V136H133V137ZM91 137V138H133V137V136H91V137ZM133 137H132V160H133H134V137H133ZM91 160H92V137H91H90V160H91Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-35-inside-17_1077_273)"
+        />
+      </g>
+
+      {/* A04 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/a04")}
+      >
+        <mask id="path-37-inside-18_1077_273" fill="white">
+          <path d="M91 160H133V183H91V160Z" />
+        </mask>
+        <path d="M91 160H133V183H91V160Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="A04"
+          theme={theme}
+          power={rackPDUs["a04"] && rackPDUs["a04"][0] ? rackPDUs["a04"][0].reading : undefined}
+          size={0.17857}
+          x={107}
+          y={166.5}
+        />
+        <path
+          d="M91 160V159H90V160H91ZM133 160H134V159H133V160ZM91 160V161H133V160V159H91V160ZM133 160H132V183H133H134V160H133ZM91 183H92V160H91H90V183H91Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-37-inside-18_1077_273)"
+        />
+      </g>
+
+      {/* A05 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/a05")}
+      >
+        <mask id="path-39-inside-19_1077_273" fill="white">
+          <path d="M91 183H133V206H91V183Z" />
+        </mask>
+        <path d="M91 183H133V206H91V183Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="A05"
+          theme={theme}
+          power={rackPDUs["a05"] && rackPDUs["a05"][0] ? rackPDUs["a05"][0].reading : undefined}
+          size={0.17857}
+          x={107}
+          y={189.5}
+        />
+        <path
+          d="M91 183V182H90V183H91ZM133 183H134V182H133V183ZM91 183V184H133V183V182H91V183ZM133 183H132V206H133H134V183H133ZM91 206H92V183H91H90V206H91Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-39-inside-19_1077_273)"
+        />
+      </g>
+
+      {/* A06 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/a06")}
+      >
+        <mask id="path-41-inside-20_1077_273" fill="white">
+          <path d="M91 206H133V229H91V206Z" />
+        </mask>
+        <path d="M91 206H133V229H91V206Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="A06"
+          theme={theme}
+          power={rackPDUs["a06"] && rackPDUs["a06"][0] ? rackPDUs["a06"][0].reading : undefined}
+          size={0.17857}
+          x={107}
+          y={212.5}
+        />
+        <path
+          d="M91 206V205H90V206H91ZM133 206H134V205H133V206ZM91 206V207H133V206V205H91V206ZM133 206H132V229H133H134V206H133ZM91 229H92V206H91H90V229H91Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-41-inside-20_1077_273)"
+        />
+      </g>
+
+      {/* A07 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/a07")}
+      >
+        <mask id="path-43-inside-21_1077_273" fill="white">
+          <path d="M91 229H133V252H91V229Z" />
+        </mask>
+        <path d="M91 229H133V252H91V229Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="A07"
+          theme={theme}
+          power={rackPDUs["a07"] && rackPDUs["a07"][0] ? rackPDUs["a07"][0].reading : undefined}
+          size={0.17857}
+          x={107}
+          y={235.5}
+        />
+        <path
+          d="M91 229V228H90V229H91ZM133 229H134V228H133V229ZM91 229V230H133V229V228H91V229ZM133 229H132V252H133H134V229H133ZM91 252H92V229H91H90V252H91Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-43-inside-21_1077_273)"
+        />
+      </g>
+
+      {/* A08 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/a08")}
+      >
+        <mask id="path-45-inside-22_1077_273" fill="white">
+          <path d="M91 252H133V275H91V252Z" />
+        </mask>
+        <path d="M91 252H133V275H91V252Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="A08"
+          theme={theme}
+          power={rackPDUs["a08"] && rackPDUs["a08"][0] ? rackPDUs["a08"][0].reading : undefined}
+          size={0.17857}
+          x={107}
+          y={258.5}
+        />
+        <path
+          d="M91 252V251H90V252H91ZM133 252H134V251H133V252ZM91 252V253H133V252V251H91V252ZM133 252H132V275H133H134V252H133ZM91 275H92V252H91H90V275H91Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-45-inside-22_1077_273)"
+        />
+      </g>
+
+      {/* A09 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/a09")}
+      >
+        <mask id="path-47-inside-23_1077_273" fill="white">
+          <path d="M91 275H133V298H91V275Z" />
+        </mask>
+        <path d="M91 275H133V298H91V275Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="A09"
+          theme={theme}
+          power={rackPDUs["a09"] && rackPDUs["a09"][0] ? rackPDUs["a09"][0].reading : undefined}
+          size={0.17857}
+          x={107}
+          y={281.5}
+        />
+        <path
+          d="M91 275V274H90V275H91ZM133 275H134V274H133V275ZM91 275V276H133V275V274H91V275ZM133 275H132V298H133H134V275H133ZM91 298H92V275H91H90V298H91Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-47-inside-23_1077_273)"
+        />
+      </g>
+
+      {/* A10 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/a10")}
+      >
+        <mask id="path-49-inside-24_1077_273" fill="white">
+          <path d="M91 298H133V321H91V298Z" />
+        </mask>
+        <path d="M91 298H133V321H91V298Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="A10"
+          theme={theme}
+          power={rackPDUs["a10"] && rackPDUs["a10"][0] ? rackPDUs["a10"][0].reading : undefined}
+          size={0.17857}
+          x={107}
+          y={304.5}
+        />
+        <path
+          d="M91 298V297H90V298H91ZM133 298H134V297H133V298ZM91 298V299H133V298V297H91V298ZM133 298H132V321H133H134V298H133ZM91 321H92V298H91H90V321H91Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-49-inside-24_1077_273)"
+        />
+      </g>
+
+      {/* A11 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/a11")}
+      >
+        <mask id="path-51-inside-25_1077_273" fill="white">
+          <path d="M91 321H133V344H91V321Z" />
+        </mask>
+        <path d="M91 321H133V344H91V321Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="A11"
+          theme={theme}
+          power={rackPDUs["a11"] && rackPDUs["a11"][0] ? rackPDUs["a11"][0].reading : undefined}
+          size={0.17857}
+          x={107}
+          y={327.5}
+        />
+        <path
+          d="M91 321V320H90V321H91ZM133 321H134V320H133V321ZM91 321V322H133V321V320H91V321ZM133 321H132V344H133H134V321H133ZM91 344H92V321H91H90V344H91Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-51-inside-25_1077_273)"
+        />
+      </g>
+
+      {/* A12 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/a12")}
+      >
+        <mask id="path-53-inside-26_1077_273" fill="white">
+          <path d="M91 344H133V367H91V344Z" />
+        </mask>
+        <path d="M91 344H133V367H91V344Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="A12"
+          theme={theme}
+          power={rackPDUs["a12"] && rackPDUs["a12"][0] ? rackPDUs["a12"][0].reading : undefined}
+          size={0.17857}
+          x={107}
+          y={350.5}
+        />
+        <path
+          d="M91 344V343H90V344H91ZM133 344H134V343H133V344ZM91 344V345H133V344V343H91V344ZM133 344H132V367H133H134V344H133ZM91 367H92V344H91H90V367H91Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-53-inside-26_1077_273)"
+        />
+      </g>
+
+      {/* A13 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/a13")}
+      >
+        <mask id="path-55-inside-27_1077_273" fill="white">
+          <path d="M91 367H133V390H91V367Z" />
+        </mask>
+        <path d="M91 367H133V390H91V367Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="A13"
+          theme={theme}
+          power={rackPDUs["a13"] && rackPDUs["a13"][0] ? rackPDUs["a13"][0].reading : undefined}
+          size={0.17857}
+          x={107}
+          y={373.5}
+        />
+        <path
+          d="M91 367V366H90V367H91ZM133 367H134V366H133V367ZM91 367V368H133V367V366H91V367ZM133 367H132V390H133H134V367H133ZM91 390H92V367H91H90V390H91Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-55-inside-27_1077_273)"
+        />
+      </g>
+
+      {/* A14 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/a14")}
+      >
+        <mask id="path-57-inside-28_1077_273" fill="white">
+          <path d="M91 390H133V413H91V390Z" />
+        </mask>
+        <path d="M91 390H133V413H91V390Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="A14"
+          theme={theme}
+          power={rackPDUs["a14"] && rackPDUs["a14"][0] ? rackPDUs["a14"][0].reading : undefined}
+          size={0.17857}
+          x={107}
+          y={396.5}
+        />
+        <path
+          d="M91 390V389H90V390H91ZM133 390H134V389H133V390ZM133 413V414H134V413H133ZM91 413H90V414H91V413ZM91 390V391H133V390V389H91V390ZM133 390H132V413H133H134V390H133ZM133 413V412H91V413V414H133V413ZM91 413H92V390H91H90V413H91Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-57-inside-28_1077_273)"
+        />
+      </g>
+
+      {/* ====================== ROW B (B01 - B14) ====================== */}
+
+      {/* B01 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/b01")}
+      >
+        <mask id="path-59-inside-29_1077_273" fill="white">
+          <path d="M176 91H218V114H176V91Z" />
+        </mask>
+        <path d="M176 91H218V114H176V91Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="B01-1"
+          theme={theme}
+          power={rackPDUs["b01"] && rackPDUs["b01"][0] ? rackPDUs["b01"][0].reading : undefined}
+          size={0.17857}
+          x={188}
+          y={97.5}
+        />
+        <Bolt
+          rack="B01-2"
+          theme={theme}
+          power={rackPDUs["b01"] && rackPDUs["b01"][1] ? rackPDUs["b01"][1].reading : undefined}
+          size={0.17857}
+          x={196}
+          y={97.5}
+        />
+        <path
+          d="M176 91V90H175V91H176ZM218 91H219V90H218V91ZM176 91V92H218V91V90H176V91ZM218 91H217V114H218H219V91H218ZM176 114H177V91H176H175V114H176Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-59-inside-29_1077_273)"
+        />
+      </g>
+
+      {/* B02 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/b02")}
+      >
+        <mask id="path-61-inside-30_1077_273" fill="white">
+          <path d="M176 114H218V137H176V114Z" />
+        </mask>
+        <path d="M176 114H218V137H176V114Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="B02"
+          theme={theme}
+          power={rackPDUs["b02"] && rackPDUs["b02"][0] ? rackPDUs["b02"][0].reading : undefined}
+          size={0.17857}
+          x={192}
+          y={120.5}
+        />
+        <path
+          d="M176 114V113H175V114H176ZM218 114H219V113H218V114ZM176 114V115H218V114V113H176V114ZM218 114H217V137H218H219V114H218ZM176 137H177V114H176H175V137H176Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-61-inside-30_1077_273)"
+        />
+      </g>
+
+      {/* B03 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/b03")}
+      >
+        <mask id="path-63-inside-31_1077_273" fill="white">
+          <path d="M176 137H218V160H176V137Z" />
+        </mask>
+        <path d="M176 137H218V160H176V137Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="B03-1"
+          theme={theme}
+          power={rackPDUs["b03"] && rackPDUs["b03"][0] ? rackPDUs["b03"][0].reading : undefined}
+          size={0.17857}
+          x={188}
+          y={143.5}
+        />
+        <Bolt
+          rack="B03-2"
+          theme={theme}
+          power={rackPDUs["b03"] && rackPDUs["b03"][1] ? rackPDUs["b03"][1].reading : undefined}
+          size={0.17857}
+          x={196}
+          y={143.5}
+        />
+        <path
+          d="M176 137V136H175V137H176ZM218 137H219V136H218V137ZM176 137V138H218V137V136H176V137ZM218 137H217V160H218H219V137H218ZM176 160H177V137H176H175V160H176Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-63-inside-31_1077_273)"
+        />
+      </g>
+
+      {/* B04 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/b04")}
+      >
+        <mask id="path-65-inside-32_1077_273" fill="white">
+          <path d="M176 160H218V183H176V160Z" />
+        </mask>
+        <path d="M176 160H218V183H176V160Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="B04-1"
+          theme={theme}
+          power={rackPDUs["b04"] && rackPDUs["b04"][0] ? rackPDUs["b04"][0].reading : undefined}
+          size={0.17857}
+          x={188}
+          y={166.5}
+        />
+        <Bolt
+          rack="B04-2"
+          theme={theme}
+          power={rackPDUs["b04"] && rackPDUs["b04"][1] ? rackPDUs["b04"][1].reading : undefined}
+          size={0.17857}
+          x={196}
+          y={166.5}
+        />
+        <path
+          d="M176 160V159H175V160H176ZM218 160H219V159H218V160ZM176 160V161H218V160V159H176V160ZM218 160H217V183H218H219V160H218ZM176 183H177V160H176H175V183H176Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-65-inside-32_1077_273)"
+        />
+      </g>
+
+      {/* B05 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/b05")}
+      >
+        <mask id="path-67-inside-33_1077_273" fill="white">
+          <path d="M176 183H218V206H176V183Z" />
+        </mask>
+        <path d="M176 183H218V206H176V183Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="B05-1"
+          theme={theme}
+          power={rackPDUs["b05"] && rackPDUs["b05"][0] ? rackPDUs["b05"][0].reading : undefined}
+          size={0.17857}
+          x={188}
+          y={189.5}
+        />
+        <Bolt
+          rack="B05-2"
+          theme={theme}
+          power={rackPDUs["b05"] && rackPDUs["b05"][1] ? rackPDUs["b05"][1].reading : undefined}
+          size={0.17857}
+          x={196}
+          y={189.5}
+        />
+        <path
+          d="M176 183V182H175V183H176ZM218 183H219V182H218V183ZM176 183V184H218V183V182H176V183ZM218 183H217V206H218H219V183H218ZM176 206H177V183H176H175V206H176Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-67-inside-33_1077_273)"
+        />
+      </g>
+
+      {/* B06 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/b06")}
+      >
+        <mask id="path-69-inside-34_1077_273" fill="white">
+          <path d="M176 206H218V229H176V206Z" />
+        </mask>
+        <path d="M176 206H218V229H176V206Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="B06"
+          theme={theme}
+          power={rackPDUs["b06"] && rackPDUs["b06"][0] ? rackPDUs["b06"][0].reading : undefined}
+          size={0.17857}
+          x={192}
+          y={212.5}
+        />
+        <path
+          d="M176 206V205H175V206H176ZM218 206H219V205H218V206ZM176 206V207H218V206V205H176V206ZM218 206H217V229H218H219V206H218ZM176 229H177V206H176H175V229H176Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-69-inside-34_1077_273)"
+        />
+      </g>
+
+      {/* B07 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/b07")}
+      >
+        <mask id="path-71-inside-35_1077_273" fill="white">
+          <path d="M176 229H218V252H176V229Z" />
+        </mask>
+        <path d="M176 229H218V252H176V229Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="B07-1"
+          theme={theme}
+          power={rackPDUs["b07"] && rackPDUs["b07"][0] ? rackPDUs["b07"][0].reading : undefined}
+          size={0.17857}
+          x={188}
+          y={235.5}
+        />
+        <Bolt
+          rack="B07-2"
+          theme={theme}
+          power={rackPDUs["b07"] && rackPDUs["b07"][1] ? rackPDUs["b07"][1].reading : undefined}
+          size={0.17857}
+          x={196}
+          y={235.5}
+        />
+        <path
+          d="M176 229V228H175V229H176ZM218 229H219V228H218V229ZM176 229V230H218V229V228H176V229ZM218 229H217V252H218H219V229H218ZM176 252H177V229H176H175V252H176Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-71-inside-35_1077_273)"
+        />
+      </g>
+
+      {/* B08 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/b08")}
+      >
+        <mask id="path-73-inside-36_1077_273" fill="white">
+          <path d="M176 252H218V275H176V252Z" />
+        </mask>
+        <path d="M176 252H218V275H176V252Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="B08-1"
+          theme={theme}
+          power={rackPDUs["b08"] && rackPDUs["b08"][0] ? rackPDUs["b08"][0].reading : undefined}
+          size={0.17857}
+          x={188}
+          y={258.5}
+        />
+        <Bolt
+          rack="B08-2"
+          theme={theme}
+          power={rackPDUs["b08"] && rackPDUs["b08"][1] ? rackPDUs["b08"][1].reading : undefined}
+          size={0.17857}
+          x={196}
+          y={258.5}
+        />
+        <path
+          d="M176 252V251H175V252H176ZM218 252H219V251H218V252ZM176 252V253H218V252V251H176V252ZM218 252H217V275H218H219V252H218ZM176 275H177V252H176H175V275H176Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-73-inside-36_1077_273)"
+        />
+      </g>
+
+      {/* B09 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/b09")}
+      >
+        <mask id="path-75-inside-37_1077_273" fill="white">
+          <path d="M176 275H218V298H176V275Z" />
+        </mask>
+        <path d="M176 275H218V298H176V275Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="B09-1"
+          theme={theme}
+          power={rackPDUs["b09"] && rackPDUs["b09"][0] ? rackPDUs["b09"][0].reading : undefined}
+          size={0.17857}
+          x={188}
+          y={281.5}
+        />
+        <Bolt
+          rack="B09-2"
+          theme={theme}
+          power={rackPDUs["b09"] && rackPDUs["b09"][1] ? rackPDUs["b09"][1].reading : undefined}
+          size={0.17857}
+          x={196}
+          y={281.5}
+        />
+        <path
+          d="M176 275V274H175V275H176ZM218 275H219V274H218V275ZM176 275V276H218V275V274H176V275ZM218 275H217V298H218H219V275H218ZM176 298H177V275H176H175V298H176Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-75-inside-37_1077_273)"
+        />
+      </g>
+
+      {/* B10 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/b10")}
+      >
+        <mask id="path-77-inside-38_1077_273" fill="white">
+          <path d="M176 298H218V321H176V298Z" />
+        </mask>
+        <path d="M176 298H218V321H176V298Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="B10"
+          theme={theme}
+          power={rackPDUs["b10"] && rackPDUs["b10"][0] ? rackPDUs["b10"][0].reading : undefined}
+          size={0.17857}
+          x={192}
+          y={304.5}
+        />
+        <path
+          d="M176 298V297H175V298H176ZM218 298H219V297H218V298ZM176 298V299H218V298V297H176V298ZM218 298H217V321H218H219V298H218ZM176 321H177V298H176H175V321H176Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-77-inside-38_1077_273)"
+        />
+      </g>
+
+      {/* B11 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/b11")}
+      >
+        <mask id="path-79-inside-39_1077_273" fill="white">
+          <path d="M176 321H218V344H176V321Z" />
+        </mask>
+        <path d="M176 321H218V344H176V321Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="B11-1"
+          theme={theme}
+          power={rackPDUs["b11"] && rackPDUs["b11"][0] ? rackPDUs["b11"][0].reading : undefined}
+          size={0.17857}
+          x={188}
+          y={327.5}
+        />
+        <Bolt
+          rack="B11-2"
+          theme={theme}
+          power={rackPDUs["b11"] && rackPDUs["b11"][1] ? rackPDUs["b11"][1].reading : undefined}
+          size={0.17857}
+          x={196}
+          y={327.5}
+        />
+        <path
+          d="M176 321V320H175V321H176ZM218 321H219V320H218V321ZM176 321V322H218V321V320H176V321ZM218 321H217V344H218H219V321H218ZM176 344H177V321H176H175V344H176Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-79-inside-39_1077_273)"
+        />
+      </g>
+
+      {/* B12 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/b12")}
+      >
+        <mask id="path-81-inside-40_1077_273" fill="white">
+          <path d="M176 344H218V367H176V344Z" />
+        </mask>
+        <path d="M176 344H218V367H176V344Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="B12"
+          theme={theme}
+          power={rackPDUs["b12"] && rackPDUs["b12"][0] ? rackPDUs["b12"][0].reading : undefined}
+          size={0.17857}
+          x={192}
+          y={350.5}
+        />
+        <path
+          d="M176 344V343H175V344H176ZM218 344H219V343H218V344ZM176 344V345H218V344V343H176V344ZM218 344H217V367H218H219V344H218ZM176 367H177V344H176H175V367H176Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-81-inside-40_1077_273)"
+        />
+      </g>
+
+      {/* B13 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/b13")}
+      >
+        <mask id="path-83-inside-41_1077_273" fill="white">
+          <path d="M176 367H218V390H176V367Z" />
+        </mask>
+        <path d="M176 367H218V390H176V367Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="B13"
+          theme={theme}
+          power={rackPDUs["b13"] && rackPDUs["b13"][0] ? rackPDUs["b13"][0].reading : undefined}
+          size={0.17857}
+          x={192}
+          y={373.5}
+        />
+        <path
+          d="M176 367V366H175V367H176ZM218 367H219V366H218V367ZM176 367V368H218V367V366H176V367ZM218 367H217V390H218H219V367H218ZM176 390H177V367H176H175V390H176Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-83-inside-41_1077_273)"
+        />
+      </g>
+
+      {/* B14 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/b14")}
+      >
+        <mask id="path-85-inside-42_1077_273" fill="white">
+          <path d="M176 390H218V413H176V390Z" />
+        </mask>
+        <path d="M176 390H218V413H176V390Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="B14"
+          theme={theme}
+          power={rackPDUs["b14"] && rackPDUs["b14"][0] ? rackPDUs["b14"][0].reading : undefined}
+          size={0.17857}
+          x={192}
+          y={396.5}
+        />
+        <path
+          d="M176 390V389H175V390H176ZM218 390H219V389H218V390ZM218 413V414H219V413H218ZM176 413H175V414H176V413ZM176 390V391H218V390V389H176V390ZM218 390H217V413H218H219V390H218ZM218 413V412H176V413V414H218V413ZM176 413H177V390H176H175V413H176Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-85-inside-42_1077_273)"
+        />
+      </g>
+
+      {/* ====================== ROW C (C01 - C14) ====================== */}
+
+      {/* C01 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/c01")}
+      >
+        <mask id="path-3-inside-1_1077_273" fill="white">
+          <path d="M367 91H409V114H367V91Z" />
+        </mask>
+        <path d="M367 91H409V114H367V91Z" fill={colorConfig.block_fill} />
+        {/*
+        <Bolt
+          rack="C01"
+          theme={theme}
+          power={rackPDUs["c01"] && rackPDUs["c01"][0] ? rackPDUs["c01"][0].reading : undefined}
+          size={0.17857}
+          x={383}
+          y={97.5}
+        />
+        */}
+        <path
+          d="M367 91V90H366V91H367ZM409 91H410V90H409V91ZM367 91V92H409V91V90H367V91ZM409 91H408V114H409H410V91H409ZM367 114H368V91H367H366V114H367Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-3-inside-1_1077_273)"
+        />
+      </g>
+
+      {/* C02 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/c02")}
+      >
+        <mask id="path-5-inside-2_1077_273" fill="white">
+          <path d="M367 114H409V137H367V114Z" />
+        </mask>
+        <path d="M367 114H409V137H367V114Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="C02"
+          theme={theme}
+          power={rackPDUs["c02"] && rackPDUs["c02"][0] ? rackPDUs["c02"][0].reading : undefined}
+          size={0.17857}
+          x={383}
+          y={120.5}
+        />
+        <path
+          d="M367 114V113H366V114H367ZM409 114H410V113H409V114ZM367 114V115H409V114V113H367V114ZM409 114H408V137H409H410V114H409ZM367 137H368V114H367H366V137H367Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-5-inside-2_1077_273)"
+        />
+      </g>
+
+      {/* C03 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/c03")}
+      >
+        <mask id="path-7-inside-3_1077_273" fill="white">
+          <path d="M367 137H409V160H367V137Z" />
+        </mask>
+        <path d="M367 137H409V160H367V137Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="C03-1"
+          theme={theme}
+          power={rackPDUs["c03"] && rackPDUs["c03"][0] ? rackPDUs["c03"][0].reading : undefined}
+          size={0.17857}
+          x={379}
+          y={143.5}
+        />
+        <Bolt
+          rack="C03-2"
+          theme={theme}
+          power={rackPDUs["c03"] && rackPDUs["c03"][1] ? rackPDUs["c03"][1].reading : undefined}
+          size={0.17857}
+          x={387}
+          y={143.5}
+        />
+        <path
+          d="M367 137V136H366V137H367ZM409 137H410V136H409V137ZM367 137V138H409V137V136H367V137ZM409 137H408V160H409H410V137H409ZM367 160H368V137H367H366V160H367Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-7-inside-3_1077_273)"
+        />
+      </g>
+
+      {/* C04 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/c04")}
+      >
+        <mask id="path-9-inside-4_1077_273" fill="white">
+          <path d="M367 160H409V183H367V160Z" />
+        </mask>
+        <path d="M367 160H409V183H367V160Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="C04-1"
+          theme={theme}
+          power={rackPDUs["c04"] && rackPDUs["c04"][0] ? rackPDUs["c04"][0].reading : undefined}
+          size={0.17857}
+          x={379}
+          y={166.5}
+        />
+        <Bolt
+          rack="C04-2"
+          theme={theme}
+          power={rackPDUs["c04"] && rackPDUs["c04"][1] ? rackPDUs["c04"][1].reading : undefined}
+          size={0.17857}
+          x={387}
+          y={166.5}
+        />
+        <path
+          d="M367 160V159H366V160H367ZM409 160H410V159H409V160ZM367 160V161H409V160V159H367V160ZM409 160H408V183H409H410V160H409ZM367 183H368V160H367H366V183H367Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-9-inside-4_1077_273)"
+        />
+      </g>
+
+      {/* C05 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/c05")}
+      >
+        <mask id="path-11-inside-5_1077_273" fill="white">
+          <path d="M367 183H409V206H367V183Z" />
+        </mask>
+        <path d="M367 183H409V206H367V183Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="C05-1"
+          theme={theme}
+          power={rackPDUs["c05"] && rackPDUs["c05"][0] ? rackPDUs["c05"][0].reading : undefined}
+          size={0.17857}
+          x={379}
+          y={189.5}
+        />
+        <Bolt
+          rack="C05-2"
+          theme={theme}
+          power={rackPDUs["c05"] && rackPDUs["c05"][1] ? rackPDUs["c05"][1].reading : undefined}
+          size={0.17857}
+          x={387}
+          y={189.5}
+        />
+        <path
+          d="M367 183V182H366V183H367ZM409 183H410V182H409V183ZM367 183V184H409V183V182H367V183ZM409 183H408V206H409H410V183H409ZM367 206H368V183H367H366V206H367Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-11-inside-5_1077_273)"
+        />
+      </g>
+
+      {/* C06 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/c06")}
+      >
+        <mask id="path-13-inside-6_1077_273" fill="white">
+          <path d="M367 206H409V229H367V206Z" />
+        </mask>
+        <path d="M367 206H409V229H367V206Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="C06"
+          theme={theme}
+          power={rackPDUs["c06"] && rackPDUs["c06"][0] ? rackPDUs["c06"][0].reading : undefined}
+          size={0.17857}
+          x={383}
+          y={212.5}
+        />
+        <path
+          d="M367 206V205H366V206H367ZM409 206H410V205H409V206ZM367 206V207H409V206V205H367V206ZM409 206H408V229H409H410V206H409ZM367 229H368V206H367H366V229H367Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-13-inside-6_1077_273)"
+        />
+      </g>
+
+      {/* C07 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/c07")}
+      >
+        <mask id="path-15-inside-7_1077_273" fill="white">
+          <path d="M367 229H409V252H367V229Z" />
+        </mask>
+        <path d="M367 229H409V252H367V229Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="C07-1"
+          theme={theme}
+          power={rackPDUs["c07"] && rackPDUs["c07"][0] ? rackPDUs["c07"][0].reading : undefined}
+          size={0.17857}
+          x={379}
+          y={235.5}
+        />
+        <Bolt
+          rack="C07-2"
+          theme={theme}
+          power={rackPDUs["c07"] && rackPDUs["c07"][1] ? rackPDUs["c07"][1].reading : undefined}
+          size={0.17857}
+          x={387}
+          y={235.5}
+        />
+        <path
+          d="M367 229V228H366V229H367ZM409 229H410V228H409V229ZM367 229V230H409V229V228H367V229ZM409 229H408V252H409H410V229H409ZM367 252H368V229H367H366V252H367Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-15-inside-7_1077_273)"
+        />
+      </g>
+
+      {/* C08 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/c08")}
+      >
+        <mask id="path-17-inside-8_1077_273" fill="white">
+          <path d="M367 252H409V275H367V252Z" />
+        </mask>
+        <path d="M367 252H409V275H367V252Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="C08-1"
+          theme={theme}
+          power={rackPDUs["c08"] && rackPDUs["c08"][0] ? rackPDUs["c08"][0].reading : undefined}
+          size={0.17857}
+          x={379}
+          y={258.5}
+        />
+        <Bolt
+          rack="C08-2"
+          theme={theme}
+          power={rackPDUs["c08"] && rackPDUs["c08"][1] ? rackPDUs["c08"][1].reading : undefined}
+          size={0.17857}
+          x={387}
+          y={258.5}
+        />
+        <path
+          d="M367 252V251H366V252H367ZM409 252H410V251H409V252ZM367 252V253H409V252V251H367V252ZM409 252H408V275H409H410V252H409ZM367 275H368V252H367H366V275H367Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-17-inside-8_1077_273)"
+        />
+      </g>
+
+      {/* C09 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/c09")}
+      >
+        <mask id="path-19-inside-9_1077_273" fill="white">
+          <path d="M367 275H409V298H367V275Z" />
+        </mask>
+        <path d="M367 275H409V298H367V275Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="C09-1"
+          theme={theme}
+          power={rackPDUs["c09"] && rackPDUs["c09"][0] ? rackPDUs["c09"][0].reading : undefined}
+          size={0.17857}
+          x={379}
+          y={281.5}
+        />
+        <Bolt
+          rack="C09-2"
+          theme={theme}
+          power={rackPDUs["c09"] && rackPDUs["c09"][1] ? rackPDUs["c09"][1].reading : undefined}
+          size={0.17857}
+          x={387}
+          y={281.5}
+        />
+        <path
+          d="M367 275V274H366V275H367ZM409 275H410V274H409V275ZM367 275V276H409V275V274H367V275ZM409 275H408V298H409H410V275H409ZM367 298H368V275H367H366V298H367Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-19-inside-9_1077_273)"
+        />
+      </g>
+
+      {/* C10 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/c10")}
+      >
+        <mask id="path-21-inside-10_1077_273" fill="white">
+          <path d="M367 298H409V321H367V298Z" />
+        </mask>
+        <path d="M367 298H409V321H367V298Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="C10"
+          theme={theme}
+          power={rackPDUs["c10"] && rackPDUs["c10"][0] ? rackPDUs["c10"][0].reading : undefined}
+          size={0.17857}
+          x={383}
+          y={304.5}
+        />
+        <path
+          d="M367 298V297H366V298H367ZM409 298H410V297H409V298ZM367 298V299H409V298V297H367V298ZM409 298H408V321H409H410V298H409ZM367 321H368V298H367H366V321H367Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-21-inside-10_1077_273)"
+        />
+      </g>
+
+      {/* C11 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/c11")}
+      >
+        <mask id="path-23-inside-11_1077_273" fill="white">
+          <path d="M367 321H409V344H367V321Z" />
+        </mask>
+        <path d="M367 321H409V344H367V321Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="C11"
+          theme={theme}
+          power={rackPDUs["c11"] && rackPDUs["c11"][0] ? rackPDUs["c11"][0].reading : undefined}
+          size={0.17857}
+          x={383}
+          y={327.5}
+        />
+        <path
+          d="M367 321V320H366V321H367ZM409 321H410V320H409V321ZM367 321V322H409V321V320H367V321ZM409 321H408V344H409H410V321H409ZM367 344H368V321H367H366V344H367Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-23-inside-11_1077_273)"
+        />
+      </g>
+
+      {/* C12 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/c12")}
+      >
+        <mask id="path-25-inside-12_1077_273" fill="white">
+          <path d="M367 344H409V367H367V344Z" />
+        </mask>
+        <path d="M367 344H409V367H367V344Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="C12-1"
+          theme={theme}
+          power={rackPDUs["c12"] && rackPDUs["c12"][0] ? rackPDUs["c12"][0].reading : undefined}
+          size={0.17857}
+          x={379}
+          y={350.5}
+        />
+        <Bolt
+          rack="C12-2"
+          theme={theme}
+          power={rackPDUs["c12"] && rackPDUs["c12"][1] ? rackPDUs["c12"][1].reading : undefined}
+          size={0.17857}
+          x={387}
+          y={350.5}
+        />
+        <path
+          d="M367 344V343H366V344H367ZM409 344H410V343H409V344ZM367 344V345H409V344V343H367V344ZM409 344H408V367H409H410V344H409ZM367 367H368V344H367H366V367H367Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-25-inside-12_1077_273)"
+        />
+      </g>
+
+      {/* C13 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/c13")}
+      >
+        <mask id="path-27-inside-13_1077_273" fill="white">
+          <path d="M367 367H409V390H367V367Z" />
+        </mask>
+        <path d="M367 367H409V390H367V367Z" fill={colorConfig.block_fill} />
+        <Bolt
+          rack="C13"
+          theme={theme}
+          power={rackPDUs["c13"] && rackPDUs["c13"][0] ? rackPDUs["c13"][0].reading : undefined}
+          size={0.17857}
+          x={383}
+          y={373.5}
+        />
+        <path
+          d="M367 367V366H366V367H367ZM409 367H410V366H409V367ZM367 367V368H409V367V366H367V367ZM409 367H408V390H409H410V367H409ZM367 390H368V367H367H366V390H367Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-27-inside-13_1077_273)"
+        />
+      </g>
+
+      {/* C14 */}
+      <g
+        className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        onClick={() => router.push("/opendc/dh2/power/c14")}
+      >
+        <mask id="path-29-inside-14_1077_273" fill="white">
+          <path d="M367 390H409V413H367V390Z" />
+        </mask>
+        <path d="M367 390H409V413H367V390Z" fill={colorConfig.block_fill} />
+        {/*
+        <Bolt
+          rack="C14"
+          theme={theme}
+          power={rackPDUs["c14"] && rackPDUs["c14"][0] ? rackPDUs["c14"][0].reading : undefined}
+          size={0.17857}
+          x={383}
+          y={396.5}
+        />
+        */}
+        <path
+          d="M367 390V389H366V390H367ZM409 390H410V389H409V390ZM409 413V414H410V413H409ZM367 413H366V414H367V413ZM367 390V391H409V390V389H367V390ZM409 390H408V413H409H410V390H409ZM409 413V412H367V413V414H409V413ZM367 413H368V390H367H366V413H367Z"
+          fill={colorConfig.block_stroke}
+          mask="url(#path-29-inside-14_1077_273)"
+        />
+      </g>
+
+
+
       {/* CRAC-1 */}
       <g mask="url(#semicircle-mask-1)">
         <AnimatedCircles
@@ -3106,6 +3927,7 @@ const OpenDCDH2: React.FC<RoomVisualizerProps> = ({ theme }) => {
         fill={colorConfig.grill}
       />
     </svg>
+    </TooltipProvider>
   );
 };
 

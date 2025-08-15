@@ -7,8 +7,9 @@ import { AnimatedCircles } from "@/components/animated-circles";
 interface RoomVisualizerProps {
   theme?: string;
   powerData?: any[] | null | undefined;
+  temperatureData?: any[] | null | undefined;
 }
-const OpenDCDH5: React.FC<RoomVisualizerProps> = ({ theme, powerData }) => {
+const OpenDCDH5: React.FC<RoomVisualizerProps> = ({ theme, powerData, temperatureData }) => {
   const router = useRouter();
   const [benchPower, setBenchPower] = useState<any>({});
 
