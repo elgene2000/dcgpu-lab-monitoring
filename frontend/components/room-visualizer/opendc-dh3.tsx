@@ -517,7 +517,8 @@ const OpenDCDH3: React.FC<RoomVisualizerProps> = ({
           onClick={() => router.push("/opendc/dh3/power/b04")}
         >
           <path d="M182 165H224V197H182V165Z" fill={colorConfig.block_fill} />
-          <Bolt rack="B04-1" theme={theme} power={rackPDUs["b04"] && rackPDUs["b04"][0] ? rackPDUs["b04"][0].reading : undefined} size={0.17857} x={198.5} y={176.5} />
+          <Bolt rack="B04-1" theme={theme} power={rackPDUs["b04"] && rackPDUs["b04"][0] ? rackPDUs["b04"][0].reading : undefined} size={0.17857} x={194.5} y={176.5} />
+          <Bolt rack="B04-2" theme={theme} power={rackPDUs["b04"] && rackPDUs["b04"][1] ? rackPDUs["b04"][1].reading : undefined} size={0.17857} x={202.5} y={176.5} />
           <path
             d="M182 165V164H181V165H182ZM224 165H225V164H224V165ZM182 165V166H224V165V164H182V165ZM224 165H223V197H224H225V165H224ZM182 197H183V165H182H181V197H182Z"
             fill={colorConfig.block_stroke}

@@ -279,11 +279,19 @@ const OpenDCDH2: React.FC<RoomVisualizerProps> = ({ theme, powerData, temperatur
         </mask>
         <path d="M91 229H133V252H91V229Z" fill={colorConfig.block_fill} />
         <Bolt
-          rack="A07"
+          rack="A07-1"
           theme={theme}
           power={rackPDUs["a07"] && rackPDUs["a07"][0] ? rackPDUs["a07"][0].reading : undefined}
           size={0.17857}
-          x={107}
+          x={103}
+          y={235.5}
+        />
+        <Bolt
+          rack="A07-2"
+          theme={theme}
+          power={rackPDUs["a07"] && rackPDUs["a07"][1] ? rackPDUs["a07"][1].reading : undefined}
+          size={0.17857}
+          x={111}
           y={235.5}
         />
         <path
@@ -303,11 +311,19 @@ const OpenDCDH2: React.FC<RoomVisualizerProps> = ({ theme, powerData, temperatur
         </mask>
         <path d="M91 252H133V275H91V252Z" fill={colorConfig.block_fill} />
         <Bolt
-          rack="A08"
+          rack="A08-1"
           theme={theme}
           power={rackPDUs["a08"] && rackPDUs["a08"][0] ? rackPDUs["a08"][0].reading : undefined}
           size={0.17857}
-          x={107}
+          x={103}
+          y={258.5}
+        />
+        <Bolt
+          rack="A08-2"
+          theme={theme}
+          power={rackPDUs["a08"] && rackPDUs["a08"][1] ? rackPDUs["a08"][1].reading : undefined}
+          size={0.17857}
+          x={111}
           y={258.5}
         />
         <path
@@ -375,11 +391,19 @@ const OpenDCDH2: React.FC<RoomVisualizerProps> = ({ theme, powerData, temperatur
         </mask>
         <path d="M91 321H133V344H91V321Z" fill={colorConfig.block_fill} />
         <Bolt
-          rack="A11"
+          rack="A11-1"
           theme={theme}
           power={rackPDUs["a11"] && rackPDUs["a11"][0] ? rackPDUs["a11"][0].reading : undefined}
           size={0.17857}
-          x={107}
+          x={103}
+          y={327.5}
+        />
+        <Bolt
+          rack="A11-2"
+          theme={theme}
+          power={rackPDUs["a11"] && rackPDUs["a11"][1] ? rackPDUs["a11"][1].reading : undefined}
+          size={0.17857}
+          x={111}
           y={327.5}
         />
         <path
@@ -399,11 +423,19 @@ const OpenDCDH2: React.FC<RoomVisualizerProps> = ({ theme, powerData, temperatur
         </mask>
         <path d="M91 344H133V367H91V344Z" fill={colorConfig.block_fill} />
         <Bolt
-          rack="A12"
+          rack="A12-1"
           theme={theme}
           power={rackPDUs["a12"] && rackPDUs["a12"][0] ? rackPDUs["a12"][0].reading : undefined}
           size={0.17857}
-          x={107}
+          x={103}
+          y={350.5}
+        />
+        <Bolt
+          rack="A12-2"
+          theme={theme}
+          power={rackPDUs["a12"] && rackPDUs["a12"][1] ? rackPDUs["a12"][1].reading : undefined}
+          size={0.17857}
+          x={111}
           y={350.5}
         />
         <path
