@@ -58,7 +58,7 @@ const MonthlyPowerTable = () => {
   // Fetch historical data from JSON file
   const fetchHistoricalData = async () => {
     try {
-      const response = await axios.get('/api/monthly-power-data');
+      const response = await axios.get(`/api/monthly-power-data`);
       return response.data || [];
     } catch (error) {
       console.error('Error fetching historical data:', error);
@@ -69,12 +69,18 @@ const MonthlyPowerTable = () => {
   // Fetch current month data for each data hall
   const fetchCurrentMonthData = async () => {
     try {
-      const sites = ["odcdh1", "odcdh2", "odcdh3", "odcdh5"];
+      const sites = ["odcdh1", "odcdh2", "odcdh3", "odcdh4", "odcdh5"];
       const currentDate = new Date();
       const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
       
       const promises = sites.map(site =>
-        axios.get(`/api/power?site=${site}&timeline=1mnth`)
+        axios.get(`/api/power`, {
+          params: {
+            site: site,
+            start_date: firstDayOfMonth.toISOString(),
+            end_date: new Date().toISOString() // Current time
+          }
+        })
       );
       
       const responses = await Promise.all(promises);
@@ -87,6 +93,7 @@ const MonthlyPowerTable = () => {
         if (response.status === 200 && response.data) {
           response.data.forEach((reading: any) => {
             const readingDate = new Date(reading.created);
+            // Only include readings from current month
             if (readingDate >= firstDayOfMonth) {
               // Convert power reading to energy (10-minute intervals)
               const energyWh = (reading.reading || 0) * (10 / 60);
@@ -114,6 +121,61 @@ const MonthlyPowerTable = () => {
     }
   };
 
+  // Fetch data for a specific month
+  const fetchMonthData = async (year: number, month: number) => {
+    try {
+      const sites = ["odcdh1", "odcdh2", "odcdh3", "odcdh4", "odcdh5"];
+      const firstDayOfMonth = new Date(year, month, 1);
+      const lastDayOfMonth = new Date(year, month + 1, 0); // Last day of the month
+      
+      const promises = sites.map(site =>
+        axios.get(`/api/power`, {
+          params: {
+            site: site,
+            start_date: firstDayOfMonth.toISOString(),
+            end_date: lastDayOfMonth.toISOString()
+          }
+        })
+      );
+      
+      const responses = await Promise.all(promises);
+      const monthlyTotals: Record<string, number> = {};
+      
+      responses.forEach((response, index) => {
+        const site = sites[index];
+        let siteTotal = 0;
+        
+        if (response.status === 200 && response.data) {
+          response.data.forEach((reading: any) => {
+            const readingDate = new Date(reading.created);
+            // Only include readings from the specified month
+            if (readingDate >= firstDayOfMonth && readingDate <= lastDayOfMonth) {
+              // Convert power reading to energy (10-minute intervals)
+              const energyWh = (reading.reading || 0) * (10 / 60);
+              siteTotal += energyWh;
+            }
+          });
+        }
+        
+        // Convert site names to table column names
+        const columnMap: Record<string, string> = {
+          odcdh1: 'dh1',
+          odcdh2: 'dh2', 
+          odcdh3: 'dh3',
+          odcdh4: 'dh4',
+          odcdh5: 'dh5'
+        };
+        
+        monthlyTotals[columnMap[site]] = siteTotal / 1000; // Convert to kWh
+      });
+      
+      return monthlyTotals;
+    } catch (error) {
+      console.error('Error fetching month data:', error);
+      return {};
+    }
+  };
+
   // Load all data
   const loadData = async () => {
     setLoading(true);
@@ -126,49 +188,74 @@ const MonthlyPowerTable = () => {
       const monthsToDisplay = getMonthsToDisplay();
       const currentMonth = formatMonth(new Date());
       
-      const tableData: MonthlyData[] = monthsToDisplay.map(month => {
+      const tableData: MonthlyData[] = [];
+      
+      for (const month of monthsToDisplay) {
         // Check if we have historical data for this month
         const existingData = historicalData.find((item: MonthlyData) => item.month === month);
         
         if (existingData) {
-          return existingData;
+          tableData.push(existingData);
+        } else {
+          // For current month, use live data
+          if (month === currentMonth) {
+            const total = Object.values(currentMonthTotals).reduce((sum, val) => sum + val, 0);
+            tableData.push({
+              month,
+              dh1: currentMonthTotals.dh1 || 0,
+              dh2: currentMonthTotals.dh2 || 0,
+              dh3: currentMonthTotals.dh3 || 0,
+              dh4: currentMonthTotals.dh4 || 0,
+              dh5: currentMonthTotals.dh5 || 0,
+              total,
+              openDcFacilityPower: 0,
+              pue: 0,
+            });
+          } else {
+            // For past months without saved data, fetch from API
+            const monthDate = new Date(month + " 1");
+            const year = monthDate.getFullYear();
+            const monthIndex = monthDate.getMonth();
+            
+            // Only fetch data for months that have passed (not future months)
+            const now = new Date();
+            if (year < now.getFullYear() || (year === now.getFullYear() && monthIndex < now.getMonth())) {
+              const monthData = await fetchMonthData(year, monthIndex);
+              const total = Object.values(monthData).reduce((sum, val) => sum + val, 0);
+              
+              tableData.push({
+                month,
+                dh1: monthData.dh1 || 0,
+                dh2: monthData.dh2 || 0,
+                dh3: monthData.dh3 || 0,
+                dh4: monthData.dh4 || 0,
+                dh5: monthData.dh5 || 0,
+                total,
+                openDcFacilityPower: 0,
+                pue: 0,
+              });
+            } else {
+              // For future months, return empty row
+              tableData.push({
+                month,
+                dh1: 0,
+                dh2: 0,
+                dh3: 0,
+                dh4: 0,
+                dh5: 0,
+                total: 0,
+                openDcFacilityPower: 0,
+                pue: 0,
+              });
+            }
+          }
         }
-        
-        // For current month, use live data
-        if (month === currentMonth) {
-          const total = Object.values(currentMonthTotals).reduce((sum, val) => sum + val, 0);
-          return {
-            month,
-            dh1: currentMonthTotals.dh1 || 0,
-            dh2: currentMonthTotals.dh2 || 0,
-            dh3: currentMonthTotals.dh3 || 0,
-            dh4: currentMonthTotals.dh4 || 0,
-            dh5: currentMonthTotals.dh5 || 0,
-            total,
-            openDcFacilityPower: 0,
-            pue: 0,
-          };
-        }
-        
-        // For months without data, return empty row
-        return {
-          month,
-          dh1: 0,
-          dh2: 0,
-          dh3: 0,
-          dh4: 0,
-          dh5: 0,
-          total: 0,
-          openDcFacilityPower: 0,
-          pue: 0,
-        };
-      });
+      }
       
       setData(tableData);
     } catch (error) {
       console.error('Error loading data:', error);
       alert("Failed to load monthly power data");
-
     } finally {
       setLoading(false);
     }
@@ -178,8 +265,8 @@ const MonthlyPowerTable = () => {
   const saveData = async () => {
     setSaving(true);
     try {
-      await axios.post('/api/monthly-power-data', { data });
-      alert("Data saved successfully");
+      await axios.post(`/api/monthly-power-data`, { data });
+      alert("Monthly power data saved successfully");
     } catch (error) {
       console.error('Error saving data:', error);
       alert("Failed to save data");
@@ -200,8 +287,8 @@ const MonthlyPowerTable = () => {
     
     const numValue = parseFloat(editValue);
     if (isNaN(numValue) || numValue < 0) {
-        alert("Please enter a valid positive number");
-        return;
+      alert("Failed to save data");
+      return;
     }
     
     setData(prevData => 
