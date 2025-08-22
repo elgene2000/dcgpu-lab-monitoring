@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/chart";
 import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { useTheme } from "next-themes";
+import { Zap, TrendingUp } from "lucide-react";
+import { MonthlyPowerTable } from "@/components/monthly-power-table";
 
 const chartColors = [
   "#a78bfa",
@@ -35,6 +37,254 @@ const getTemperatureColor = (location: string) => {
   if (location.includes("-up")) return "#FF6961";
   if (location.includes("-down")) return "#00A6F4";
   return chartColors[0];
+};
+
+// Monthly Power Usage Card Component
+const MonthlyPowerCard = () => {
+  const { theme } = useTheme();
+  const [monthlyData, setMonthlyData] = useState<{
+    totalPower: number;
+    previousMonth: number;
+    percentageChange: number;
+    siteBreakdown: Record<string, {
+      current: number;
+      previous: number;
+      change: number;
+    }>;
+    loading: boolean;
+  }>({
+    totalPower: 0,
+    previousMonth: 0,
+    percentageChange: 0,
+    siteBreakdown: {},
+    loading: true,
+  });
+
+  const fetchMonthlyPowerData = async () => {
+    try {
+      const sites = ["odcdh1", "odcdh2", "odcdh3", "odcdh5"];
+      const currentDate = new Date();
+      const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      const firstDayOfPrevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+      const lastDayOfPrevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
+      
+      // Fetch current month data for all sites
+      const currentMonthPromises = sites.map(site =>
+        axios.get(`/api/power?site=${site}&timeline=1mnth`)
+      );
+      
+      const currentMonthResponses = await Promise.all(currentMonthPromises);
+      
+      // Calculate totals for each site and overall
+      let currentMonthTotal = 0;
+      let previousMonthTotal = 0;
+      const siteBreakdown: Record<string, { current: number; previous: number; change: number }> = {};
+
+      currentMonthResponses.forEach((response, index) => {
+        const site = sites[index];
+        let siteCurrentTotal = 0;
+        let sitePreviousTotal = 0;
+
+        if (response.status === 200 && response.data) {
+          response.data.forEach((reading: any) => {
+            const readingDate = new Date(reading.created);
+            // Convert power reading to energy consumption
+            // Each reading represents 10 minutes = 10/60 = 0.1667 hours
+            const energyWh = (reading.reading || 0) * (10 / 60); // Watt-hours
+            
+            if (readingDate >= firstDayOfMonth) {
+              siteCurrentTotal += energyWh;
+            }
+            if (readingDate >= firstDayOfPrevMonth && readingDate <= lastDayOfPrevMonth) {
+              sitePreviousTotal += energyWh;
+            }
+          });
+        }
+
+        const siteChange = sitePreviousTotal > 0 
+          ? ((siteCurrentTotal - sitePreviousTotal) / sitePreviousTotal) * 100 
+          : 0;
+
+        siteBreakdown[site] = {
+          current: siteCurrentTotal,
+          previous: sitePreviousTotal,
+          change: siteChange,
+        };
+
+        currentMonthTotal += siteCurrentTotal;
+        previousMonthTotal += sitePreviousTotal;
+      });
+
+      const percentageChange = previousMonthTotal > 0 
+        ? ((currentMonthTotal - previousMonthTotal) / previousMonthTotal) * 100 
+        : 0;
+
+      setMonthlyData({
+        totalPower: currentMonthTotal,
+        previousMonth: previousMonthTotal,
+        percentageChange,
+        siteBreakdown,
+        loading: false,
+      });
+    } catch (error) {
+      console.error("Error fetching monthly power data:", error);
+      setMonthlyData(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  useEffect(() => {
+    fetchMonthlyPowerData();
+    // Refresh every hour
+    const interval = setInterval(fetchMonthlyPowerData, 3600000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatPowerValue = (wattHours: number) => {
+    // Convert Watt-hours to more readable units
+    if (wattHours >= 1000000000) {
+      return `${(wattHours / 1000000000).toFixed(2)} GWh`;
+    } else if (wattHours >= 1000000) {
+      return `${(wattHours / 1000000).toFixed(2)} MWh`;
+    } else if (wattHours >= 1000) {
+      return `${(wattHours / 1000).toFixed(2)} kWh`;
+    }
+    return `${wattHours.toFixed(2)} Wh`;
+  };
+
+  const getSiteDisplayName = (site: string) => {
+    const siteMap: Record<string, string> = {
+      odcdh1: "Data Hall 1",
+      odcdh2: "Data Hall 2", 
+      odcdh3: "Data Hall 3",
+      odcdh5: "Data Hall 5",
+    };
+    return siteMap[site] || site.toUpperCase();
+  };
+
+  const currentMonth = new Date().toLocaleDateString("en-US", { 
+    month: "long", 
+    year: "numeric" 
+  });
+
+  if (monthlyData.loading) {
+    return (
+      <Card className="w-full mb-8 relative overflow-hidden">
+        <div className="absolute inset-0 h-full w-full -translate-x-full animate-[shimmer_2s_infinite] overflow-hidden bg-gradient-to-r from-transparent via-slate-200/30 to-transparent dark:via-slate-200/10" />
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Zap className="h-5 w-5" />
+            Monthly Power Usage
+          </CardTitle>
+          <CardDescription>Loading current month data...</CardDescription>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="w-full mb-8 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+          <Zap className="h-5 w-5" />
+          Monthly Power Usage - {currentMonth}
+        </CardTitle>
+        <CardDescription className="text-blue-600 dark:text-blue-400">
+          Total energy consumed across all data halls
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="pt-0 space-y-6">
+        {/* Overall Summary */}
+        <div className="flex items-center justify-between p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+          <div className="space-y-1">
+            <p className="text-3xl font-bold text-blue-800 dark:text-blue-200">
+              {formatPowerValue(monthlyData.totalPower)}
+            </p>
+            <p className="text-sm text-blue-600 dark:text-blue-400">
+              Total energy consumed
+            </p>
+          </div>
+          
+          <div className="text-right space-y-1">
+            <div className="flex items-center gap-1">
+              <TrendingUp 
+                className={`h-4 w-4 ${
+                  monthlyData.percentageChange >= 0 
+                    ? 'text-green-600 dark:text-green-400' 
+                    : 'text-red-600 dark:text-red-400'
+                }`} 
+              />
+              <p className={`text-sm font-medium ${
+                monthlyData.percentageChange >= 0 
+                  ? 'text-green-600 dark:text-green-400' 
+                  : 'text-red-600 dark:text-red-400'
+              }`}>
+                {monthlyData.percentageChange >= 0 ? '+' : ''}
+                {monthlyData.percentageChange.toFixed(1)}%
+              </p>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              vs last month ({formatPowerValue(monthlyData.previousMonth)})
+            </p>
+          </div>
+        </div>
+
+        {/* Individual Data Halls Breakdown */}
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-blue-700 dark:text-blue-300">
+            Individual Data Hall Breakdown
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {["odcdh1", "odcdh2", "odcdh3", "odcdh5"].map((site) => {
+              const data = monthlyData.siteBreakdown[site];
+              if (!data) return null;
+              
+              return (
+                <div
+                  key={site}
+                  className="p-4 bg-white/70 dark:bg-gray-800/70 rounded-lg border border-blue-100 dark:border-blue-800/50"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-blue-800 dark:text-blue-200">
+                      {getSiteDisplayName(site)}
+                    </h4>
+                    <div className="flex items-center gap-1">
+                      <TrendingUp 
+                        className={`h-3 w-3 ${
+                          data.change >= 0 
+                            ? 'text-green-500' 
+                            : 'text-red-500'
+                        }`} 
+                      />
+                      <span className={`text-xs font-medium ${
+                        data.change >= 0 
+                          ? 'text-green-600 dark:text-green-400' 
+                          : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {data.change >= 0 ? '+' : ''}
+                        {data.change.toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <p className="text-xl font-bold text-gray-800 dark:text-gray-200">
+                      {formatPowerValue(data.current)}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Previous: {formatPowerValue(data.previous)}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 };
 
 // --------------- PowerChart (single site) -----------------
@@ -314,7 +564,7 @@ const TemperatureChart = ({ site }: { site: string }) => {
   );
 };
 
-// --------- Main Page: render 2x charts for each site -----------
+// --------- Main Page: render monthly card + charts for each site -----------
 export default function Home() {
   const sites = ["odcdh1", "odcdh2", "odcdh3", "odcdh5"];
 
@@ -323,6 +573,12 @@ export default function Home() {
       <h1 className="text-4xl font-bold mb-4">Overall View</h1>
 
       <div className="w-full max-w-5xl space-y-16">
+        {/* Monthly Power Usage Card */}
+        <MonthlyPowerCard />
+        
+        {/* Monthly Power Data Table */}
+        <MonthlyPowerTable />
+        
         {sites.map((site) => (
           <div key={site}>
             <PowerChart site={site} />
