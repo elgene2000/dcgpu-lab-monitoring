@@ -42,65 +42,73 @@ const MonthlyPowerTable = () => {
     });
   };
 
-  // Get current month and previous months
+  // Get current month and previous months (only last 3 months)
   const getMonthsToDisplay = () => {
     const months = [];
     const currentDate = new Date();
     
-    // Get last 12 months including current month
-    for (let i = 11; i >= 0; i--) {
+    // Get last 3 months including current month
+    for (let i = 2; i >= 0; i--) {
       const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
       months.push(formatMonth(date));
     }
     return months;
   };
 
-  // Fetch historical data from JSON file
+  // Fetch historical data with better error handling
   const fetchHistoricalData = async () => {
     try {
+      console.log('Attempting to fetch historical data...');
       const response = await axios.get(`/api/monthly-power-data`);
+      console.log('Historical data response:', response.data);
       return response.data || [];
     } catch (error) {
       console.error('Error fetching historical data:', error);
+      // If the monthly data endpoint doesn't work, return empty array
+      // The component will still work with live data
       return [];
     }
   };
 
-  // Fetch current month data for each data hall
+  // Fetch current month data using the same method as graphs
   const fetchCurrentMonthData = async () => {
     try {
       const sites = ["odcdh1", "odcdh2", "odcdh3", "odcdh4", "odcdh5"];
       const currentDate = new Date();
       const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
       
-      const promises = sites.map(site =>
-        axios.get(`/api/power`, {
-          params: {
-            site: site,
-            start_date: firstDayOfMonth.toISOString(),
-            end_date: new Date().toISOString() // Current time
-          }
-        })
-      );
+      const promises = sites.map(async (site) => {
+        try {
+          // Use the same API call pattern as the working graphs
+          const response = await axios.get(`/api/power`, {
+            params: {
+              site: site,
+              timeline: "1mnth"
+            }
+          });
+          return { site, data: response.data || [] };
+        } catch (error) {
+          console.error(`Error fetching current month data for ${site}:`, error);
+          return { site, data: [] };
+        }
+      });
       
       const responses = await Promise.all(promises);
       const monthlyTotals: Record<string, number> = {};
       
-      responses.forEach((response, index) => {
-        const site = sites[index];
+      responses.forEach(({ site, data }) => {
         let siteTotal = 0;
         
-        if (response.status === 200 && response.data) {
-          response.data.forEach((reading: any) => {
-            const readingDate = new Date(reading.created);
-            // Only include readings from current month
-            if (readingDate >= firstDayOfMonth) {
-              // Convert power reading to energy (10-minute intervals)
-              const energyWh = (reading.reading || 0) * (10 / 60);
-              siteTotal += energyWh;
-            }
-          });
-        }
+        // Process the data exactly like the working components
+        data.forEach((reading: any) => {
+          const readingDate = new Date(reading.created);
+          // Only include readings from current month
+          if (readingDate >= firstDayOfMonth) {
+            // Convert power reading to energy (10-minute intervals)
+            const energyWh = (reading.reading || 0) * (10 / 60);
+            siteTotal += energyWh;
+          }
+        });
         
         // Convert site names to table column names
         const columnMap: Record<string, string> = {
@@ -121,155 +129,124 @@ const MonthlyPowerTable = () => {
     }
   };
 
-  // Fetch data for a specific month
+  // Fetch data for a specific month (simplified for last 3 months only)
   const fetchMonthData = async (year: number, month: number) => {
     try {
       const sites = ["odcdh1", "odcdh2", "odcdh3", "odcdh4", "odcdh5"];
-      const firstDayOfMonth = new Date(year, month, 1);
-      const lastDayOfMonth = new Date(year, month + 1, 0); // Last day of the month
       
-      const promises = sites.map(site =>
-        axios.get(`/api/power`, {
-          params: {
-            site: site,
-            start_date: firstDayOfMonth.toISOString(),
-            end_date: lastDayOfMonth.toISOString()
-          }
-        })
-      );
-      
-      const responses = await Promise.all(promises);
-      const monthlyTotals: Record<string, number> = {};
-      
-      responses.forEach((response, index) => {
-        const site = sites[index];
-        let siteTotal = 0;
-        
-        if (response.status === 200 && response.data) {
-          response.data.forEach((reading: any) => {
-            const readingDate = new Date(reading.created);
-            // Only include readings from the specified month
-            if (readingDate >= firstDayOfMonth && readingDate <= lastDayOfMonth) {
-              // Convert power reading to energy (10-minute intervals)
-              const energyWh = (reading.reading || 0) * (10 / 60);
-              siteTotal += energyWh;
-            }
-          });
-        }
-        
-        // Convert site names to table column names
-        const columnMap: Record<string, string> = {
-          odcdh1: 'dh1',
-          odcdh2: 'dh2', 
-          odcdh3: 'dh3',
-          odcdh4: 'dh4',
-          odcdh5: 'dh5'
-        };
-        
-        monthlyTotals[columnMap[site]] = siteTotal / 1000; // Convert to kWh
-      });
+      // Use the existing historical data if available, don't make additional API calls
+      // This function is now mainly for fallback
+      const monthlyTotals: Record<string, number> = {
+        dh1: 0, dh2: 0, dh3: 0, dh4: 0, dh5: 0
+      };
       
       return monthlyTotals;
     } catch (error) {
       console.error('Error fetching month data:', error);
-      return {};
+      return { dh1: 0, dh2: 0, dh3: 0, dh4: 0, dh5: 0 };
     }
   };
 
-  // Load all data
+  // Load all data (optimized and with better error handling)
   const loadData = async () => {
     setLoading(true);
     try {
-      const [historicalData, currentMonthTotals] = await Promise.all([
-        fetchHistoricalData(),
-        fetchCurrentMonthData()
-      ]);
-      
       const monthsToDisplay = getMonthsToDisplay();
       const currentMonth = formatMonth(new Date());
+      
+      console.log('Loading data for months:', monthsToDisplay);
+      console.log('Current month:', currentMonth);
+      
+      // Always try to fetch current month data, handle historical data separately
+      const currentMonthTotals = await fetchCurrentMonthData();
+      console.log('Current month totals:', currentMonthTotals);
+      
+      // Try to fetch historical data, but don't fail if it's not available
+      let historicalData = [];
+      try {
+        historicalData = await fetchHistoricalData();
+      } catch (error) {
+        console.warn('Historical data not available, using live data only');
+      }
       
       const tableData: MonthlyData[] = [];
       
       for (const month of monthsToDisplay) {
+        console.log('Processing month:', month);
+        
         // Check if we have historical data for this month
         const existingData = historicalData.find((item: MonthlyData) => item.month === month);
         
         if (existingData) {
+          console.log('Found historical data for', month);
           tableData.push(existingData);
-        } else {
+        } else if (month === currentMonth) {
           // For current month, use live data
-          if (month === currentMonth) {
-            const total = Object.values(currentMonthTotals).reduce((sum, val) => sum + val, 0);
-            tableData.push({
-              month,
-              dh1: currentMonthTotals.dh1 || 0,
-              dh2: currentMonthTotals.dh2 || 0,
-              dh3: currentMonthTotals.dh3 || 0,
-              dh4: currentMonthTotals.dh4 || 0,
-              dh5: currentMonthTotals.dh5 || 0,
-              total,
-              openDcFacilityPower: 0,
-              pue: 0,
-            });
-          } else {
-            // For past months without saved data, fetch from API
-            const monthDate = new Date(month + " 1");
-            const year = monthDate.getFullYear();
-            const monthIndex = monthDate.getMonth();
-            
-            // Only fetch data for months that have passed (not future months)
-            const now = new Date();
-            if (year < now.getFullYear() || (year === now.getFullYear() && monthIndex < now.getMonth())) {
-              const monthData = await fetchMonthData(year, monthIndex);
-              const total = Object.values(monthData).reduce((sum, val) => sum + val, 0);
-              
-              tableData.push({
-                month,
-                dh1: monthData.dh1 || 0,
-                dh2: monthData.dh2 || 0,
-                dh3: monthData.dh3 || 0,
-                dh4: monthData.dh4 || 0,
-                dh5: monthData.dh5 || 0,
-                total,
-                openDcFacilityPower: 0,
-                pue: 0,
-              });
-            } else {
-              // For future months, return empty row
-              tableData.push({
-                month,
-                dh1: 0,
-                dh2: 0,
-                dh3: 0,
-                dh4: 0,
-                dh5: 0,
-                total: 0,
-                openDcFacilityPower: 0,
-                pue: 0,
-              });
-            }
-          }
+          console.log('Using live data for current month:', month);
+          const total = Object.values(currentMonthTotals).reduce((sum, val) => sum + val, 0);
+          tableData.push({
+            month,
+            dh1: currentMonthTotals.dh1 || 0,
+            dh2: currentMonthTotals.dh2 || 0,
+            dh3: currentMonthTotals.dh3 || 0,
+            dh4: currentMonthTotals.dh4 || 0,
+            dh5: currentMonthTotals.dh5 || 0,
+            total,
+            openDcFacilityPower: 0,
+            pue: 0,
+          });
+        } else {
+          // For past months without saved data, show empty row
+          console.log('No data available for past month:', month);
+          tableData.push({
+            month,
+            dh1: 0,
+            dh2: 0,
+            dh3: 0,
+            dh4: 0,
+            dh5: 0,
+            total: 0,
+            openDcFacilityPower: 0,
+            pue: 0,
+          });
         }
       }
       
+      console.log('Final table data:', tableData);
       setData(tableData);
     } catch (error) {
       console.error('Error loading data:', error);
-      alert("Failed to load monthly power data");
+      // Don't show alert for every error, just log it
+      console.warn("Failed to load some monthly power data, showing available data");
+      
+      // Set minimal data so the component doesn't break
+      const monthsToDisplay = getMonthsToDisplay();
+      const fallbackData = monthsToDisplay.map(month => ({
+        month,
+        dh1: 0, dh2: 0, dh3: 0, dh4: 0, dh5: 0,
+        total: 0, openDcFacilityPower: 0, pue: 0,
+      }));
+      setData(fallbackData);
     } finally {
       setLoading(false);
     }
   };
 
-  // Save data to JSON file
+  // Save data with better error handling
   const saveData = async () => {
     setSaving(true);
     try {
-      await axios.post(`/api/monthly-power-data`, { data });
+      console.log('Attempting to save data:', data);
+      const response = await axios.post(`/api/monthly-power-data`, { data });
+      console.log('Save response:', response.data);
       alert("Monthly power data saved successfully");
     } catch (error) {
       console.error('Error saving data:', error);
-      alert("Failed to save data");
+      if (error.response) {
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', error.response.data);
+      }
+      alert("Failed to save data. Check console for details.");
     } finally {
       setSaving(false);
     }
@@ -287,7 +264,7 @@ const MonthlyPowerTable = () => {
     
     const numValue = parseFloat(editValue);
     if (isNaN(numValue) || numValue < 0) {
-      alert("Failed to save data");
+      alert("Please enter a valid number");
       return;
     }
     
@@ -296,7 +273,7 @@ const MonthlyPowerTable = () => {
         if (row.month === editingMonth) {
           const updatedRow = { ...row, openDcFacilityPower: numValue };
           // Recalculate PUE
-          updatedRow.pue = updatedRow.total > 0 ? updatedRow.openDcFacilityPower / updatedRow.total : 0;
+          updatedRow.pue = updatedRow.total > 0 ? (updatedRow.total + updatedRow.openDcFacilityPower) / updatedRow.total : 0;
           return updatedRow;
         }
         return row;
@@ -422,9 +399,10 @@ const MonthlyPowerTable = () => {
           </Table>
         </div>
         <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+          <p>• Showing last 3 months of data for optimal performance</p>
           <p>• Current month data is automatically calculated from live readings</p>
           <p>• Facility Power must be entered manually for each month</p>
-          <p>• PUE (Power Usage Effectiveness) is calculated as Facility Power ÷ Total IT Power</p>
+          <p>• PUE (Power Usage Effectiveness) is calculated as (Total IT Power + Facility Power) ÷ Total IT Power</p>
           <p>• PUE Color coding: Green (&lt;1.5), Yellow (1.5-2.0), Red (&gt;2.0)</p>
         </div>
       </CardContent>

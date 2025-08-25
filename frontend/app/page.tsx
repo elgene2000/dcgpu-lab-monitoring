@@ -63,43 +63,52 @@ const MonthlyPowerCard = () => {
   const fetchMonthlyPowerData = async () => {
     try {
       const sites = ["odcdh1", "odcdh2", "odcdh3", "odcdh5"];
+      
+      // Fetch data for each site using the same method as the graphs
+      const promises = sites.map(async (site) => {
+        try {
+          // Use 1mnth timeline to get last 30 days of data
+          const response = await axios.get(`/api/power`, {
+            params: {
+              site: site,
+              timeline: "1mnth"
+            }
+          });
+          return { site, data: response.data || [] };
+        } catch (error) {
+          console.error(`Error fetching data for ${site}:`, error);
+          return { site, data: [] };
+        }
+      });
+      
+      const responses = await Promise.all(promises);
+      
+      // Calculate totals for current and previous month
       const currentDate = new Date();
-      const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      const firstDayOfCurrentMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
       const firstDayOfPrevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
       const lastDayOfPrevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
       
-      // Fetch current month data for all sites
-      const currentMonthPromises = sites.map(site =>
-        axios.get(`/api/power?site=${site}&timeline=1mnth`)
-      );
-      
-      const currentMonthResponses = await Promise.all(currentMonthPromises);
-      
-      // Calculate totals for each site and overall
       let currentMonthTotal = 0;
       let previousMonthTotal = 0;
       const siteBreakdown: Record<string, { current: number; previous: number; change: number }> = {};
 
-      currentMonthResponses.forEach((response, index) => {
-        const site = sites[index];
+      responses.forEach(({ site, data }) => {
         let siteCurrentTotal = 0;
         let sitePreviousTotal = 0;
 
-        if (response.status === 200 && response.data) {
-          response.data.forEach((reading: any) => {
-            const readingDate = new Date(reading.created);
-            // Convert power reading to energy consumption
-            // Each reading represents 10 minutes = 10/60 = 0.1667 hours
-            const energyWh = (reading.reading || 0) * (10 / 60); // Watt-hours
-            
-            if (readingDate >= firstDayOfMonth) {
-              siteCurrentTotal += energyWh;
-            }
-            if (readingDate >= firstDayOfPrevMonth && readingDate <= lastDayOfPrevMonth) {
-              sitePreviousTotal += energyWh;
-            }
-          });
-        }
+        data.forEach((reading: any) => {
+          const readingDate = new Date(reading.created);
+          // Convert power reading to energy consumption (10-minute intervals)
+          const energyWh = (reading.reading || 0) * (10 / 60); // Watt-hours
+          
+          if (readingDate >= firstDayOfCurrentMonth) {
+            siteCurrentTotal += energyWh;
+          }
+          if (readingDate >= firstDayOfPrevMonth && readingDate <= lastDayOfPrevMonth) {
+            sitePreviousTotal += energyWh;
+          }
+        });
 
         const siteChange = sitePreviousTotal > 0 
           ? ((siteCurrentTotal - sitePreviousTotal) / sitePreviousTotal) * 100 
@@ -302,12 +311,16 @@ const PowerChart = ({ site }: { site: string }) => {
 
   const fetchPower = async () => {
     try {
-      const response = await axios.get(
-        `/api/power?site=${site}&timeline=${selectedRange}`
-      );
+      const response = await axios.get(`/api/power`, {
+        params: {
+          site: site,
+          timeline: selectedRange
+        }
+      });
       setData(response.data || []);
     } catch (e) {
-      console.error(e);
+      console.error("Error fetching power data:", e);
+      setData([]);
     }
   };
 
@@ -335,7 +348,7 @@ const PowerChart = ({ site }: { site: string }) => {
     fetchPower();
     const interval = setInterval(fetchPower, 60000);
     return () => clearInterval(interval);
-  }, [selectedRange]);
+  }, [selectedRange, site]);
 
   return (
     <Card className="w-full relative overflow-hidden min-h-64 mb-6">
@@ -440,12 +453,16 @@ const TemperatureChart = ({ site }: { site: string }) => {
 
   const fetchTemp = async () => {
     try {
-      const response = await axios.get(
-        `/api/temperature?site=${site}&timeline=${selectedRange}`
-      );
+      const response = await axios.get(`/api/temperature`, {
+        params: {
+          site: site,
+          timeline: selectedRange
+        }
+      });
       setData(response.data || []);
     } catch (e) {
-      console.error(e);
+      console.error("Error fetching temperature data:", e);
+      setData([]);
     }
   };
 
@@ -472,7 +489,7 @@ const TemperatureChart = ({ site }: { site: string }) => {
     fetchTemp();
     const interval = setInterval(fetchTemp, 60000);
     return () => clearInterval(interval);
-  }, [selectedRange]);
+  }, [selectedRange, site]);
 
   return (
     <Card className="w-full relative overflow-hidden min-h-64">
@@ -576,7 +593,7 @@ export default function Home() {
         {/* Monthly Power Usage Card */}
         <MonthlyPowerCard />
         
-        {/* Monthly Power Data Table */}
+        {/* Monthly Power Data Table*/} 
         <MonthlyPowerTable />
         
         {sites.map((site) => (
