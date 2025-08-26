@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/chart";
 import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { useTheme } from "next-themes";
-import { Zap, TrendingUp } from "lucide-react";
+import { Zap, TrendingUp, AlertTriangle } from "lucide-react";
 import { MonthlyPowerTable } from "@/components/monthly-power-table";
 
 const chartColors = [
@@ -39,7 +39,7 @@ const getTemperatureColor = (location: string) => {
   return chartColors[0];
 };
 
-// Monthly Power Usage Card Component
+// Monthly Power Usage Card Component with batched queries
 const MonthlyPowerCard = () => {
   const { theme } = useTheme();
   const [monthlyData, setMonthlyData] = useState<{
@@ -52,6 +52,7 @@ const MonthlyPowerCard = () => {
       change: number;
     }>;
     loading: boolean;
+    error?: string;
   }>({
     totalPower: 0,
     previousMonth: 0,
@@ -63,65 +64,89 @@ const MonthlyPowerCard = () => {
   const fetchMonthlyPowerData = async () => {
     try {
       const sites = ["odcdh1", "odcdh2", "odcdh3", "odcdh5"];
+      const currentDate = new Date();
+      const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      const firstDayOfPrevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+      const lastDayOfPrevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
       
-      // Fetch data for each site using the same method as the graphs
-      const promises = sites.map(async (site) => {
+      // Use the updated API with batched queries (timeline=1mnth handles batching internally)
+      const promises = sites.map(async site => {
         try {
-          // Use 1mnth timeline to get last 30 days of data
           const response = await axios.get(`/api/power`, {
             params: {
               site: site,
-              timeline: "1mnth"
+              timeline: "1mnth" // Backend automatically handles batching for this timeline
             }
           });
-          return { site, data: response.data || [] };
+          
+          if (response.status === 200 && response.data) {
+            let siteCurrentTotal = 0;
+            let sitePreviousTotal = 0;
+
+            response.data.forEach((reading: any) => {
+              const readingDate = new Date(reading.created);
+              // Convert power reading to energy consumption
+              // Each reading represents 10 minutes = 10/60 = 0.1667 hours
+              const energyWh = (reading.reading || 0) * (10 / 60); // Watt-hours
+              
+              if (readingDate >= firstDayOfMonth) {
+                siteCurrentTotal += energyWh;
+              }
+              if (readingDate >= firstDayOfPrevMonth && readingDate <= lastDayOfPrevMonth) {
+                sitePreviousTotal += energyWh;
+              }
+            });
+
+            const siteChange = sitePreviousTotal > 0 
+              ? ((siteCurrentTotal - sitePreviousTotal) / sitePreviousTotal) * 100 
+              : 0;
+
+            return {
+              site,
+              current: siteCurrentTotal,
+              previous: sitePreviousTotal,
+              change: siteChange,
+              success: true
+            };
+          }
+          
+          return {
+            site,
+            current: 0,
+            previous: 0,
+            change: 0,
+            success: false
+          };
         } catch (error) {
           console.error(`Error fetching data for ${site}:`, error);
-          return { site, data: [] };
+          return {
+            site,
+            current: 0,
+            previous: 0,
+            change: 0,
+            success: false
+          };
         }
       });
       
-      const responses = await Promise.all(promises);
-      
-      // Calculate totals for current and previous month
-      const currentDate = new Date();
-      const firstDayOfCurrentMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-      const firstDayOfPrevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-      const lastDayOfPrevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
+      const results = await Promise.all(promises);
       
       let currentMonthTotal = 0;
       let previousMonthTotal = 0;
       const siteBreakdown: Record<string, { current: number; previous: number; change: number }> = {};
+      let failedSites = 0;
 
-      responses.forEach(({ site, data }) => {
-        let siteCurrentTotal = 0;
-        let sitePreviousTotal = 0;
-
-        data.forEach((reading: any) => {
-          const readingDate = new Date(reading.created);
-          // Convert power reading to energy consumption (10-minute intervals)
-          const energyWh = (reading.reading || 0) * (10 / 60); // Watt-hours
-          
-          if (readingDate >= firstDayOfCurrentMonth) {
-            siteCurrentTotal += energyWh;
-          }
-          if (readingDate >= firstDayOfPrevMonth && readingDate <= lastDayOfPrevMonth) {
-            sitePreviousTotal += energyWh;
-          }
-        });
-
-        const siteChange = sitePreviousTotal > 0 
-          ? ((siteCurrentTotal - sitePreviousTotal) / sitePreviousTotal) * 100 
-          : 0;
-
+      results.forEach(({ site, current, previous, change, success }) => {
+        if (!success) failedSites++;
+        
         siteBreakdown[site] = {
-          current: siteCurrentTotal,
-          previous: sitePreviousTotal,
-          change: siteChange,
+          current,
+          previous,
+          change,
         };
 
-        currentMonthTotal += siteCurrentTotal;
-        previousMonthTotal += sitePreviousTotal;
+        currentMonthTotal += current;
+        previousMonthTotal += previous;
       });
 
       const percentageChange = previousMonthTotal > 0 
@@ -134,10 +159,15 @@ const MonthlyPowerCard = () => {
         percentageChange,
         siteBreakdown,
         loading: false,
+        error: failedSites > 0 ? `Warning: ${failedSites} site(s) failed to load data` : undefined
       });
     } catch (error) {
       console.error("Error fetching monthly power data:", error);
-      setMonthlyData(prev => ({ ...prev, loading: false }));
+      setMonthlyData(prev => ({ 
+        ...prev, 
+        loading: false,
+        error: "Failed to load monthly power data due to query limitations"
+      }));
     }
   };
 
@@ -184,7 +214,7 @@ const MonthlyPowerCard = () => {
             <Zap className="h-5 w-5" />
             Monthly Power Usage
           </CardTitle>
-          <CardDescription>Loading current month data...</CardDescription>
+          <CardDescription>Loading current month data using batched queries...</CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
@@ -201,7 +231,13 @@ const MonthlyPowerCard = () => {
           Monthly Power Usage - {currentMonth}
         </CardTitle>
         <CardDescription className="text-blue-600 dark:text-blue-400">
-          Total energy consumed across all data halls
+          Total energy consumed across all data halls (using batched queries)
+          {monthlyData.error && (
+            <div className="flex items-center gap-1 mt-1 text-amber-600 dark:text-amber-400">
+              <AlertTriangle className="h-3 w-3" />
+              <span className="text-xs">{monthlyData.error}</span>
+            </div>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-0 space-y-6">
@@ -296,7 +332,7 @@ const MonthlyPowerCard = () => {
   );
 };
 
-// --------------- PowerChart (single site) -----------------
+// --------------- PowerChart (single site) with improved error handling -----------------
 const PowerChart = ({ site }: { site: string }) => {
   const { theme } = useTheme();
 
@@ -304,6 +340,7 @@ const PowerChart = ({ site }: { site: string }) => {
   const [filtered, setFiltered] = useState<any[]>([]);
   const [config, setConfig] = useState<any>({});
   const [highlightedKey, setHighlightedKey] = useState<string>();
+  const [error, setError] = useState<string>();
 
   const [selectedRange, setSelectedRange] = useState<"24h" | "7d" | "1mnth">(
     "24h"
@@ -311,16 +348,14 @@ const PowerChart = ({ site }: { site: string }) => {
 
   const fetchPower = async () => {
     try {
-      const response = await axios.get(`/api/power`, {
-        params: {
-          site: site,
-          timeline: selectedRange
-        }
-      });
+      setError(undefined);
+      const response = await axios.get(
+        `/api/power?site=${site}&timeline=${selectedRange}`
+      );
       setData(response.data || []);
     } catch (e) {
-      console.error("Error fetching power data:", e);
-      setData([]);
+      console.error(e);
+      setError(`Failed to load power data for ${site.toUpperCase()}`);
     }
   };
 
@@ -348,97 +383,121 @@ const PowerChart = ({ site }: { site: string }) => {
     fetchPower();
     const interval = setInterval(fetchPower, 60000);
     return () => clearInterval(interval);
-  }, [selectedRange, site]);
+  }, [selectedRange]);
 
   return (
     <Card className="w-full relative overflow-hidden min-h-64 mb-6">
       <CardHeader className="text-left">
         <CardTitle>Combined Power Overview ({site.toUpperCase()})</CardTitle>
-        <CardDescription>Power data for {site.toUpperCase()}</CardDescription>
+        <CardDescription>
+          Power data for {site.toUpperCase()} 
+          {selectedRange === "1mnth" && " (using batched queries for large date range)"}
+          {error && (
+            <div className="flex items-center gap-1 mt-1 text-red-600 dark:text-red-400">
+              <AlertTriangle className="h-3 w-3" />
+              <span className="text-xs">{error}</span>
+            </div>
+          )}
+        </CardDescription>
       </CardHeader>
       <CardContent className="mt-4">
-        <ChartContainer config={config} className="aspect-auto h-[300px] w-full">
-          <LineChart data={filtered}>
-            <CartesianGrid
-              vertical={false}
-              stroke={theme === "dark" ? "#424C5E" : "#D9DEE3"}
-            />
-            <XAxis
-              dataKey="created"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              minTickGap={32}
-              tick={{
-                fill: theme === "dark" ? "#CBD5E1" : "#334155",
-              }}
-              tickFormatter={(value) =>
-                new Date(value).toLocaleDateString("en-US", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  month: "2-digit",
-                  day: "numeric",
-                  hour12: false,
-                  timeZone: "UTC",
-                })
-              }
-            />
-            <YAxis
-              width={35}
-              axisLine={{ stroke: theme === "dark" ? "#424C5E" : "#D9DEE3" }}
-              tickLine={{ stroke: theme === "dark" ? "#424C5E" : "#D9DEE3" }}
-              tick={{ fill: theme === "dark" ? "#CBD5E1" : "#334155" }}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={
-                <ChartTooltipContent
-                  labelFormatter={(value) =>
-                    new Date(value).toLocaleDateString("en-US", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      month: "short",
-                      day: "numeric",
-                      hour12: false,
-                      timeZone: "UTC",
-                    })
-                  }
-                  indicator="dot"
-                />
-              }
-            />
-            {Object.keys(config).map((location, index) => {
-              const isHighlighted =
-                !highlightedKey || highlightedKey === location;
-              return (
-                <Line
-                  key={location}
-                  dataKey={location}
-                  type="monotone"
-                  stroke={chartColors[index % chartColors.length]}
-                  strokeWidth={highlightedKey === location ? 4 : 2}
-                  dot={false}
-                  opacity={isHighlighted ? 1 : 0.3}
-                  style={{ transition: "opacity 0.2s, stroke-width 0.2s" }}
-                />
-              );
-            })}
-            <ChartLegend
-              content={
-                <ChartLegendContent
-                  onLegendHover={setHighlightedKey}
-                  highlightedKey={highlightedKey}
-                />
-              }
-            />
-          </LineChart>
-        </ChartContainer>
+        {error ? (
+          <div className="flex items-center justify-center h-[300px] text-gray-500 dark:text-gray-400">
+            <div className="text-center space-y-2">
+              <AlertTriangle className="h-8 w-8 mx-auto" />
+              <p>Unable to load power data</p>
+              <button 
+                onClick={fetchPower}
+                className="text-blue-600 dark:text-blue-400 underline hover:no-underline"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        ) : (
+          <ChartContainer config={config} className="aspect-auto h-[300px] w-full">
+            <LineChart data={filtered}>
+              <CartesianGrid
+                vertical={false}
+                stroke={theme === "dark" ? "#424C5E" : "#D9DEE3"}
+              />
+              <XAxis
+                dataKey="created"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                minTickGap={32}
+                tick={{
+                  fill: theme === "dark" ? "#CBD5E1" : "#334155",
+                }}
+                tickFormatter={(value) =>
+                  new Date(value).toLocaleDateString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    month: "2-digit",
+                    day: "numeric",
+                    hour12: false,
+                    timeZone: "UTC",
+                  })
+                }
+              />
+              <YAxis
+                width={35}
+                axisLine={{ stroke: theme === "dark" ? "#424C5E" : "#D9DEE3" }}
+                tickLine={{ stroke: theme === "dark" ? "#424C5E" : "#D9DEE3" }}
+                tick={{ fill: theme === "dark" ? "#CBD5E1" : "#334155" }}
+              />
+              <ChartTooltip
+                cursor={false}
+                content={
+                  <ChartTooltipContent
+                    labelFormatter={(value) =>
+                      new Date(value).toLocaleDateString("en-US", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        month: "short",
+                        day: "numeric",
+                        hour12: false,
+                        timeZone: "UTC",
+                      })
+                    }
+                    indicator="dot"
+                  />
+                }
+              />
+              {Object.keys(config).map((location, index) => {
+                const isHighlighted =
+                  !highlightedKey || highlightedKey === location;
+                return (
+                  <Line
+                    key={location}
+                    dataKey={location}
+                    type="monotone"
+                    stroke={chartColors[index % chartColors.length]}
+                    strokeWidth={highlightedKey === location ? 4 : 2}
+                    dot={false}
+                    opacity={isHighlighted ? 1 : 0.3}
+                    style={{ transition: "opacity 0.2s, stroke-width 0.2s" }}
+                  />
+                );
+              })}
+              <ChartLegend
+                content={
+                  <ChartLegendContent
+                    onLegendHover={setHighlightedKey}
+                    highlightedKey={highlightedKey}
+                  />
+                }
+              />
+            </LineChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   );
 };
 
-// --------------- TemperatureChart (single site) -----------------
+// --------------- TemperatureChart (single site) with improved error handling -----------------
 const TemperatureChart = ({ site }: { site: string }) => {
   const { theme } = useTheme();
 
@@ -446,6 +505,7 @@ const TemperatureChart = ({ site }: { site: string }) => {
   const [filtered, setFiltered] = useState<any[]>([]);
   const [config, setConfig] = useState<any>({});
   const [highlightedKey, setHighlightedKey] = useState<string>();
+  const [error, setError] = useState<string>();
 
   const [selectedRange, setSelectedRange] = useState<"24h" | "7d" | "1mnth">(
     "24h"
@@ -453,16 +513,14 @@ const TemperatureChart = ({ site }: { site: string }) => {
 
   const fetchTemp = async () => {
     try {
-      const response = await axios.get(`/api/temperature`, {
-        params: {
-          site: site,
-          timeline: selectedRange
-        }
-      });
+      setError(undefined);
+      const response = await axios.get(
+        `/api/temperature?site=${site}&timeline=${selectedRange}`
+      );
       setData(response.data || []);
     } catch (e) {
-      console.error("Error fetching temperature data:", e);
-      setData([]);
+      console.error(e);
+      setError(`Failed to load temperature data for ${site.toUpperCase()}`);
     }
   };
 
@@ -489,7 +547,7 @@ const TemperatureChart = ({ site }: { site: string }) => {
     fetchTemp();
     const interval = setInterval(fetchTemp, 60000);
     return () => clearInterval(interval);
-  }, [selectedRange, site]);
+  }, [selectedRange]);
 
   return (
     <Card className="w-full relative overflow-hidden min-h-64">
@@ -497,85 +555,108 @@ const TemperatureChart = ({ site }: { site: string }) => {
         <CardTitle>
           Combined Temperature Overview ({site.toUpperCase()})
         </CardTitle>
-        <CardDescription>Temperature data for {site.toUpperCase()}</CardDescription>
+        <CardDescription>
+          Temperature data for {site.toUpperCase()}
+          {error && (
+            <div className="flex items-center gap-1 mt-1 text-red-600 dark:text-red-400">
+              <AlertTriangle className="h-3 w-3" />
+              <span className="text-xs">{error}</span>
+            </div>
+          )}
+        </CardDescription>
       </CardHeader>
       <CardContent className="mt-4">
-        <ChartContainer config={config} className="aspect-auto h-[300px] w-full">
-          <LineChart data={filtered}>
-            <CartesianGrid
-              vertical={false}
-              stroke={theme === "dark" ? "#424C5E" : "#D9DEE3"}
-            />
-            <XAxis
-              dataKey="created"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              minTickGap={32}
-              tick={{
-                fill: theme === "dark" ? "#CBD5E1" : "#334155",
-              }}
-              tickFormatter={(value) =>
-                new Date(value).toLocaleDateString("en-US", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  month: "2-digit",
-                  day: "numeric",
-                  hour12: false,
-                  timeZone: "UTC",
-                })
-              }
-            />
-            <YAxis
-              width={35}
-              axisLine={{ stroke: theme === "dark" ? "#424C5E" : "#D9DEE3" }}
-              tickLine={{ stroke: theme === "dark" ? "#424C5E" : "#D9DEE3" }}
-              tick={{ fill: theme === "dark" ? "#CBD5E1" : "#334155" }}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={
-                <ChartTooltipContent
-                  labelFormatter={(value) =>
-                    new Date(value).toLocaleDateString("en-US", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      month: "short",
-                      day: "numeric",
-                      hour12: false,
-                      timeZone: "UTC",
-                    })
-                  }
-                  indicator="dot"
-                />
-              }
-            />
-            {Object.keys(config).map((location, index) => {
-              const isHighlighted =
-                !highlightedKey || highlightedKey === location;
-              return (
-                <Line
-                  key={location}
-                  dataKey={location}
-                  type="monotone"
-                  stroke={getTemperatureColor(location)}
-                  strokeWidth={highlightedKey === location ? 4 : 2}
-                  dot={false}
-                  opacity={isHighlighted ? 1 : 0.3}
-                  style={{ transition: "opacity 0.2s, stroke-width 0.2s" }}
-                />
-              );
-            })}
-            <ChartLegend
-              content={
-                <ChartLegendContent
-                  onLegendHover={setHighlightedKey}
-                  highlightedKey={highlightedKey}
-                />
-              }
-            />
-          </LineChart>
-        </ChartContainer>
+        {error ? (
+          <div className="flex items-center justify-center h-[300px] text-gray-500 dark:text-gray-400">
+            <div className="text-center space-y-2">
+              <AlertTriangle className="h-8 w-8 mx-auto" />
+              <p>Unable to load temperature data</p>
+              <button 
+                onClick={fetchTemp}
+                className="text-blue-600 dark:text-blue-400 underline hover:no-underline"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        ) : (
+          <ChartContainer config={config} className="aspect-auto h-[300px] w-full">
+            <LineChart data={filtered}>
+              <CartesianGrid
+                vertical={false}
+                stroke={theme === "dark" ? "#424C5E" : "#D9DEE3"}
+              />
+              <XAxis
+                dataKey="created"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                minTickGap={32}
+                tick={{
+                  fill: theme === "dark" ? "#CBD5E1" : "#334155",
+                }}
+                tickFormatter={(value) =>
+                  new Date(value).toLocaleDateString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    month: "2-digit",
+                    day: "numeric",
+                    hour12: false,
+                    timeZone: "UTC",
+                  })
+                }
+              />
+              <YAxis
+                width={35}
+                axisLine={{ stroke: theme === "dark" ? "#424C5E" : "#D9DEE3" }}
+                tickLine={{ stroke: theme === "dark" ? "#424C5E" : "#D9DEE3" }}
+                tick={{ fill: theme === "dark" ? "#CBD5E1" : "#334155" }}
+              />
+              <ChartTooltip
+                cursor={false}
+                content={
+                  <ChartTooltipContent
+                    labelFormatter={(value) =>
+                      new Date(value).toLocaleDateString("en-US", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        month: "short",
+                        day: "numeric",
+                        hour12: false,
+                        timeZone: "UTC",
+                      })
+                    }
+                    indicator="dot"
+                  />
+                }
+              />
+              {Object.keys(config).map((location, index) => {
+                const isHighlighted =
+                  !highlightedKey || highlightedKey === location;
+                return (
+                  <Line
+                    key={location}
+                    dataKey={location}
+                    type="monotone"
+                    stroke={getTemperatureColor(location)}
+                    strokeWidth={highlightedKey === location ? 4 : 2}
+                    dot={false}
+                    opacity={isHighlighted ? 1 : 0.3}
+                    style={{ transition: "opacity 0.2s, stroke-width 0.2s" }}
+                  />
+                );
+              })}
+              <ChartLegend
+                content={
+                  <ChartLegendContent
+                    onLegendHover={setHighlightedKey}
+                    highlightedKey={highlightedKey}
+                  />
+                }
+              />
+            </LineChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   );

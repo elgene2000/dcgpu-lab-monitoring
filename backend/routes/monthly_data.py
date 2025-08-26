@@ -39,6 +39,50 @@ def save_monthly_data(data):
         print(f"Error saving monthly data: {e}")
         return False
 
+def get_date_batches(start_date, end_date, max_days=7):
+    """Split a date range into batches of max_days or less"""
+    batches = []
+    current_start = start_date
+    
+    while current_start < end_date:
+        # Calculate the end of current batch
+        current_end = min(current_start + timedelta(days=max_days), end_date)
+        batches.append((current_start, current_end))
+        current_start = current_end
+    
+    return batches
+
+def query_power_data_for_month(site, start_date, end_date):
+    """Query power data for a specific month using batched queries"""
+    power = Power()
+    all_readings = []
+    
+    # Split the month into batches of 7 days or less
+    batches = get_date_batches(start_date, end_date)
+    
+    print(f"Querying {site} from {start_date} to {end_date} in {len(batches)} batches")
+    
+    for batch_start, batch_end in batches:
+        try:
+            query_filter = {
+                "site": site,
+                "created": {
+                    "$gte": batch_start,
+                    "$lt": batch_end
+                }
+            }
+            
+            batch_readings = power.find(query_filter, sort=[("created", 1)])
+            all_readings.extend(batch_readings)
+            print(f"  Batch {batch_start.strftime('%Y-%m-%d')} to {batch_end.strftime('%Y-%m-%d')}: {len(batch_readings)} readings")
+            
+        except Exception as e:
+            print(f"Error querying batch {batch_start} to {batch_end} for {site}: {e}")
+            # Continue with other batches even if one fails
+            continue
+    
+    return all_readings
+
 def auto_save_previous_month():
     """Automatically save previous month's data if not already saved"""
     try:
@@ -61,21 +105,15 @@ def auto_save_previous_month():
         
         print(f"Auto-saving data for {previous_month}")
         
-        # Fetch previous month data for all sites
+        # Fetch previous month data for all sites using batched queries
         sites = ["odcdh1", "odcdh2", "odcdh3", "odcdh4", "odcdh5"]
         site_totals = {}
         
         for site in sites:
-            power = Power()
-            query_filter = {
-                "site": site,
-                "created": {
-                    "$gte": first_day_previous,
-                    "$lt": first_day_current
-                }
-            }
+            print(f"Processing site: {site}")
             
-            readings = power.find(query_filter, sort=[("created", 1)])
+            # Use batched query for the entire previous month
+            readings = query_power_data_for_month(site, first_day_previous, first_day_current)
             site_total = 0
             
             for reading in readings:
@@ -92,6 +130,7 @@ def auto_save_previous_month():
                 "odcdh5": "dh5"
             }
             site_totals[column_map[site]] = site_total / 1000  # Convert to kWh
+            print(f"  {site} total: {site_total / 1000:.2f} kWh")
         
         # Calculate total
         total = sum(site_totals.values())
