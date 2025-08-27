@@ -53,7 +53,7 @@ export const MonthlyPowerProvider = ({ children }: MonthlyPowerProviderProps) =>
       setData(prev => ({ ...prev, loading: true, error: undefined }));
       
       // Single API call for monthly summary
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/power/monthly-summary`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/power/monthly-summary`, {
         params: { sites: "odcdh1,odcdh2,odcdh3,odcdh4,odcdh5" }
       });
       

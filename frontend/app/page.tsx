@@ -216,7 +216,7 @@ const PowerChart = ({ site }: { site: string }) => {
     try {
       setError(undefined);
       const response = await axios.get(
-        `/api/power?site=${site}&timeline=${selectedRange}`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/power?site=${site}&timeline=${selectedRange}`
       );
       setData(response.data || []);
     } catch (e) {
@@ -381,7 +381,7 @@ const TemperatureChart = ({ site }: { site: string }) => {
     try {
       setError(undefined);
       const response = await axios.get(
-        `/api/temperature?site=${site}&timeline=${selectedRange}`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/temperature?site=${site}&timeline=${selectedRange}`
       );
       setData(response.data || []);
     } catch (e) {
