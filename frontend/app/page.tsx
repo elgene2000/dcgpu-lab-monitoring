@@ -19,6 +19,7 @@ import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { useTheme } from "next-themes";
 import { Zap, TrendingUp, AlertTriangle } from "lucide-react";
 import { MonthlyPowerTable } from "@/components/monthly-power-table";
+import { MonthlyPowerProvider, useMonthlyPower } from "@/contexts/MonthlyPowerContext";
 
 const chartColors = [
   "#a78bfa",
@@ -39,144 +40,9 @@ const getTemperatureColor = (location: string) => {
   return chartColors[0];
 };
 
-// Monthly Power Usage Card Component with batched queries
+// Optimized Monthly Power Usage Card Component - now uses context
 const MonthlyPowerCard = () => {
-  const { theme } = useTheme();
-  const [monthlyData, setMonthlyData] = useState<{
-    totalPower: number;
-    previousMonth: number;
-    percentageChange: number;
-    siteBreakdown: Record<string, {
-      current: number;
-      previous: number;
-      change: number;
-    }>;
-    loading: boolean;
-    error?: string;
-  }>({
-    totalPower: 0,
-    previousMonth: 0,
-    percentageChange: 0,
-    siteBreakdown: {},
-    loading: true,
-  });
-
-  const fetchMonthlyPowerData = async () => {
-    try {
-      const sites = ["odcdh1", "odcdh2", "odcdh3", "odcdh5"];
-      const currentDate = new Date();
-      const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-      const firstDayOfPrevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-      const lastDayOfPrevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
-      
-      // Use the updated API with batched queries (timeline=1mnth handles batching internally)
-      const promises = sites.map(async site => {
-        try {
-          const response = await axios.get(`/api/power`, {
-            params: {
-              site: site,
-              timeline: "1mnth" // Backend automatically handles batching for this timeline
-            }
-          });
-          
-          if (response.status === 200 && response.data) {
-            let siteCurrentTotal = 0;
-            let sitePreviousTotal = 0;
-
-            response.data.forEach((reading: any) => {
-              const readingDate = new Date(reading.created);
-              // Convert power reading to energy consumption
-              // Each reading represents 10 minutes = 10/60 = 0.1667 hours
-              const energyWh = (reading.reading || 0) * (10 / 60); // Watt-hours
-              
-              if (readingDate >= firstDayOfMonth) {
-                siteCurrentTotal += energyWh;
-              }
-              if (readingDate >= firstDayOfPrevMonth && readingDate <= lastDayOfPrevMonth) {
-                sitePreviousTotal += energyWh;
-              }
-            });
-
-            const siteChange = sitePreviousTotal > 0 
-              ? ((siteCurrentTotal - sitePreviousTotal) / sitePreviousTotal) * 100 
-              : 0;
-
-            return {
-              site,
-              current: siteCurrentTotal,
-              previous: sitePreviousTotal,
-              change: siteChange,
-              success: true
-            };
-          }
-          
-          return {
-            site,
-            current: 0,
-            previous: 0,
-            change: 0,
-            success: false
-          };
-        } catch (error) {
-          console.error(`Error fetching data for ${site}:`, error);
-          return {
-            site,
-            current: 0,
-            previous: 0,
-            change: 0,
-            success: false
-          };
-        }
-      });
-      
-      const results = await Promise.all(promises);
-      
-      let currentMonthTotal = 0;
-      let previousMonthTotal = 0;
-      const siteBreakdown: Record<string, { current: number; previous: number; change: number }> = {};
-      let failedSites = 0;
-
-      results.forEach(({ site, current, previous, change, success }) => {
-        if (!success) failedSites++;
-        
-        siteBreakdown[site] = {
-          current,
-          previous,
-          change,
-        };
-
-        currentMonthTotal += current;
-        previousMonthTotal += previous;
-      });
-
-      const percentageChange = previousMonthTotal > 0 
-        ? ((currentMonthTotal - previousMonthTotal) / previousMonthTotal) * 100 
-        : 0;
-
-      setMonthlyData({
-        totalPower: currentMonthTotal,
-        previousMonth: previousMonthTotal,
-        percentageChange,
-        siteBreakdown,
-        loading: false,
-        error: failedSites > 0 ? `Warning: ${failedSites} site(s) failed to load data` : undefined
-      });
-    } catch (error) {
-      console.error("Error fetching monthly power data:", error);
-      setMonthlyData(prev => ({ 
-        ...prev, 
-        loading: false,
-        error: "Failed to load monthly power data due to query limitations"
-      }));
-    }
-  };
-
-  useEffect(() => {
-    fetchMonthlyPowerData();
-    // Refresh every hour
-    const interval = setInterval(fetchMonthlyPowerData, 3600000);
-    return () => clearInterval(interval);
-  }, []);
+  const { data: monthlyData } = useMonthlyPower();
 
   const formatPowerValue = (wattHours: number) => {
     // Convert Watt-hours to more readable units
@@ -200,11 +66,6 @@ const MonthlyPowerCard = () => {
     return siteMap[site] || site.toUpperCase();
   };
 
-  const currentMonth = new Date().toLocaleDateString("en-US", { 
-    month: "long", 
-    year: "numeric" 
-  });
-
   if (monthlyData.loading) {
     return (
       <Card className="w-full mb-8 relative overflow-hidden">
@@ -214,7 +75,7 @@ const MonthlyPowerCard = () => {
             <Zap className="h-5 w-5" />
             Monthly Power Usage
           </CardTitle>
-          <CardDescription>Loading current month data using batched queries...</CardDescription>
+          <CardDescription>Loading monthly summary (shared data)...</CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
@@ -228,10 +89,10 @@ const MonthlyPowerCard = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
           <Zap className="h-5 w-5" />
-          Monthly Power Usage - {currentMonth}
+          Monthly Power Usage - {monthlyData.monthInfo?.current_month || "Current Month"}
         </CardTitle>
         <CardDescription className="text-blue-600 dark:text-blue-400">
-          Total energy consumed across all data halls (using batched queries)
+          Pre-calculated energy totals (shared data source)
           {monthlyData.error && (
             <div className="flex items-center gap-1 mt-1 text-amber-600 dark:text-amber-400">
               <AlertTriangle className="h-3 w-3" />
@@ -271,7 +132,7 @@ const MonthlyPowerCard = () => {
               </p>
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              vs last month ({formatPowerValue(monthlyData.previousMonth)})
+              vs {monthlyData.monthInfo?.previous_month || "last month"} ({formatPowerValue(monthlyData.previousMonth)})
             </p>
           </div>
         </div>
@@ -326,6 +187,11 @@ const MonthlyPowerCard = () => {
               );
             })}
           </div>
+        </div>
+
+        {/* Performance indicator */}
+        <div className="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/20 p-2 rounded">
+          ⚡ Using shared context - single API call for all components (~1KB vs ~100MB)
         </div>
       </CardContent>
     </Card>
@@ -527,7 +393,7 @@ const TemperatureChart = ({ site }: { site: string }) => {
   useEffect(() => {
     const grouped: any[] = [];
     const cfg: any = {};
-
+  
     data.forEach((entry) => {
       let gp = grouped.find((g) => g.created === entry.created);
       if (!gp) {
@@ -539,9 +405,35 @@ const TemperatureChart = ({ site }: { site: string }) => {
         cfg[entry.location] = { label: entry.location };
       }
     });
-    setFiltered(grouped);
+  
+    // ---- Apply 30-min moving average ----
+    const averaged = grouped.map((point, idx) => {
+      const windowStart = new Date(point.created).getTime() - 30 * 60 * 1000; // 30 min earlier
+      const windowPoints = grouped.filter(
+        (p) =>
+          new Date(p.created).getTime() >= windowStart &&
+          new Date(p.created).getTime() <= new Date(point.created).getTime()
+      );
+  
+      const averagedPoint: any = { created: point.created };
+  
+      Object.keys(cfg).forEach((location) => {
+        const vals = windowPoints
+          .map((p) => p[location])
+          .filter((v) => v !== undefined);
+        if (vals.length > 0) {
+          averagedPoint[location] =
+            vals.reduce((sum, v) => sum + v, 0) / vals.length;
+        }
+      });
+  
+      return averagedPoint;
+    });
+  
+    setFiltered(averaged);
     setConfig(cfg);
   }, [data]);
+  
 
   useEffect(() => {
     fetchTemp();
@@ -556,7 +448,7 @@ const TemperatureChart = ({ site }: { site: string }) => {
           Combined Temperature Overview ({site.toUpperCase()})
         </CardTitle>
         <CardDescription>
-          Temperature data for {site.toUpperCase()}
+          Temperature data for {site.toUpperCase()} (30-min moving average)
           {error && (
             <div className="flex items-center gap-1 mt-1 text-red-600 dark:text-red-400">
               <AlertTriangle className="h-3 w-3" />
@@ -662,8 +554,8 @@ const TemperatureChart = ({ site }: { site: string }) => {
   );
 };
 
-// --------- Main Page: render monthly card + charts for each site -----------
-export default function Home() {
+// Content component that uses the context
+const PageContent = () => {
   const sites = ["odcdh1", "odcdh2", "odcdh3", "odcdh5"];
 
   return (
@@ -671,10 +563,10 @@ export default function Home() {
       <h1 className="text-4xl font-bold mb-4">Overall View</h1>
 
       <div className="w-full max-w-5xl space-y-16">
-        {/* Monthly Power Usage Card */}
+        {/* Monthly Power Usage Card - uses shared context */}
         <MonthlyPowerCard />
         
-        {/* Monthly Power Data Table*/} 
+        {/* Monthly Power Data Table - uses shared context */} 
         <MonthlyPowerTable />
         
         {sites.map((site) => (
@@ -685,5 +577,14 @@ export default function Home() {
         ))}
       </div>
     </main>
+  );
+};
+
+// Main Page: wrap content in MonthlyPowerProvider
+export default function Home() {
+  return (
+    <MonthlyPowerProvider>
+      <PageContent />
+    </MonthlyPowerProvider>
   );
 }

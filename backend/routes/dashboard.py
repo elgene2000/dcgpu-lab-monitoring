@@ -63,7 +63,7 @@ def get_site_total_power():
             elif timeline == "7d":
                 start_time = start_time - relativedelta(days=7)
             elif timeline == "1mnth":
-                start_time = start_time - relativedelta(days=30)
+                start_time = start_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
             query_filter["created"] = {"$gte": start_time}
 
         if site_total_power:

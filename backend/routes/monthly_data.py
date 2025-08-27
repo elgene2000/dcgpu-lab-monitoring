@@ -202,3 +202,43 @@ def trigger_auto_save():
         return {"status": "success", "message": "Auto-save completed"}
     except Exception as e:
         return {"status": "error", "data": str(e)}
+
+
+@monthly_data.route("/compare", methods=["GET"])
+def compare_months():
+    try:
+        site = request.args.get("site")
+        if not site:
+            return {"status": "error", "message": "site parameter required"}, 400
+
+        current_date = datetime.now()
+        first_day_current = datetime(current_date.year, current_date.month, 1)
+        first_day_previous = first_day_current - relativedelta(months=1)
+        last_day_previous = first_day_current - timedelta(days=1)
+
+        # Query both months in batches
+        readings_current = query_power_data_for_month(site, first_day_current, current_date)
+        readings_previous = query_power_data_for_month(site, first_day_previous, first_day_current)
+
+        def total_energy(readings):
+            total = 0
+            for r in readings:
+                energy_wh = r.get("reading", 0) * (10 / 60)  # convert to Wh
+                total += energy_wh
+            return total / 1000  # kWh
+
+        site_current_total = total_energy(readings_current)
+        site_previous_total = total_energy(readings_previous)
+
+        site_change = site_previous_total > 0 and (
+            (site_current_total - site_previous_total) / site_previous_total * 100
+        ) or 0
+
+        return {
+            "site": site,
+            "current": site_current_total,
+            "previous": site_previous_total,
+            "change": site_change,
+        }
+    except Exception as e:
+        return {"status": "error", "data": str(e)}, 500

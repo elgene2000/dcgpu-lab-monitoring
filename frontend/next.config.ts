@@ -8,11 +8,16 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: "/api/:path*",
-        destination: "http://localhost:5000/:path*", // Proxy to backend in dev
+        source: "/api/:path*",  // catches "power/monthly-summary"
+        destination: "http://localhost:5000/:path*", 
+      },
+      {
+        source: "/api/power/:path*", // explicit rule for power endpoints
+        destination: "http://localhost:5000/power/:path*",
       },
     ];
-  },
+  }
+  
 };
 
 export default nextConfig;

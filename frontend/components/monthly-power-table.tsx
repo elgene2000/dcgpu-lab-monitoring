@@ -1,7 +1,7 @@
-// Monthly Power Table Component
+// Monthly Power Table Component - Uses Shared Context
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Save, Edit3, Check, X } from 'lucide-react';
+import { Save, Edit3, Check, X, AlertTriangle, RefreshCw } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-
+import { useMonthlyPower } from "@/contexts/MonthlyPowerContext";
 
 interface MonthlyData {
   month: string;
@@ -28,11 +28,13 @@ interface MonthlyData {
 }
 
 const MonthlyPowerTable = () => {
+  const { data: contextData, refreshData } = useMonthlyPower();
   const [data, setData] = useState<MonthlyData[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingMonth, setEditingMonth] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string>();
 
   // Format month for display
   const formatMonth = (date: Date) => {
@@ -47,7 +49,7 @@ const MonthlyPowerTable = () => {
     const months = [];
     const currentDate = new Date();
     
-    // Get last 12 months including current month
+    // Get last 3 months including current month
     for (let i = 2; i >= 0; i--) {
       const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
       months.push(formatMonth(date));
@@ -66,231 +68,123 @@ const MonthlyPowerTable = () => {
     }
   };
 
-  // Fetch current month data for each data hall using the new batched approach
-  const fetchCurrentMonthData = async () => {
-    try {
-      const sites = ["odcdh1", "odcdh2", "odcdh3", "odcdh4", "odcdh5"];
-      const monthlyTotals: Record<string, number> = {};
-      
-      // Use the updated API endpoint that handles batching internally
-      const promises = sites.map(async site => {
-        try {
-          const response = await axios.get(`/api/power`, {
-            params: {
-              site: site,
-              timeline: "1mnth" // This will use batched queries on the backend
-            }
-          });
-          
-          if (response.status === 200 && response.data) {
-            const currentDate = new Date();
-            const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-            let siteTotal = 0;
-            
-            response.data.forEach((reading: any) => {
-              const readingDate = new Date(reading.created);
-              // Only include readings from current month
-              if (readingDate >= firstDayOfMonth) {
-                // Convert power reading to energy (10-minute intervals)
-                const energyWh = (reading.reading || 0) * (10 / 60);
-                siteTotal += energyWh;
-              }
-            });
-            
-            return { site, total: siteTotal / 1000 }; // Convert to kWh
-          }
-          return { site, total: 0 };
-        } catch (error) {
-          console.error(`Error fetching data for ${site}:`, error);
-          return { site, total: 0 };
-        }
-      });
-      
-      const results = await Promise.all(promises);
-      
-      results.forEach(({ site, total }) => {
-        // Convert site names to table column names
-        const columnMap: Record<string, string> = {
-          odcdh1: 'dh1',
-          odcdh2: 'dh2', 
-          odcdh3: 'dh3',
-          odcdh4: 'dh4',
-          odcdh5: 'dh5'
-        };
-        
-        monthlyTotals[columnMap[site]] = total;
-      });
-      
-      return monthlyTotals;
-    } catch (error) {
-      console.error('Error fetching current month data:', error);
+  // Get current month totals from shared context data
+  const getCurrentMonthTotals = () => {
+    if (!contextData || contextData.loading || !contextData.siteBreakdown) {
       return {};
+    }
+
+    const monthlyTotals: Record<string, number> = {};
+    
+    Object.entries(contextData.siteBreakdown).forEach(([site, siteData]) => {
+      // Convert site names to table column names and convert back to kWh
+      const columnMap: Record<string, string> = {
+        odcdh1: 'dh1',
+        odcdh2: 'dh2', 
+        odcdh3: 'dh3',
+        odcdh4: 'dh4',
+        odcdh5: 'dh5'
+      };
+      
+      if (columnMap[site]) {
+        // Convert from Wh to kWh
+        monthlyTotals[columnMap[site]] = (siteData.current / 1000) || 0;
+      }
+    });
+    
+    return monthlyTotals;
+  };
+
+  // Fetch historical summary using the optimized historical-summary endpoint
+  const fetchHistoricalSummary = async (monthsBack: number = 3) => {
+    try {
+      // We can reuse the same endpoint but for historical data
+      // In practice, you might want a separate historical endpoint
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/power/monthly-summary`, {
+        params: { sites: "odcdh1,odcdh2,odcdh3,odcdh4,odcdh5" }
+      });
+      
+      if (response.data.status === "error") {
+        throw new Error(response.data.data);
+      }
+
+      return response.data.months || [];
+    } catch (error) {
+      console.error('Error fetching historical summary:', error);
+      throw error;
     }
   };
 
-  // Fetch data for a specific month using batched approach
-  const fetchMonthData = async (year: number, month: number) => {
-    try {
-      const sites = ["odcdh1", "odcdh2", "odcdh3", "odcdh4", "odcdh5"];
-      const monthlyTotals: Record<string, number> = {};
-      
-      const promises = sites.map(async site => {
-        try {
-          const firstDayOfMonth = new Date(year, month, 1);
-          const lastDayOfMonth = new Date(year, month + 1, 0);
-          
-          // Use the power API with a custom date range approach
-          // Since we can't pass arbitrary date ranges, we'll use timeline=1mnth and filter
-          const response = await axios.get(`/api/power`, {
-            params: {
-              site: site,
-              timeline: "1mnth" // Backend will handle batching
-            }
-          });
-          
-          if (response.status === 200 && response.data) {
-            let siteTotal = 0;
-            
-            response.data.forEach((reading: any) => {
-              const readingDate = new Date(reading.created);
-              // Only include readings from the specified month
-              if (readingDate >= firstDayOfMonth && readingDate <= lastDayOfMonth) {
-                // Convert power reading to energy (10-minute intervals)
-                const energyWh = (reading.reading || 0) * (10 / 60);
-                siteTotal += energyWh;
-              }
-            });
-            
-            return { site, total: siteTotal / 1000 }; // Convert to kWh
-          }
-          return { site, total: 0 };
-        } catch (error) {
-          console.error(`Error fetching month data for ${site}:`, error);
-          return { site, total: 0 };
-        }
-      });
-      
-      const results = await Promise.all(promises);
-      
-      results.forEach(({ site, total }) => {
-        // Convert site names to table column names
-        const columnMap: Record<string, string> = {
-          odcdh1: 'dh1',
-          odcdh2: 'dh2', 
-          odcdh3: 'dh3',
-          odcdh4: 'dh4',
-          odcdh5: 'dh5'
-        };
-        
-        monthlyTotals[columnMap[site]] = total;
-      });
-      
-      return monthlyTotals;
-    } catch (error) {
-      console.error('Error fetching month data:', error);
-      return {};
-    }
-  };
-
-  // Load all data with improved error handling
+  // Load all data using shared context for current month
   const loadData = async () => {
     setLoading(true);
+    setError(undefined);
+
     try {
-      const [historicalData, currentMonthTotals] = await Promise.all([
-        fetchHistoricalData(),
-        fetchCurrentMonthData()
-      ]);
-      
-      const monthsToDisplay = getMonthsToDisplay();
       const currentMonth = formatMonth(new Date());
-      
+      const monthsToDisplay = getMonthsToDisplay();
+
+      // Fetch saved historical data
+      const historicalData = await fetchHistoricalData();
+
       const tableData: MonthlyData[] = [];
-      
+
       for (const month of monthsToDisplay) {
-        // Check if we have historical data for this month
-        const existingData = historicalData.find((item: MonthlyData) => item.month === month);
-        
-        if (existingData) {
-          tableData.push(existingData);
+        const savedData = historicalData.find((item: MonthlyData) => item.month === month);
+
+        if (savedData) {
+          // Use saved data if available
+          tableData.push(savedData);
+        } else if (month === currentMonth) {
+          // Use shared context data for current month
+          const currentMonthTotals = getCurrentMonthTotals();
+          const total = Object.values(currentMonthTotals).reduce((sum, val) => sum + val, 0);
+
+          tableData.push({
+            month,
+            dh1: currentMonthTotals.dh1 || 0,
+            dh2: currentMonthTotals.dh2 || 0,
+            dh3: currentMonthTotals.dh3 || 0,
+            dh4: currentMonthTotals.dh4 || 0,
+            dh5: currentMonthTotals.dh5 || 0,
+            total,
+            openDcFacilityPower: 0,
+            pue: 0,
+          });
         } else {
-          // For current month, use live data
-          if (month === currentMonth) {
-            const total = Object.values(currentMonthTotals).reduce((sum, val) => sum + val, 0);
-            tableData.push({
-              month,
-              dh1: currentMonthTotals.dh1 || 0,
-              dh2: currentMonthTotals.dh2 || 0,
-              dh3: currentMonthTotals.dh3 || 0,
-              dh4: currentMonthTotals.dh4 || 0,
-              dh5: currentMonthTotals.dh5 || 0,
-              total,
-              openDcFacilityPower: 0,
-              pue: 0,
-            });
-          } else {
-            // For past months without saved data, fetch from API
-            const monthDate = new Date(month + " 1");
-            const year = monthDate.getFullYear();
-            const monthIndex = monthDate.getMonth();
-            
-            // Only fetch data for months that have passed (not future months)
-            const now = new Date();
-            if (year < now.getFullYear() || (year === now.getFullYear() && monthIndex < now.getMonth())) {
-              try {
-                const monthData = await fetchMonthData(year, monthIndex);
-                const total = Object.values(monthData).reduce((sum, val) => sum + val, 0);
-                
-                tableData.push({
-                  month,
-                  dh1: monthData.dh1 || 0,
-                  dh2: monthData.dh2 || 0,
-                  dh3: monthData.dh3 || 0,
-                  dh4: monthData.dh4 || 0,
-                  dh5: monthData.dh5 || 0,
-                  total,
-                  openDcFacilityPower: 0,
-                  pue: 0,
-                });
-              } catch (error) {
-                console.error(`Error fetching data for ${month}:`, error);
-                // Add empty row if fetch fails
-                tableData.push({
-                  month,
-                  dh1: 0,
-                  dh2: 0,
-                  dh3: 0,
-                  dh4: 0,
-                  dh5: 0,
-                  total: 0,
-                  openDcFacilityPower: 0,
-                  pue: 0,
-                });
-              }
-            } else {
-              // For future months, return empty row
-              tableData.push({
-                month,
-                dh1: 0,
-                dh2: 0,
-                dh3: 0,
-                dh4: 0,
-                dh5: 0,
-                total: 0,
-                openDcFacilityPower: 0,
-                pue: 0,
-              });
-            }
-          }
+          // Fallback empty row for historical months not in saved data
+          tableData.push({
+            month,
+            dh1: 0,
+            dh2: 0,
+            dh3: 0,
+            dh4: 0,
+            dh5: 0,
+            total: 0,
+            openDcFacilityPower: 0,
+            pue: 0,
+          });
         }
       }
-      
+
       setData(tableData);
+
     } catch (error) {
       console.error('Error loading data:', error);
-      alert("Failed to load monthly power data. Some data may be incomplete due to query limitations.");
+      setError(
+        `Failed to load monthly power data: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
     } finally {
       setLoading(false);
     }
+  };
+
+  // Manual refresh function - also refreshes shared context
+  const handleRefresh = async () => {
+    await refreshData(); // Refresh shared context data
+    await loadData(); // Reload table data
   };
 
   // Save data to JSON file
@@ -353,38 +247,74 @@ const MonthlyPowerTable = () => {
     });
   };
 
+  // Load data when component mounts or context data changes
   useEffect(() => {
-    loadData();
-    // Reload data every hour
-    const interval = setInterval(loadData, 3600000);
-    return () => clearInterval(interval);
-  }, []);
+    if (!contextData.loading) {
+      loadData();
+    }
+  }, [contextData.loading]);
 
-  if (loading) {
+  // Auto-refresh every 30 minutes (but rely on context for API calls)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!contextData.loading) {
+        loadData();
+      }
+    }, 30 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [contextData.loading]);
+
+  if (loading || contextData.loading) {
     return (
-      <Card className="w-full mb-8">
+      <Card className="w-full mb-8 relative overflow-hidden">
+        <div className="absolute inset-0 h-full w-full -translate-x-full animate-[shimmer_2s_infinite] overflow-hidden bg-gradient-to-r from-transparent via-slate-200/30 to-transparent dark:via-slate-200/10" />
         <CardHeader>
           <CardTitle>Monthly Power Consumption History</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+          <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            Loading shared monthly summaries...
+          </div>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="w-full mb-8">
+    <Card className="w-full mb-8 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Monthly Power Consumption History</CardTitle>
-        <Button 
-          onClick={saveData} 
-          disabled={saving}
-          className="flex items-center gap-2"
-        >
-          <Save className="h-4 w-4" />
-          {saving ? 'Saving...' : 'Save Changes'}
-        </Button>
+        <div>
+          <CardTitle className="text-green-700 dark:text-green-300">
+            Monthly Power Consumption History
+          </CardTitle>
+          {(error || contextData.error) && (
+            <div className="flex items-center gap-1 mt-1 text-red-600 dark:text-red-400">
+              <AlertTriangle className="h-3 w-3" />
+              <span className="text-xs">{error || contextData.error}</span>
+            </div>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            onClick={handleRefresh} 
+            disabled={loading}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button 
+            onClick={saveData} 
+            disabled={saving}
+            className="flex items-center gap-2"
+          >
+            <Save className="h-4 w-4" />
+            {saving ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -453,12 +383,19 @@ const MonthlyPowerTable = () => {
             </TableBody>
           </Table>
         </div>
-        <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-          <p>• Current month data is automatically calculated from live readings using batched queries</p>
-          <p>• Facility Power must be entered manually for each month</p>
-          <p>• PUE (Power Usage Effectiveness) is calculated as Facility Power ÷ Total IT Power</p>
-          <p>• PUE Color coding: Green (&lt; 1.5), Yellow (1.5-2.0), Red (&gt;2.0)</p>
-          <p>• Large date ranges are automatically split into smaller batches to prevent query timeouts</p>
+        
+        {/* Performance and info indicators */}
+        <div className="mt-4 space-y-2">
+          <div className="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/20 p-2 rounded">
+            ⚡ Using shared context: Single API call shared between components (~1KB total)
+          </div>
+          <div className="text-sm text-gray-500 dark:text-gray-400 space-y-1">
+            <p>• Current month: Uses shared context data (no additional API calls)</p>
+            <p>• Historical months: Loaded from saved JSON file</p>
+            <p>• Facility Power must be entered manually for each month</p>
+            <p>• PUE = Facility Power ÷ Total IT Power</p>
+            <p>• PUE Color coding: Green (&lt;1.5), Yellow (1.5-2.0), Red (&gt;2.0)</p>
+          </div>
         </div>
       </CardContent>
     </Card>

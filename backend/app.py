@@ -19,5 +19,6 @@ app.register_blueprint(systems, url_prefix="/systems")
 app.register_blueprint(monthly_data, url_prefix="/monthly-power-data")
 
 
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
