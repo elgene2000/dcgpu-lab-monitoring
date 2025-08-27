@@ -12,11 +12,11 @@ CORS(
     origins="*",
 )
 
-app.register_blueprint(power, url_prefix="/api/power")
-app.register_blueprint(temperature, url_prefix="/api/temperature")
-app.register_blueprint(dashboard, url_prefix="/api/dashboard")
-app.register_blueprint(systems, url_prefix="/api/systems")
-app.register_blueprint(monthly_data, url_prefix="/api/monthly-power-data")
+app.register_blueprint(power, url_prefix="/power")
+app.register_blueprint(temperature, url_prefix="/temperature")
+app.register_blueprint(dashboard, url_prefix="/dashboard")
+app.register_blueprint(systems, url_prefix="/systems")
+app.register_blueprint(monthly_data, url_prefix="/monthly-power-data")
 
 
 
