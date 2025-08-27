@@ -60,7 +60,7 @@ const MonthlyPowerTable = () => {
   // Fetch historical data from JSON file
   const fetchHistoricalData = async () => {
     try {
-      const response = await axios.get(`/api/monthly-power-data`);
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/monthly-power-data`);
       return response.data || [];
     } catch (error) {
       console.error('Error fetching historical data:', error);
