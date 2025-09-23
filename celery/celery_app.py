@@ -2,6 +2,10 @@ import tasks
 import os
 from celery import Celery
 from datetime import timedelta
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Celery(
     "celery_app",
@@ -26,5 +30,9 @@ app.conf.beat_schedule = {
     "fetch_temperature": {
         "task": "tasks.cron.fetch_temperature_data",
         "schedule": timedelta(minutes=10),
+    },
+    "fetch_system_temperature": {
+        "task": "tasks.cron.fetch_system_temperature_data",
+        "schedule": timedelta(minutes=15),  # Run every 15 minutes for system temps
     },
 }

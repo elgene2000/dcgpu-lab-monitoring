@@ -1,1 +1,1 @@
-version: 1.7-fixed
+version: 1.8

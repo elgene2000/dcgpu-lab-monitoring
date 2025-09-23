@@ -4,6 +4,7 @@ from routes.temperature import temperature
 from routes.dashboard import dashboard
 from routes.systems import systems
 from routes.monthly_data import monthly_data
+from routes.system_temperature import system_temperature
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -12,6 +13,8 @@ CORS(
     origins="*",
 )
 
+
+app.register_blueprint(system_temperature, url_prefix="/api/system-temperature")
 app.register_blueprint(power, url_prefix="/api/power")
 app.register_blueprint(temperature, url_prefix="/api/temperature")
 app.register_blueprint(dashboard, url_prefix="/api/dashboard")
