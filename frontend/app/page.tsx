@@ -41,6 +41,7 @@ const getTemperatureColor = (location: string) => {
 };
 
 // Optimized Monthly Power Usage Card Component - now uses context
+// Optimized Monthly Power Usage Card Component - now uses context
 const MonthlyPowerCard = () => {
   const { data: monthlyData } = useMonthlyPower();
 
@@ -102,37 +103,14 @@ const MonthlyPowerCard = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-0 space-y-6">
-        {/* Overall Summary */}
-        <div className="flex items-center justify-between p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
-          <div className="space-y-1">
+        {/* Overall Summary - Removed comparison section */}
+        <div className="flex items-center justify-center p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+          <div className="space-y-1 text-center">
             <p className="text-3xl font-bold text-blue-800 dark:text-blue-200">
               {formatPowerValue(monthlyData.totalPower)}
             </p>
             <p className="text-sm text-blue-600 dark:text-blue-400">
-              Total energy consumed
-            </p>
-          </div>
-          
-          <div className="text-right space-y-1">
-            <div className="flex items-center gap-1">
-              <TrendingUp 
-                className={`h-4 w-4 ${
-                  monthlyData.percentageChange >= 0 
-                    ? 'text-green-600 dark:text-green-400' 
-                    : 'text-red-600 dark:text-red-400'
-                }`} 
-              />
-              <p className={`text-sm font-medium ${
-                monthlyData.percentageChange >= 0 
-                  ? 'text-green-600 dark:text-green-400' 
-                  : 'text-red-600 dark:text-red-400'
-              }`}>
-                {monthlyData.percentageChange >= 0 ? '+' : ''}
-                {monthlyData.percentageChange.toFixed(1)}%
-              </p>
-            </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              vs {monthlyData.monthInfo?.previous_month || "last month"} ({formatPowerValue(monthlyData.previousMonth)})
+              Total energy consumed this month
             </p>
           </div>
         </div>
@@ -156,23 +134,6 @@ const MonthlyPowerCard = () => {
                     <h4 className="font-medium text-blue-800 dark:text-blue-200">
                       {getSiteDisplayName(site)}
                     </h4>
-                    <div className="flex items-center gap-1">
-                      <TrendingUp 
-                        className={`h-3 w-3 ${
-                          data.change >= 0 
-                            ? 'text-green-500' 
-                            : 'text-red-500'
-                        }`} 
-                      />
-                      <span className={`text-xs font-medium ${
-                        data.change >= 0 
-                          ? 'text-green-600 dark:text-green-400' 
-                          : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {data.change >= 0 ? '+' : ''}
-                        {data.change.toFixed(1)}%
-                      </span>
-                    </div>
                   </div>
                   
                   <div className="space-y-1">
@@ -180,7 +141,7 @@ const MonthlyPowerCard = () => {
                       {formatPowerValue(data.current)}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Previous: {formatPowerValue(data.previous)}
+                      Current month total
                     </p>
                   </div>
                 </div>

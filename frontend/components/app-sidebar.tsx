@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Factory, Moon } from "lucide-react";
+import { Home, Factory, Moon, Thermometer } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Fragment } from "react";
 import {
@@ -28,6 +28,12 @@ const items = [
     title: "Home",
     url: "/",
     icon: Home,
+    activeIndicator: "",
+  },
+  {
+    title: "System Temperatures",
+    url: "/system-temperatures",
+    icon: Thermometer,
     activeIndicator: "",
   },
   {
