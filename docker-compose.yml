@@ -45,7 +45,7 @@ services:
     env_file:
       - ./celery/.env
     volumes:
-      - ./celery/ipmi_credentials.json:./ipmi_credentials.json:ro
+      - ./celery/ipmi_credentials.json:/app/ipmi_credentials.json:ro
     depends_on:
       - redis
 

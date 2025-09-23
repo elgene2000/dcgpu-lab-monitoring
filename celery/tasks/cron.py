@@ -120,108 +120,90 @@ def fetch_system_temperature_via_ipmi(bmc_ip: str, username: str, password: str)
 
 def parse_ipmi_credentials():
     """
-    Parse IPMI credentials from environment variable in the new format.
-    
-    Expected format: [["system", "bmc_ip", "username", "password"], ...]
-    
-    Returns a dictionary mapping system names to their credentials.
+    Parse IPMI credentials from environment variable or file.
+    Tries multiple file paths to handle different environments.
     """
     import ast
     import json
     
-    # Debug: Print ALL environment variables related to IPMI
-    print("=== DEBUGGING ENVIRONMENT VARIABLES ===")
-    for key, value in os.environ.items():
-        if 'IPMI' in key.upper():
-            print(f"Found env var: {key} = {repr(value)}")
+    # Try different file paths in order of preference
+    possible_paths = [
+        os.environ.get("IPMI_CREDENTIALS_FILE"),  # Environment variable path
+        "/app/ipmi_credentials.json",             # Docker container path
+        "./ipmi_credentials.json",                # Local relative path
+        "ipmi_credentials.json",                  # Current directory
+        os.path.join(os.path.dirname(__file__), 'ipmi_credentials.json'),  # Same dir as script
+    ]
     
-    # Also check for common variations
-    common_vars = ['IPMI_CREDENTIALS', 'IPMI_CREDENTIALS_JSON', 'IPMI_CREDENTIALS_FILE']
-    for var in common_vars:
-        val = os.environ.get(var)
-        print(f"{var}: {'FOUND' if val else 'NOT FOUND'} - {repr(val) if val else 'None'}")
+    # Remove None values and duplicates while preserving order
+    paths_to_try = []
+    for path in possible_paths:
+        if path and path not in paths_to_try:
+            paths_to_try.append(path)
     
-    print("=== END DEBUG INFO ===")
+    print("=== IPMI CREDENTIALS LOADING DEBUG ===")
+    print(f"Will try these paths in order: {paths_to_try}")
     
-    # Try different environment variable formats
+    # Try environment variables first (same as before)
     ipmi_credentials_str = os.environ.get("IPMI_CREDENTIALS")
     ipmi_credentials_json = os.environ.get("IPMI_CREDENTIALS_JSON")
-    ipmi_credentials_file = os.environ.get("IPMI_CREDENTIALS_FILE")
     
     credential_list = None
     
-    # Try to load from file first
-    if ipmi_credentials_file:
+    # Try JSON format from environment
+    if ipmi_credentials_json:
         try:
-            print(f"Loading credentials from file: {ipmi_credentials_file}")
-            
-            # Check if file exists
-            if not os.path.exists(ipmi_credentials_file):
-                print(f"ERROR: File does not exist: {ipmi_credentials_file}")
-                print(f"Current working directory: {os.getcwd()}")
-                print(f"Absolute path would be: {os.path.abspath(ipmi_credentials_file)}")
-                
-                # Try some common alternative paths
-                alternative_paths = [
-                    os.path.join(os.getcwd(), 'ipmi_credentials.json'),
-                    os.path.join(os.path.dirname(__file__), 'ipmi_credentials.json'),
-                    os.path.join(os.path.dirname(__file__), '..', 'ipmi_credentials.json'),
-                    './ipmi_credentials.json'
-                ]
-                
-                print("Checking alternative paths:")
-                for alt_path in alternative_paths:
-                    abs_alt_path = os.path.abspath(alt_path)
-                    exists = os.path.exists(abs_alt_path)
-                    print(f"  {abs_alt_path}: {'EXISTS' if exists else 'NOT FOUND'}")
-                    if exists:
-                        ipmi_credentials_file = abs_alt_path
-                        print(f"Using alternative path: {ipmi_credentials_file}")
-                        break
-                else:
-                    print("No alternative paths found")
-                    return {}
-            
-            with open(ipmi_credentials_file, 'r') as f:
-                content = f.read()
-                print(f"File content preview: {content[:200]}...")
-                credential_list = json.loads(content)
-            print(f"Successfully loaded {len(credential_list)} credential sets from file")
-        except FileNotFoundError as e:
-            print(f"File not found error: {e}")
-            return {}
-        except json.JSONDecodeError as e:
-            print(f"JSON decode error: {e}")
-            return {}
-        except Exception as e:
-            print(f"Error loading credentials from file: {e}")
-            return {}
-    
-    # Try JSON format
-    if not credential_list and ipmi_credentials_json:
-        try:
-            print("Parsing credentials from JSON format")
+            print("Parsing credentials from JSON environment variable")
             credential_list = json.loads(ipmi_credentials_json)
-            print("Successfully parsed JSON credentials")
+            print("Successfully parsed JSON credentials from environment")
         except Exception as e:
-            print(f"Error parsing JSON credentials: {e}")
+            print(f"Error parsing JSON credentials from environment: {e}")
     
-    # Try Python literal format
+    # Try Python literal format from environment
     if not credential_list and ipmi_credentials_str:
         try:
-            print("Parsing credentials from Python literal format")
-            # Clean up the string - remove extra whitespace and newlines
+            print("Parsing credentials from Python literal environment variable")
             cleaned_str = ipmi_credentials_str.strip().replace('\n', '').replace('\r', '')
             credential_list = ast.literal_eval(cleaned_str)
-            print("Successfully parsed Python literal credentials")
+            print("Successfully parsed Python literal credentials from environment")
         except Exception as e:
-            print(f"Error parsing Python literal credentials: {e}")
+            print(f"Error parsing Python literal credentials from environment: {e}")
+    
+    # Try loading from files if environment variables didn't work
+    if not credential_list:
+        for file_path in paths_to_try:
+            try:
+                print(f"Trying to load credentials from: {file_path}")
+                
+                if not os.path.exists(file_path):
+                    print(f"File does not exist: {file_path}")
+                    continue
+                
+                with open(file_path, 'r') as f:
+                    content = f.read()
+                    print(f"File found, content length: {len(content)} characters")
+                    credential_list = json.loads(content)
+                    print(f"Successfully loaded {len(credential_list)} credential sets from: {file_path}")
+                    break  # Stop trying other paths once we find a working file
+                    
+            except FileNotFoundError:
+                print(f"File not found: {file_path}")
+                continue
+            except json.JSONDecodeError as e:
+                print(f"JSON decode error in {file_path}: {e}")
+                continue
+            except Exception as e:
+                print(f"Error loading credentials from {file_path}: {e}")
+                continue
     
     if not credential_list:
-        print("ERROR: No IPMI credentials found in any format!")
+        print("ERROR: No IPMI credentials found in any location!")
         print("Expected format: [['system','bmc_ip','username','password'], ...]")
+        print("Tried environment variables: IPMI_CREDENTIALS, IPMI_CREDENTIALS_JSON, IPMI_CREDENTIALS_FILE")
+        print(f"Tried file paths: {paths_to_try}")
         return {}
     
+    # Rest of the function remains the same...
     credentials_dict = {}
     try:
         if not isinstance(credential_list, list):
@@ -246,7 +228,6 @@ def parse_ipmi_credentials():
                 print(f"Empty values in credential set {i+1}: {credential_set}")
                 continue
             
-            # Build credential dictionary
             credentials_dict[system_name] = {
                 "bmc_ip": bmc_ip,
                 "username": username,
