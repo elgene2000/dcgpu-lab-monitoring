@@ -4,4 +4,4 @@ __pycache__/
 letsencrypt/
 dumps/
 ssb/
-ipmi_credentials.json
+**/ipmi_credentials.json
