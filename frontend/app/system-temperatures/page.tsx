@@ -94,14 +94,18 @@ const SystemTemperaturesPage = () => {
   };
 
   const formatTimestamp = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "Asia/Kuala_Lumpur",
-    });
+    const d = new Date(timestamp);
+  
+    // Extract raw parts (using UTC so we don't shift timezones)
+    const year = d.getUTCFullYear();
+    const month = d.toLocaleString("en-US", { month: "short", timeZone: "UTC" });
+    const day = d.getUTCDate();
+    const hours = d.getUTCHours().toString().padStart(2, "0");
+    const minutes = d.getUTCMinutes().toString().padStart(2, "0");
+  
+    return `${month} ${day} ${year}, ${hours}:${minutes}`;
   };
+  
 
   const getTimeAgo = (timestamp: string) => {
     const now = new Date();
