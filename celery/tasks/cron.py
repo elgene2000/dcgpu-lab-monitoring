@@ -4,6 +4,7 @@ import redis
 import asyncio
 import subprocess
 import re
+import requests
 from datetime import datetime
 from celery import shared_task
 from utils.models.pdu import PDU
@@ -12,6 +13,10 @@ from utils.models.temperature import Temperature
 from utils.models.systems import Systems
 from puresnmp import Client, V2C, ObjectIdentifier as OID
 from dotenv import load_dotenv
+import urllib3
+
+# Disable SSL warnings for self-signed certificates
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Import SystemTemperature model with error handling
 try:
@@ -75,18 +80,21 @@ def fetch_gpu_temperatures_redfish(bmc_ip: str, username: str, password: str, sy
         try:
             if system_type == 'smci':
                 # SMCI: GPUs numbered 1-8
-                cmd = f'''curl -k -u {username}:{password} https://{bmc_ip}/redfish/v1/Chassis/1/Thermal'''
+                url = f"https://{bmc_ip}/redfish/v1/Chassis/1/Thermal"
                 
-                result = subprocess.run(
-                    cmd, shell=True, capture_output=True, text=True, timeout=30
+                response = requests.get(
+                    url, 
+                    auth=(username, password), 
+                    verify=False, 
+                    timeout=30
                 )
                 
-                if result.returncode != 0:
-                    print(f"SMCI curl failed for {bmc_ip}: {result.stderr}")
+                if response.status_code != 200:
+                    print(f"SMCI request failed for {bmc_ip}: HTTP {response.status_code}")
                     return None
                 
                 try:
-                    thermal_data = json.loads(result.stdout)
+                    thermal_data = response.json()
                     gpu_temps = [None] * 8  # Initialize with None for 8 GPUs
                     
                     # Look for UBB GPU Temp in temperatures array
@@ -109,18 +117,21 @@ def fetch_gpu_temperatures_redfish(bmc_ip: str, username: str, password: str, sy
                     
             elif system_type == 'miramar':
                 # Miramar: GPUs numbered 0-7
-                cmd = f'''curl -s -k -u {username}:{password} https://{bmc_ip}/redfish/v1/Chassis/Miramar_Sensor/Thermal'''
+                url = f"https://{bmc_ip}/redfish/v1/Chassis/Miramar_Sensor/Thermal"
                 
-                result = subprocess.run(
-                    cmd, shell=True, capture_output=True, text=True, timeout=30
+                response = requests.get(
+                    url, 
+                    auth=(username, password), 
+                    verify=False, 
+                    timeout=30
                 )
                 
-                if result.returncode != 0:
-                    print(f"Miramar curl failed for {bmc_ip}: {result.stderr}")
+                if response.status_code != 200:
+                    print(f"Miramar request failed for {bmc_ip}: HTTP {response.status_code}")
                     return None
                 
                 try:
-                    thermal_data = json.loads(result.stdout)
+                    thermal_data = response.json()
                     gpu_temps = [None] * 8  # Initialize with None for 8 GPUs
                     
                     # Look for TEMP_MI300_GPU{0-7} sensors
@@ -144,18 +155,21 @@ def fetch_gpu_temperatures_redfish(bmc_ip: str, username: str, password: str, sy
                     
             elif system_type == 'gbt':
                 # Gigabyte: GPUs numbered 0-7
-                cmd = f'''curl -k -u {username}:{password} https://{bmc_ip}/redfish/v1/Chassis/1/Thermal'''
+                url = f"https://{bmc_ip}/redfish/v1/Chassis/1/Thermal"
                 
-                result = subprocess.run(
-                    cmd, shell=True, capture_output=True, text=True, timeout=30
+                response = requests.get(
+                    url, 
+                    auth=(username, password), 
+                    verify=False, 
+                    timeout=30
                 )
                 
-                if result.returncode != 0:
-                    print(f"Gigabyte curl failed for {bmc_ip}: {result.stderr}")
+                if response.status_code != 200:
+                    print(f"Gigabyte request failed for {bmc_ip}: HTTP {response.status_code}")
                     return None
                 
                 try:
-                    thermal_data = json.loads(result.stdout)
+                    thermal_data = response.json()
                     gpu_temps = [None] * 8  # Initialize with None for 8 GPUs
                     
                     # Look for GPU_{0-7}_DIE_TEMP sensors
@@ -181,8 +195,11 @@ def fetch_gpu_temperatures_redfish(bmc_ip: str, username: str, password: str, sy
                 print(f"Unknown system type: {system_type}")
                 return None
                 
-        except subprocess.TimeoutExpired:
+        except requests.exceptions.Timeout:
             print(f"Redfish request timed out for {bmc_ip}")
+            return None
+        except requests.exceptions.RequestException as e:
+            print(f"Request exception for {bmc_ip}: {e}")
             return None
         except Exception as e:
             print(f"Exception during Redfish fetch for {bmc_ip}: {e}")

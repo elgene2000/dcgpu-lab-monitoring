@@ -3,3 +3,4 @@ redis
 pymongo
 python-dotenv
 puresnmp
+requests>=2.25.0
