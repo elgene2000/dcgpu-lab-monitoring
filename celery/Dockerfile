@@ -2,9 +2,9 @@ FROM python:3.10-slim-bullseye
 
 WORKDIR /app
 
-# Update package list and install ipmitool
+# Update package list and install curl
 RUN apt-get update && \
-    apt-get install -y ipmitool && \
+    apt-get install -y curl && \
     rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .

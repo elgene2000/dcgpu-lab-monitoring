@@ -165,7 +165,7 @@ const SystemTemperaturesPage = () => {
             System Temperatures
           </h1>
           <p className="text-gray-600">
-            Real-time temperature monitoring via IPMI
+            Real-time temperature monitoring via Redfish commands
           </p>
           {lastUpdated && (
             <p className="text-sm text-gray-500 flex items-center justify-center gap-1">
@@ -349,7 +349,7 @@ const SystemTemperaturesPage = () => {
                   <Server className="h-12 w-12 text-gray-400 mx-auto mb-3" />
                   <p className="text-gray-600">No system temperature data available</p>
                   <p className="text-sm text-gray-500 mt-1">
-                    Check if the IPMI collection task is running
+                    Check if the System Temperatures collection task is running
                   </p>
                 </CardContent>
               </Card>
