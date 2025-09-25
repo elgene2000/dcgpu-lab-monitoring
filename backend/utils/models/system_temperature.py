@@ -12,13 +12,13 @@ class SystemTemperature(object):
         self.fields = {
             "system": "string",
             "bmc_ip": "string",
-            "reading": "float",
+            "gpu_temperatures": "array",  # Array of 8 GPU temperatures (floats or null)
             "symbol": "string",
             "created": "datetime",
             "updated": "datetime",
         }
 
-        self.create_required_fields = ["reading", "bmc_ip", "system"]
+        self.create_required_fields = ["gpu_temperatures", "bmc_ip", "system"]
 
         # Fields optional for CREATE
         self.create_optional_fields = [
@@ -33,7 +33,7 @@ class SystemTemperature(object):
         # Fields optional for UPDATE
         self.update_optional_fields = [
             "system",
-            "reading",
+            "gpu_temperatures",
             "symbol",
         ]
 
@@ -48,8 +48,8 @@ class SystemTemperature(object):
         res = self.db.insert(system_temperature_data, self.collection_name)
         return "Inserted Id " + res
 
-    def find(self, system_temperature_data):  # find all
-        return self.db.find(system_temperature_data, self.collection_name)
+    def find(self, system_temperature_data, sort=None, limit=0):  # find all
+        return self.db.find(system_temperature_data, self.collection_name, sort=sort, limit=limit)
 
     def find_by_id(self, id):
         return self.db.find_by_id(id, self.collection_name)
