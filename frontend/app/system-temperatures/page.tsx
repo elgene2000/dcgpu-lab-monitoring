@@ -348,7 +348,7 @@ const SystemTemperaturesPage = () => {
                           {maxTemp !== null ? `${maxTemp.toFixed(1)}${system.symbol}` : 'N/A'}
                         </div>
                         <div className={`text-sm text-center mt-1 capitalize ${tempStatus.color}`}>
-                          {maxTemp !== null ? `${tempStatus.status} (Max)` : 'No Data'}
+                          {maxTemp !== null ? `${tempStatus.status}` : 'No Data'}
                         </div>
                       </div>
                       
