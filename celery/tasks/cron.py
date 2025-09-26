@@ -4,6 +4,7 @@ import redis
 import asyncio
 import subprocess
 import re
+import requests
 from datetime import datetime
 from celery import shared_task
 from utils.models.pdu import PDU
@@ -12,6 +13,10 @@ from utils.models.temperature import Temperature
 from utils.models.systems import Systems
 from puresnmp import Client, V2C, ObjectIdentifier as OID
 from dotenv import load_dotenv
+import urllib3
+
+# Disable SSL warnings for self-signed certificates
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Import SystemTemperature model with error handling
 try:
@@ -47,80 +52,184 @@ async def snmpFetch(pdu_hostname: str, oid: str, v2c: str, type: str):
         return None
 
 
-def fetch_system_temperature_via_ipmi(bmc_ip: str, username: str, password: str):
+def determine_system_type(system_name: str):
     """
-    Fetch system temperature using ipmitool with three different sensor patterns.
-    Returns temperature value if successful, None if all commands fail.
+    Determine system type based on system name prefix.
+    Returns: 'smci', 'miramar', 'gbt', or 'unknown'
     """
-    commands = [
-        f'ipmitool -I lanplus -H {bmc_ip} -U {username} -P {password} sensor | grep "UBB Board Temp"',
-        f'ipmitool -I lanplus -H {bmc_ip} -U {username} -P {password} sensor | grep UBB_TEMP_FRONT',
-        f'ipmitool -I lanplus -H {bmc_ip} -U {username} -P {password} sensor | grep TEMP_MI300_BACK'
-    ]
+    system_name_lower = system_name.lower()
     
-    for i, command in enumerate(commands):
-        try:
-            sensor_name = ["UBB Board Temp", "UBB_TEMP_FRONT", "TEMP_MI300_BACK"][i]
-            print(f"Trying command {i+1} for {bmc_ip} ({sensor_name}): {command.split('|')[0]}...")
-            
-            # Execute the command
-            result = subprocess.run(
-                command,
-                shell=True,
-                capture_output=True,
-                text=True,
-                timeout=30  # 30 second timeout
-            )
-            
-            if result.returncode == 0 and result.stdout.strip():
-                # Parse the output to extract temperature
-                output = result.stdout.strip()
-                print(f"IPMI output for {bmc_ip} ({sensor_name}): {output}")
-                
-                # Extract temperature value using multiple regex patterns
-                temp_patterns = [
-                    # Pattern 1: Standard format like "25.000 | degrees C"
-                    r'(\d+\.?\d*)\s*\|\s*degrees\s*C',
-                    # Pattern 2: Direct format like "25.000 degrees C"
-                    r'(\d+\.?\d*)\s*degrees\s*C',
-                    # Pattern 3: More flexible format
-                    r'(\d+\.?\d*)\s*[|\s]*degrees\s*C'
-                ]
-                
-                temperature = None
-                for pattern in temp_patterns:
-                    match = re.search(pattern, output, re.IGNORECASE)
-                    if match:
-                        temperature = float(match.group(1))
-                        print(f"Successfully extracted temperature {temperature}°C from {bmc_ip} using sensor {sensor_name}")
-                        return temperature
-                
-                if temperature is None:
-                    print(f"Could not parse temperature from output: {output}")
-                    # Try to extract any number followed by degrees
-                    fallback_match = re.search(r'(\d+\.?\d*)', output)
-                    if fallback_match:
-                        temperature = float(fallback_match.group(1))
-                        print(f"Fallback: extracted temperature {temperature}°C from {bmc_ip} using sensor {sensor_name}")
-                        return temperature
-                    
-            else:
-                print(f"Command {i+1} failed for {bmc_ip}. Return code: {result.returncode}")
-                if result.stderr:
-                    print(f"Error: {result.stderr}")
-                    
-        except subprocess.TimeoutExpired:
-            print(f"Command {i+1} timed out for {bmc_ip}")
-        except Exception as e:
-            print(f"Exception in command {i+1} for {bmc_ip}: {e}")
-            
-    print(f"All 3 IPMI commands failed for {bmc_ip}")
-    return None
+    if system_name_lower.startswith('smci'):
+        return 'smci'
+    elif system_name_lower.startswith('miramar'):
+        return 'miramar'
+    elif system_name_lower.startswith('gbt'):
+        return 'gbt'
+    else:
+        return 'unknown'
 
 
-def parse_ipmi_credentials():
+def fetch_gpu_temperatures_redfish(bmc_ip: str, username: str, password: str, system_type: str):
     """
-    Parse IPMI credentials from environment variable or file.
+    Fetch GPU temperatures for all 8 GPUs using Redfish API with retry logic.
+    Returns a list of 8 temperatures (indexed 0-7) or None if failed.
+    """
+    
+    def attempt_fetch():
+        """Single attempt to fetch GPU temperatures"""
+        try:
+            if system_type == 'smci':
+                # SMCI: GPUs numbered 1-8
+                url = f"https://{bmc_ip}/redfish/v1/Chassis/1/Thermal"
+                
+                response = requests.get(
+                    url, 
+                    auth=(username, password), 
+                    verify=False, 
+                    timeout=30
+                )
+                
+                if response.status_code != 200:
+                    print(f"SMCI request failed for {bmc_ip}: HTTP {response.status_code}")
+                    return None
+                
+                try:
+                    thermal_data = response.json()
+                    gpu_temps = [None] * 8  # Initialize with None for 8 GPUs
+                    
+                    # Look for UBB GPU Temp in temperatures array
+                    for temp_sensor in thermal_data.get('Temperatures', []):
+                        if temp_sensor.get('Name') == 'UBB GPU Temp':
+                            oem_details = temp_sensor.get('Oem', {}).get('Supermicro', {}).get('Details', {})
+                            
+                            # Extract GPU temperatures 1-8 and map to 0-7 index
+                            for gpu_num in range(1, 9):
+                                gpu_key = f'UBB GPU {gpu_num} Temp'
+                                if gpu_key in oem_details:
+                                    gpu_temps[gpu_num - 1] = float(oem_details[gpu_key])
+                            break
+                    
+                    return gpu_temps
+                    
+                except json.JSONDecodeError as e:
+                    print(f"SMCI JSON decode error for {bmc_ip}: {e}")
+                    return None
+                    
+            elif system_type == 'miramar':
+                # Miramar: GPUs numbered 0-7
+                url = f"https://{bmc_ip}/redfish/v1/Chassis/Miramar_Sensor/Thermal"
+                
+                response = requests.get(
+                    url, 
+                    auth=(username, password), 
+                    verify=False, 
+                    timeout=30
+                )
+                
+                if response.status_code != 200:
+                    print(f"Miramar request failed for {bmc_ip}: HTTP {response.status_code}")
+                    return None
+                
+                try:
+                    thermal_data = response.json()
+                    gpu_temps = [None] * 8  # Initialize with None for 8 GPUs
+                    
+                    # Look for TEMP_MI300_GPU{0-7} sensors
+                    for temp_sensor in thermal_data.get('Temperatures', []):
+                        member_id = temp_sensor.get('MemberId', '')
+                        if member_id.startswith('TEMP_MI300_GPU'):
+                            try:
+                                gpu_num = int(member_id.replace('TEMP_MI300_GPU', ''))
+                                if 0 <= gpu_num <= 7:
+                                    reading = temp_sensor.get('ReadingCelsius')
+                                    if reading is not None:
+                                        gpu_temps[gpu_num] = float(reading)
+                            except ValueError:
+                                continue
+                    
+                    return gpu_temps
+                    
+                except json.JSONDecodeError as e:
+                    print(f"Miramar JSON decode error for {bmc_ip}: {e}")
+                    return None
+                    
+            elif system_type == 'gbt':
+                # Gigabyte: GPUs numbered 0-7
+                url = f"https://{bmc_ip}/redfish/v1/Chassis/1/Thermal"
+                
+                response = requests.get(
+                    url, 
+                    auth=(username, password), 
+                    verify=False, 
+                    timeout=30
+                )
+                
+                if response.status_code != 200:
+                    print(f"Gigabyte request failed for {bmc_ip}: HTTP {response.status_code}")
+                    return None
+                
+                try:
+                    thermal_data = response.json()
+                    gpu_temps = [None] * 8  # Initialize with None for 8 GPUs
+                    
+                    # Look for GPU_{0-7}_DIE_TEMP sensors
+                    for temp_sensor in thermal_data.get('Temperatures', []):
+                        name = temp_sensor.get('Name', '')
+                        if name.startswith('GPU_') and name.endswith('_DIE_TEMP'):
+                            try:
+                                # Extract GPU number from "GPU_{N}_DIE_TEMP"
+                                gpu_num = int(name.split('_')[1])
+                                if 0 <= gpu_num <= 7:
+                                    reading = temp_sensor.get('ReadingCelsius')
+                                    if reading is not None:
+                                        gpu_temps[gpu_num] = float(reading)
+                            except (ValueError, IndexError):
+                                continue
+                    
+                    return gpu_temps
+                    
+                except json.JSONDecodeError as e:
+                    print(f"Gigabyte JSON decode error for {bmc_ip}: {e}")
+                    return None
+            else:
+                print(f"Unknown system type: {system_type}")
+                return None
+                
+        except requests.exceptions.Timeout:
+            print(f"Redfish request timed out for {bmc_ip}")
+            return None
+        except requests.exceptions.RequestException as e:
+            print(f"Request exception for {bmc_ip}: {e}")
+            return None
+        except Exception as e:
+            print(f"Exception during Redfish fetch for {bmc_ip}: {e}")
+            return None
+    
+    # First attempt
+    print(f"Attempting GPU temperature fetch for {bmc_ip} (type: {system_type})")
+    gpu_temperatures = attempt_fetch()
+    
+    if gpu_temperatures is not None:
+        valid_temps = [t for t in gpu_temperatures if t is not None]
+        print(f"First attempt successful for {bmc_ip}: {len(valid_temps)}/8 GPUs reported")
+        return gpu_temperatures
+    
+    # Retry once if first attempt failed
+    print(f"First attempt failed for {bmc_ip}, retrying...")
+    gpu_temperatures = attempt_fetch()
+    
+    if gpu_temperatures is not None:
+        valid_temps = [t for t in gpu_temperatures if t is not None]
+        print(f"Retry successful for {bmc_ip}: {len(valid_temps)}/8 GPUs reported")
+        return gpu_temperatures
+    else:
+        print(f"Both attempts failed for {bmc_ip}")
+        return None
+
+
+def parse_bmc_credentials():
+    """
+    Parse BMC credentials from environment variable or file.
     Tries multiple file paths to handle different environments.
     """
     import ast
@@ -128,11 +237,11 @@ def parse_ipmi_credentials():
     
     # Try different file paths in order of preference
     possible_paths = [
-        os.environ.get("IPMI_CREDENTIALS_FILE"),  # Environment variable path
-        "/app/ipmi_credentials.json",             # Docker container path
-        "./ipmi_credentials.json",                # Local relative path
-        "ipmi_credentials.json",                  # Current directory
-        os.path.join(os.path.dirname(__file__), 'ipmi_credentials.json'),  # Same dir as script
+        os.environ.get("BMC_CREDENTIALS_FILE"),  # Environment variable path
+        "/app/bmc_credentials.json",             # Docker container path
+        "./bmc_credentials.json",                # Local relative path
+        "bmc_credentials.json",                  # Current directory
+        os.path.join(os.path.dirname(__file__), 'bmc_credentials.json'),  # Same dir as script
     ]
     
     # Remove None values and duplicates while preserving order
@@ -141,29 +250,29 @@ def parse_ipmi_credentials():
         if path and path not in paths_to_try:
             paths_to_try.append(path)
     
-    print("=== IPMI CREDENTIALS LOADING DEBUG ===")
+    print("=== BMC CREDENTIALS LOADING DEBUG ===")
     print(f"Will try these paths in order: {paths_to_try}")
     
-    # Try environment variables first (same as before)
-    ipmi_credentials_str = os.environ.get("IPMI_CREDENTIALS")
-    ipmi_credentials_json = os.environ.get("IPMI_CREDENTIALS_JSON")
+    # Try environment variables first
+    bmc_credentials_str = os.environ.get("BMC_CREDENTIALS")
+    bmc_credentials_json = os.environ.get("BMC_CREDENTIALS_JSON")
     
     credential_list = None
     
     # Try JSON format from environment
-    if ipmi_credentials_json:
+    if bmc_credentials_json:
         try:
             print("Parsing credentials from JSON environment variable")
-            credential_list = json.loads(ipmi_credentials_json)
+            credential_list = json.loads(bmc_credentials_json)
             print("Successfully parsed JSON credentials from environment")
         except Exception as e:
             print(f"Error parsing JSON credentials from environment: {e}")
     
     # Try Python literal format from environment
-    if not credential_list and ipmi_credentials_str:
+    if not credential_list and bmc_credentials_str:
         try:
             print("Parsing credentials from Python literal environment variable")
-            cleaned_str = ipmi_credentials_str.strip().replace('\n', '').replace('\r', '')
+            cleaned_str = bmc_credentials_str.strip().replace('\n', '').replace('\r', '')
             credential_list = ast.literal_eval(cleaned_str)
             print("Successfully parsed Python literal credentials from environment")
         except Exception as e:
@@ -197,17 +306,16 @@ def parse_ipmi_credentials():
                 continue
     
     if not credential_list:
-        print("ERROR: No IPMI credentials found in any location!")
+        print("ERROR: No BMC credentials found in any location!")
         print("Expected format: [['system','bmc_ip','username','password'], ...]")
-        print("Tried environment variables: IPMI_CREDENTIALS, IPMI_CREDENTIALS_JSON, IPMI_CREDENTIALS_FILE")
+        print("Tried environment variables: BMC_CREDENTIALS, BMC_CREDENTIALS_JSON, BMC_CREDENTIALS_FILE")
         print(f"Tried file paths: {paths_to_try}")
         return {}
     
-    # Rest of the function remains the same...
     credentials_dict = {}
     try:
         if not isinstance(credential_list, list):
-            print("IPMI credentials must be a list format")
+            print("BMC credentials must be a list format")
             return {}
         
         for i, credential_set in enumerate(credential_list):
@@ -400,15 +508,15 @@ def fetch_temperature_data():
 @shared_task
 def fetch_system_temperature_data():
     """
-    Fetch system temperature data using IPMI commands for systems in the database.
-    Matches system names from database with IPMI credentials and collects temperature data.
+    Fetch system GPU temperature data using Redfish API for all 8 GPUs per system.
+    Matches system names from database with BMC credentials and collects GPU temperature data.
     """
     try:
-        # Parse IPMI credentials from environment
-        ipmi_credentials = parse_ipmi_credentials()
+        # Parse BMC credentials from environment
+        bmc_credentials = parse_bmc_credentials()
         
-        if not ipmi_credentials:
-            print("No valid IPMI credentials found")
+        if not bmc_credentials:
+            print("No valid BMC credentials found")
             return
         
         # Check if SystemTemperature model is available
@@ -441,44 +549,51 @@ def fetch_system_temperature_data():
                 print(f"System record missing system field: {system}")
                 continue
                 
-            # Check if we have IPMI credentials for this system
-            if system_name not in ipmi_credentials:
-                print(f"No IPMI credentials found for system: {system_name}")
+            # Check if we have BMC credentials for this system
+            if system_name not in bmc_credentials:
+                print(f"No BMC credentials found for system: {system_name}")
                 continue
                 
             matched_systems += 1
-            credentials = ipmi_credentials[system_name]
+            credentials = bmc_credentials[system_name]
             bmc_ip = credentials["bmc_ip"]
             username = credentials["username"]
             password = credentials["password"]
             
-            print(f"Processing system temperature for: {system_name} (BMC: {bmc_ip})")
+            # Determine system type
+            system_type = determine_system_type(system_name)
+            print(f"Processing system: {system_name} (BMC: {bmc_ip}, Type: {system_type})")
 
-            # Fetch temperature using IPMI
-            temperature_reading = fetch_system_temperature_via_ipmi(
-                bmc_ip, username, password
+            # Fetch GPU temperatures using Redfish
+            gpu_temperatures = fetch_gpu_temperatures_redfish(
+                bmc_ip, username, password, system_type
             )
 
-            if temperature_reading is not None:
+            if gpu_temperatures is not None:
+                # Create temperature record with GPU array
                 temp_data = {
                     "system": system_name,
                     "bmc_ip": bmc_ip,
-                    "reading": temperature_reading,
+                    "gpu_temperatures": gpu_temperatures,  # List of 8 temps (some may be None)
                     "symbol": "°C",
                     "created": created_time,
                     "updated": created_time,
                 }
                 system_temperature_list.append(temp_data)
-                print(f"Successfully collected temperature {temperature_reading}°C for {system_name}")
-                print(f"Temperature data prepared: {temp_data}")
+                
+                valid_temps = [t for t in gpu_temperatures if t is not None]
+                print(f"Successfully collected temperatures for {system_name}: {len(valid_temps)}/8 GPUs")
+                print(f"GPU temps: {gpu_temperatures}")
             else:
-                print(f"Failed to collect temperature for {system_name} (BMC: {bmc_ip})")
+                print(f"Failed to collect GPU temperatures for {system_name} (BMC: {bmc_ip})")
+                # Log the failure reason (either credentials issue or no data returned)
+                print(f"FAILURE LOG: {system_name} - Could not retrieve data via Redfish API")
 
-        print(f"Processed {matched_systems} systems with IPMI credentials out of {len(all_systems)} total systems")
+        print(f"Processed {matched_systems} systems with BMC credentials out of {len(all_systems)} total systems")
 
         # Upload to DB with detailed logging
         if system_temperature_list:
-            print(f"Attempting to save {len(system_temperature_list)} temperature records to database...")
+            print(f"Attempting to save {len(system_temperature_list)} GPU temperature records to database...")
             
             try:
                 # Initialize the SystemTemperature model
@@ -490,7 +605,8 @@ def fetch_system_temperature_data():
                 
                 for i, temp_data in enumerate(system_temperature_list):
                     try:
-                        print(f"Inserting record {i+1}/{len(system_temperature_list)}: {temp_data['system']} - {temp_data['reading']}°C")
+                        valid_gpus = len([t for t in temp_data['gpu_temperatures'] if t is not None])
+                        print(f"Inserting record {i+1}/{len(system_temperature_list)}: {temp_data['system']} - {valid_gpus}/8 GPUs")
                         result = system_temp.create(temp_data)
                         print(f"Database insert result: {result}")
                         successful_inserts += 1
@@ -502,7 +618,7 @@ def fetch_system_temperature_data():
                 print(f"Database insertion complete: {successful_inserts} successful, {failed_inserts} failed")
                 
                 if successful_inserts > 0:
-                    print(f"System temperature data successfully stored in DB ({successful_inserts} records)")
+                    print(f"System GPU temperature data successfully stored in DB ({successful_inserts} records)")
                 else:
                     print("No records were successfully inserted into the database")
                     
@@ -513,7 +629,7 @@ def fetch_system_temperature_data():
                 traceback.print_exc()
                 
         else:
-            print("No system temperature data collected to save")
+            print("No system GPU temperature data collected to save")
             
     except Exception as e:
         print(f"Error in fetch_system_temperature_data: {e}")
