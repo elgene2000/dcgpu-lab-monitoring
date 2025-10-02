@@ -55,7 +55,7 @@ async def snmpFetch(pdu_hostname: str, oid: str, v2c: str, type: str):
 def determine_system_type(system_name: str):
     """
     Determine system type based on system name prefix.
-    Returns: 'smci', 'miramar', 'gbt', or 'unknown'
+    Returns: 'smci', 'miramar', 'gbt', 'quanta', or 'unknown'
     """
     system_name_lower = system_name.lower()
     
@@ -65,6 +65,8 @@ def determine_system_type(system_name: str):
         return 'miramar'
     elif system_name_lower.startswith('gbt'):
         return 'gbt'
+    elif system_name_lower.startswith('quanta'):
+        return 'quanta'
     else:
         return 'unknown'
 
@@ -110,6 +112,9 @@ def fetch_gpu_temperatures_redfish(bmc_ip: str, username: str, password: str, sy
                             break
                     
                     return gpu_temps
+            else:
+                print(f"Unknown system type: {system_type}")
+                return None
                     
                 except json.JSONDecodeError as e:
                     print(f"SMCI JSON decode error for {bmc_ip}: {e}")
@@ -191,9 +196,41 @@ def fetch_gpu_temperatures_redfish(bmc_ip: str, username: str, password: str, sy
                 except json.JSONDecodeError as e:
                     print(f"Gigabyte JSON decode error for {bmc_ip}: {e}")
                     return None
-            else:
-                print(f"Unknown system type: {system_type}")
-                return None
+            elif system_type == 'quanta':
+                # Quanta: GPUs numbered 0-7, each GPU has its own chassis
+                # Requires 8 separate API calls to get individual GPU temperatures
+                gpu_temps = [None] * 8  # Initialize with None for 8 GPUs
+                
+                for gpu_num in range(8):
+                    try:
+                        url = f"https://{bmc_ip}/redfish/v1/Chassis/GPU_{gpu_num}/Sensors/GPU_{gpu_num}_Temp_0"
+                        
+                        response = requests.get(
+                            url, 
+                            auth=(username, password), 
+                            verify=False, 
+                            timeout=10  # Shorter timeout for individual GPU requests
+                        )
+                        
+                        if response.status_code == 200:
+                            sensor_data = response.json()
+                            reading = sensor_data.get('Reading')
+                            if reading is not None:
+                                gpu_temps[gpu_num] = float(reading)
+                        else:
+                            print(f"Quanta GPU_{gpu_num} request failed for {bmc_ip}: HTTP {response.status_code}")
+                            
+                    except requests.exceptions.Timeout:
+                        print(f"Quanta GPU_{gpu_num} request timed out for {bmc_ip}")
+                        continue
+                    except requests.exceptions.RequestException as e:
+                        print(f"Quanta GPU_{gpu_num} request exception for {bmc_ip}: {e}")
+                        continue
+                    except (json.JSONDecodeError, ValueError) as e:
+                        print(f"Quanta GPU_{gpu_num} JSON/conversion error for {bmc_ip}: {e}")
+                        continue
+                
+                return gpu_temps
                 
         except requests.exceptions.Timeout:
             print(f"Redfish request timed out for {bmc_ip}")
