@@ -33,6 +33,6 @@ app.conf.beat_schedule = {
     },
     "fetch_system_temperature": {
         "task": "tasks.cron.fetch_system_temperature_data",
-        "schedule": timedelta(minutes=15),  # Run every 15 minutes for system temps
+        "schedule": timedelta(minutes=5),  # Run every 5 minutes for system temps
     },
 }
