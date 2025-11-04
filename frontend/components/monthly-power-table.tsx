@@ -191,7 +191,7 @@ const MonthlyPowerTable = () => {
   const saveData = async () => {
     setSaving(true);
     try {
-      await axios.post(`/api/monthly-power-data`, { data });
+      await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/monthly-power-data`, { data });
       alert("Monthly power data saved successfully");
     } catch (error) {
       console.error('Error saving data:', error);

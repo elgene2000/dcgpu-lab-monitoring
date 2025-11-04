@@ -14,9 +14,9 @@ services:
       - --entrypoints.web.http.redirections.entryPoint.to=websecure
       - --entrypoints.web.http.redirections.entryPoint.scheme=https
     ports:
-      - "80:80" #HTTP
-      - "443:443" #HTTPS
-      - "8080:8080" #Traefik dashboard
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./letsencrypt:/letsencrypt
@@ -28,12 +28,14 @@ services:
       - "5000:5000"
     env_file:
       - ./backend/.env
+    volumes:
+      - ./backend/data:/app/data
     depends_on:
       - mongodb
       - redis
     labels:
       - "traefik.enable=true"
-      - 'traefik.http.routers.backend.rule=Host("dcgpu-lab.amd.com") && PathPrefix("/api/")'
+      - "traefik.http.routers.backend.rule=Host(`dcgpu-lab.amd.com`) && PathPrefix(`/api/`)"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=myresolver"
       - "traefik.http.services.backend.loadbalancer.server.port=5000"
