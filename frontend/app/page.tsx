@@ -20,6 +20,7 @@ import { useTheme } from "next-themes";
 import { Zap, TrendingUp, AlertTriangle } from "lucide-react";
 import { MonthlyPowerTable } from "@/components/monthly-power-table";
 import { MonthlyPowerProvider, useMonthlyPower } from "@/contexts/MonthlyPowerContext";
+import PowerCapacityCard from "@/components/power-capacity-card";
 
 const chartColors = [
   "#a78bfa",
@@ -529,6 +530,8 @@ const PageContent = () => {
         
         {/* Monthly Power Data Table - uses shared context */} 
         <MonthlyPowerTable />
+        
+        <PowerCapacityCard />
         
         {sites.map((site) => (
           <div key={site}>

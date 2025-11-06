@@ -1,7 +1,7 @@
 // Monthly Power Table Component - Uses Shared Context
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Save, Edit3, Check, X, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Save, Edit3, Check, X, AlertTriangle, RefreshCw, History, Download } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -13,6 +13,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { useMonthlyPower } from "@/contexts/MonthlyPowerContext";
 
 interface MonthlyData {
@@ -25,6 +33,9 @@ interface MonthlyData {
   total: number;
   openDcFacilityPower: number;
   pue: number;
+  auto_saved?: boolean;
+  saved_date?: string;
+  last_updated?: string;
 }
 
 const MonthlyPowerTable = () => {
@@ -35,6 +46,9 @@ const MonthlyPowerTable = () => {
   const [editValue, setEditValue] = useState<string>('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>();
+  const [historyData, setHistoryData] = useState<MonthlyData[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   // Format month for display
   const formatMonth = (date: Date) => {
@@ -77,7 +91,6 @@ const MonthlyPowerTable = () => {
     const monthlyTotals: Record<string, number> = {};
     
     Object.entries(contextData.siteBreakdown).forEach(([site, siteData]) => {
-      // Convert site names to table column names and convert back to kWh
       const columnMap: Record<string, string> = {
         odcdh1: 'dh1',
         odcdh2: 'dh2', 
@@ -87,32 +100,11 @@ const MonthlyPowerTable = () => {
       };
       
       if (columnMap[site]) {
-        // Convert from Wh to kWh
         monthlyTotals[columnMap[site]] = (siteData.current / 1000) || 0;
       }
     });
     
     return monthlyTotals;
-  };
-
-  // Fetch historical summary using the optimized historical-summary endpoint
-  const fetchHistoricalSummary = async (monthsBack: number = 3) => {
-    try {
-      // We can reuse the same endpoint but for historical data
-      // In practice, you might want a separate historical endpoint
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/power/monthly-summary`, {
-        params: { sites: "odcdh1,odcdh2,odcdh3,odcdh4,odcdh5" }
-      });
-      
-      if (response.data.status === "error") {
-        throw new Error(response.data.data);
-      }
-
-      return response.data.months || [];
-    } catch (error) {
-      console.error('Error fetching historical summary:', error);
-      throw error;
-    }
   };
 
   // Load all data using shared context for current month
@@ -124,7 +116,6 @@ const MonthlyPowerTable = () => {
       const currentMonth = formatMonth(new Date());
       const monthsToDisplay = getMonthsToDisplay();
 
-      // Fetch saved historical data
       const historicalData = await fetchHistoricalData();
 
       const tableData: MonthlyData[] = [];
@@ -133,10 +124,8 @@ const MonthlyPowerTable = () => {
         const savedData = historicalData.find((item: MonthlyData) => item.month === month);
 
         if (savedData) {
-          // Use saved data if available
           tableData.push(savedData);
         } else if (month === currentMonth) {
-          // Use shared context data for current month
           const currentMonthTotals = getCurrentMonthTotals();
           const total = Object.values(currentMonthTotals).reduce((sum, val) => sum + val, 0);
 
@@ -152,7 +141,6 @@ const MonthlyPowerTable = () => {
             pue: 0,
           });
         } else {
-          // Fallback empty row for historical months not in saved data
           tableData.push({
             month,
             dh1: 0,
@@ -181,10 +169,77 @@ const MonthlyPowerTable = () => {
     }
   };
 
-  // Manual refresh function - also refreshes shared context
+  // Load full history for the modal
+  const loadHistoryData = async () => {
+    setHistoryLoading(true);
+    try {
+      const historicalData = await fetchHistoricalData();
+      setHistoryData(historicalData);
+    } catch (error) {
+      console.error('Error loading history:', error);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  // Download history as CSV
+  const downloadHistoryCSV = () => {
+    if (historyData.length === 0) return;
+
+    // CSV headers
+    const headers = [
+      'Month',
+      'DH1 (kWh)',
+      'DH2 (kWh)',
+      'DH3 (kWh)',
+      'DH4 (kWh)',
+      'DH5 (kWh)',
+      'Total (kWh)',
+      'Facility Power (kWh)',
+      'PUE',
+      'Auto Saved',
+      'Saved Date'
+    ];
+
+    // CSV rows
+    const rows = historyData.map(row => [
+      row.month,
+      row.dh1.toFixed(2),
+      row.dh2.toFixed(2),
+      row.dh3.toFixed(2),
+      row.dh4.toFixed(2),
+      row.dh5.toFixed(2),
+      row.total.toFixed(2),
+      row.openDcFacilityPower.toFixed(2),
+      row.pue.toFixed(2),
+      row.auto_saved ? 'Yes' : 'No',
+      row.saved_date || row.last_updated || ''
+    ]);
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `monthly_power_history_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Manual refresh function
   const handleRefresh = async () => {
-    await refreshData(); // Refresh shared context data
-    await loadData(); // Reload table data
+    await refreshData();
+    await loadData();
   };
 
   // Save data to JSON file
@@ -221,7 +276,6 @@ const MonthlyPowerTable = () => {
       prevData.map(row => {
         if (row.month === editingMonth) {
           const updatedRow = { ...row, openDcFacilityPower: numValue };
-          // Recalculate PUE
           updatedRow.pue = updatedRow.total > 0 ? updatedRow.openDcFacilityPower / updatedRow.total : 0;
           return updatedRow;
         }
@@ -254,7 +308,7 @@ const MonthlyPowerTable = () => {
     }
   }, [contextData.loading]);
 
-  // Auto-refresh every 30 minutes (but rely on context for API calls)
+  // Auto-refresh every 30 minutes
   useEffect(() => {
     const interval = setInterval(() => {
       if (!contextData.loading) {
@@ -263,6 +317,13 @@ const MonthlyPowerTable = () => {
     }, 30 * 60 * 1000);
     return () => clearInterval(interval);
   }, [contextData.loading]);
+
+  // Load history when modal opens
+  useEffect(() => {
+    if (isHistoryOpen && historyData.length === 0) {
+      loadHistoryData();
+    }
+  }, [isHistoryOpen]);
 
   if (loading || contextData.loading) {
     return (
@@ -296,6 +357,87 @@ const MonthlyPowerTable = () => {
           )}
         </div>
         <div className="flex gap-2">
+          <Sheet open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+            <SheetTrigger asChild>
+              <Button 
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <History className="h-4 w-4" />
+                View All History
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:max-w-4xl overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle>Complete Monthly Power History</SheetTitle>
+                <SheetDescription>
+                  All historical monthly power consumption data
+                </SheetDescription>
+              </SheetHeader>
+              
+              <div className="mt-6 space-y-4">
+                <div className="flex justify-end">
+                  <Button 
+                    onClick={downloadHistoryCSV}
+                    disabled={historyLoading || historyData.length === 0}
+                    className="flex items-center gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download CSV
+                  </Button>
+                </div>
+
+                {historyLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
+                  </div>
+                ) : historyData.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">
+                    No historical data available
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="font-semibold">Month</TableHead>
+                          <TableHead className="text-right font-semibold">DH1 (kWh)</TableHead>
+                          <TableHead className="text-right font-semibold">DH2 (kWh)</TableHead>
+                          <TableHead className="text-right font-semibold">DH3 (kWh)</TableHead>
+                          <TableHead className="text-right font-semibold">DH4 (kWh)</TableHead>
+                          <TableHead className="text-right font-semibold">DH5 (kWh)</TableHead>
+                          <TableHead className="text-right font-semibold">Total (kWh)</TableHead>
+                          <TableHead className="text-right font-semibold">Facility (kWh)</TableHead>
+                          <TableHead className="text-right font-semibold">PUE</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {historyData.map((row, index) => (
+                          <TableRow key={index}>
+                            <TableCell className="font-medium">{row.month}</TableCell>
+                            <TableCell className="text-right">{formatNumber(row.dh1)}</TableCell>
+                            <TableCell className="text-right">{formatNumber(row.dh2)}</TableCell>
+                            <TableCell className="text-right">{formatNumber(row.dh3)}</TableCell>
+                            <TableCell className="text-right">{formatNumber(row.dh4)}</TableCell>
+                            <TableCell className="text-right">{formatNumber(row.dh5)}</TableCell>
+                            <TableCell className="text-right font-semibold">{formatNumber(row.total)}</TableCell>
+                            <TableCell className="text-right">{formatNumber(row.openDcFacilityPower)}</TableCell>
+                            <TableCell className="text-right font-semibold">
+                              <span className={row.pue > 2 ? 'text-red-600' : row.pue > 1.5 ? 'text-yellow-600' : 'text-green-600'}>
+                                {row.pue > 0 ? formatNumber(row.pue) : '-'}
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+
           <Button 
             onClick={handleRefresh} 
             disabled={loading}
@@ -384,7 +526,6 @@ const MonthlyPowerTable = () => {
           </Table>
         </div>
         
-        {/* Performance and info indicators */}
         <div className="mt-4 space-y-2">
           <div className="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/20 p-2 rounded">
             ⚡ Using shared context: Single API call shared between components (~1KB total)
