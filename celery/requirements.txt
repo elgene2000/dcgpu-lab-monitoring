@@ -4,3 +4,4 @@ pymongo
 python-dotenv
 puresnmp
 requests>=2.25.0
+paramiko>=3.0.0
