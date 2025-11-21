@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Exclude specific components
+frontend/components/monthly-power-table.tsx
+frontend/components/power-capacity-card.tsx
