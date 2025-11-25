@@ -37,26 +37,17 @@ def say_hello():
 
 
 async def snmpFetch(pdu_hostname: str, oid: str, v2c: str, type: str):
-    """
-    Async SNMP fetch helper using puresnmp.Client and V2C community string.
-    Return float for temps (assumes tenths of degree sometimes), int otherwise.
-    """
     try:
         client = Client(pdu_hostname, V2C(v2c))
+        # Retrieve SNMP value
         data = await client.get(OID(oid))
         if not data:
             return None
         if type == "temp":
             # many SNMP temp sensors report tenths of degree
-            try:
-                return float(data.value / 10)
-            except Exception:
-                return float(data.value)
+            return float(data.value / 10)
         else:
-            try:
-                return int(data.value)
-            except Exception:
-                return None
+            return int(data.value)
     except Exception as e:
         print(f"snmpFetch error for {pdu_hostname} oid {oid}: {e}")
         return None
@@ -65,7 +56,7 @@ async def snmpFetch(pdu_hostname: str, oid: str, v2c: str, type: str):
 def determine_system_type(system_name: str):
     """
     Determine system type based on system name prefix.
-    Returns: 'smci', 'miramar', 'gbt', 'quanta', 'banff', 'gt', 'dell', or 'unknown'
+    Returns: 'smci', 'miramar', 'gbt', 'quanta', 'banff', or 'unknown'
     """
     system_name_lower = (system_name or "").lower()
     if system_name_lower.startswith("smci"):
@@ -78,30 +69,32 @@ def determine_system_type(system_name: str):
         return "quanta"
     elif system_name_lower.startswith("banff"):
         return "banff"
-    elif system_name_lower.startswith("gt"):
-        return "gt"
     elif system_name_lower.startswith("dell"):
         return "dell"
+    elif system_name_lower.startswith("gt"):
+        return "gt"
     else:
         return "unknown"
-
 
 def fetch_gpu_temperatures_dell_ssh(bmc_ip: str, username: str, password: str, system_name: str):
     """
     Fetch GPU temperatures for Dell systems via SSH.
-    Uses two-step process:
-    1. Execute 'racadm debug invoke rootshellash' to enter root shell
-    2. Execute curl command to get GPU temperatures from internal Redfish API
+    Requires running 'racadm debug invoke rootshellash' first, then using curl
+    to query the local Redfish endpoint for each GPU's temperature.
+    Uses an interactive shell to maintain the root shell context.
     Returns a list of 8 temperatures (indexed 0-7) or None if failed.
     """
+    import time
+    
     try:
-        print(f"Attempting Dell SSH connection to {bmc_ip} for system {system_name}")
+        print(f"[DELL DEBUG] Attempting Dell SSH connection to {bmc_ip}")
 
         # Create SSH client
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         # Connect with timeout
+        print(f"[DELL DEBUG] Connecting to {bmc_ip} with username: {username}")
         ssh.connect(
             bmc_ip,
             username=username,
@@ -110,78 +103,182 @@ def fetch_gpu_temperatures_dell_ssh(bmc_ip: str, username: str, password: str, s
             look_for_keys=False,
             allow_agent=False
         )
+        print(f"[DELL DEBUG] Successfully connected to {bmc_ip}")
 
-        # Initialize GPU temperatures array
+        # Open an interactive shell session
+        print(f"[DELL DEBUG] Opening interactive shell")
+        shell = ssh.invoke_shell()
+        shell.settimeout(30)
+        
+        # Wait for initial prompt
+        print(f"[DELL DEBUG] Waiting for initial prompt (2 seconds)...")
+        time.sleep(2)
+        
+        # Clear any initial output
+        initial_output = ""
+        if shell.recv_ready():
+            initial_output = shell.recv(65535).decode('utf-8', errors='ignore')
+            print(f"[DELL DEBUG] Initial output received ({len(initial_output)} chars): {initial_output[:500]}")
+        else:
+            print(f"[DELL DEBUG] No initial output ready")
+
+        # Invoke the root shell
+        print(f"[DELL DEBUG] Sending racadm command: 'racadm debug invoke rootshellash'")
+        shell.send("racadm debug invoke rootshellash\n")
+        
+        print(f"[DELL DEBUG] Waiting for root shell to initialize (5 seconds as configured)...")
+        time.sleep(5)
+        
+        # Read the output from racadm command
+        racadm_output = ""
+        if shell.recv_ready():
+            racadm_output = shell.recv(65535).decode('utf-8', errors='ignore')
+            print(f"[DELL DEBUG] Root shell response ({len(racadm_output)} chars):")
+            print(f"[DELL DEBUG] ===== START RACADM OUTPUT =====")
+            print(racadm_output)
+            print(f"[DELL DEBUG] ===== END RACADM OUTPUT =====")
+        else:
+            print(f"[DELL DEBUG] WARNING: No output ready after racadm command")
+
+        # Test if shell is responsive
+        print(f"[DELL DEBUG] Testing shell responsiveness with 'echo test'")
+        shell.send("echo test\n")
+        time.sleep(1)
+        test_output = ""
+        if shell.recv_ready():
+            test_output = shell.recv(65535).decode('utf-8', errors='ignore')
+            print(f"[DELL DEBUG] Echo test response: {test_output}")
+        else:
+            print(f"[DELL DEBUG] WARNING: No response to echo test")
+
         gpu_temps = [None] * 8
 
-        # Get temperatures for each GPU (0-7)
+        # Query each GPU temperature (OAM_0 through OAM_7)
         for gpu_num in range(8):
             try:
-                # Construct the command to get GPU temperature
-                # Note: We need to escape the command properly for SSH
-                curl_cmd = f"curl -s http://192.168.31.1/redfish/v1/Chassis/OAM_{gpu_num}/ThermalSubsystem/ThermalMetrics"
-                awk_pattern = f"'/GPU_{gpu_num}_DIE_TEMP/{{f=1}} f && /ReadingCelsius/{{print $2; exit}}'"
-
-                # Full command: first enter root shell, then execute curl with awk
-                command = f"racadm debug invoke rootshellash '{curl_cmd} | awk {awk_pattern}'"
-
-                print(f"  Executing command for GPU_{gpu_num}: {command}")
-
-                stdin, stdout, stderr = ssh.exec_command(command, timeout=30)
-
-                # Read output
-                output = stdout.read().decode('utf-8').strip()
-                error = stderr.read().decode('utf-8').strip()
-
-                if error and "debug invoke" not in error.lower():
-                    print(f"  SSH command error for GPU_{gpu_num}: {error}")
-
-                if output:
-                    # Try to parse the temperature value
-                    # The output should be just the number (possibly with comma as decimal separator)
-                    try:
-                        # Remove any trailing commas or extra whitespace
-                        temp_str = output.strip().rstrip(',')
-                        # Try to convert to float
-                        temp = float(temp_str)
-
-                        # Sanity check: temperature should be between 0 and 200°C
-                        if 0 <= temp <= 200:
-                            gpu_temps[gpu_num] = temp
-                            print(f"  Found GPU_{gpu_num}_DIE_TEMP: {temp}°C")
-                        else:
-                            print(f"  GPU_{gpu_num} temperature out of range: {temp}°C")
-                    except ValueError:
-                        print(f"  Could not parse temperature for GPU_{gpu_num}: '{output}'")
+                print(f"[DELL DEBUG] === Processing GPU {gpu_num} ===")
+                
+                # First, try to test if curl is available
+                if gpu_num == 0:  # Only test once
+                    print(f"[DELL DEBUG] Testing curl availability")
+                    shell.send("which curl\n")
+                    time.sleep(1)
+                    which_output = ""
+                    if shell.recv_ready():
+                        which_output = shell.recv(65535).decode('utf-8', errors='ignore')
+                        print(f"[DELL DEBUG] 'which curl' output: {which_output}")
+                
+                # Build the curl command to query the local Redfish endpoint
+                marker = f"GPU{gpu_num}TEMP"
+                curl_cmd = (
+                    f"curl -s http://192.168.31.1/redfish/v1/Chassis/OAM_{gpu_num}/ThermalSubsystem/ThermalMetrics 2>/dev/null | "
+                    f"awk '/GPU_{gpu_num}_DIE_TEMP/{{f=1}} f && /ReadingCelsius/{{print \"{marker}:\" $2; exit}}'\n"
+                )
+                
+                print(f"[DELL DEBUG] Sending command: {curl_cmd.strip()}")
+                shell.send(curl_cmd)
+                
+                print(f"[DELL DEBUG] Waiting 2 seconds for curl to complete...")
+                time.sleep(2)
+                
+                # Read the output
+                output = ""
+                if shell.recv_ready():
+                    output = shell.recv(65535).decode('utf-8', errors='ignore')
+                    print(f"[DELL DEBUG] GPU {gpu_num} raw output ({len(output)} chars):")
+                    print(f"[DELL DEBUG] ----- START OUTPUT -----")
+                    print(output)
+                    print(f"[DELL DEBUG] ----- END OUTPUT -----")
                 else:
-                    print(f"  No output for GPU_{gpu_num}")
+                    print(f"[DELL DEBUG] WARNING: No output ready for GPU {gpu_num}")
+                
+                # Parse the output looking for our marker
+                if marker in output:
+                    print(f"[DELL DEBUG] Found marker '{marker}' in output")
+                    for line in output.split("\n"):
+                        line = line.strip()
+
+                        # Only accept real output lines, not echoed commands
+                        if not line.startswith(f"{marker}:"):
+                            continue
+
+                        print(f"[DELL DEBUG] Marker line: {line}")
+
+                        try:
+                            temp_str = line.split(":", 1)[1].strip()
+                            temp = float(temp_str)
+                            gpu_temps[gpu_num] = temp
+                            print(f"[DELL DEBUG] Successfully parsed GPU_{gpu_num}: {temp}°C")
+                        except Exception as e:
+                            print(f"[DELL DEBUG] Parse error for GPU_{gpu_num}: {e}, line: {line}")
+                        break
+
+                else:
+                    print(f"[DELL DEBUG] Marker '{marker}' NOT found in output, trying alternative parsing...")
+                    
+                    # Try alternative parsing - look for ReadingCelsius in raw output
+                    if "ReadingCelsius" in output:
+                        print(f"[DELL DEBUG] Found 'ReadingCelsius' in output, attempting regex parse")
+                        pattern = rf'GPU_{gpu_num}_DIE_TEMP.*?ReadingCelsius["\s:]+(\d+\.?\d*)'
+                        match = re.search(pattern, output, re.DOTALL)
+                        if match:
+                            try:
+                                temp = float(match.group(1))
+                                gpu_temps[gpu_num] = temp
+                                print(f"[DELL DEBUG] Successfully parsed GPU_{gpu_num} via regex: {temp}°C")
+                            except ValueError as e:
+                                print(f"[DELL DEBUG] Regex parse error for GPU_{gpu_num}: {e}")
+                        else:
+                            print(f"[DELL DEBUG] Regex pattern did not match for GPU_{gpu_num}")
+                    else:
+                        print(f"[DELL DEBUG] 'ReadingCelsius' NOT found in output for GPU_{gpu_num}")
+                        
+                        # Try direct curl to see raw JSON
+                        if gpu_num == 0:  # Only do this once for debugging
+                            print(f"[DELL DEBUG] Attempting direct curl to see raw JSON response...")
+                            direct_curl = f"curl -s http://192.168.31.1/redfish/v1/Chassis/OAM_{gpu_num}/ThermalSubsystem/ThermalMetrics\n"
+                            shell.send(direct_curl)
+                            time.sleep(3)
+                            if shell.recv_ready():
+                                raw_json = shell.recv(65535).decode('utf-8', errors='ignore')
+                                print(f"[DELL DEBUG] Raw JSON response:")
+                                print(f"[DELL DEBUG] ----- START RAW JSON -----")
+                                print(raw_json[:1000])  # First 1000 chars
+                                print(f"[DELL DEBUG] ----- END RAW JSON -----")
 
             except Exception as e:
-                print(f"  Error fetching GPU_{gpu_num} temperature: {e}")
+                print(f"[DELL DEBUG] Exception fetching GPU_{gpu_num}: {e}")
+                import traceback
+                traceback.print_exc()
                 continue
 
+        # Close the shell and SSH connection
+        print(f"[DELL DEBUG] Closing SSH connection")
+        shell.close()
         ssh.close()
 
         valid_temps = [t for t in gpu_temps if t is not None]
+        print(f"[DELL DEBUG] Final results: {len(valid_temps)}/8 valid temperatures")
+        print(f"[DELL DEBUG] GPU temps array: {gpu_temps}")
+        
         if len(valid_temps) == 0:
-            print(f"No valid GPU temperatures found for {bmc_ip}")
+            print(f"[DELL DEBUG] FAILURE: No valid GPU temperatures found for Dell system {bmc_ip}")
             return None
 
-        print(f"Successfully retrieved {len(valid_temps)}/8 GPU temperatures from {bmc_ip}")
+        print(f"[DELL DEBUG] SUCCESS: Retrieved {len(valid_temps)}/8 GPU temperatures from Dell {bmc_ip}")
         return gpu_temps
 
     except paramiko.AuthenticationException:
-        print(f"SSH authentication failed for {bmc_ip}")
+        print(f"[DELL DEBUG] ERROR: SSH authentication failed for {bmc_ip}")
         return None
     except paramiko.SSHException as e:
-        print(f"SSH connection error for {bmc_ip}: {e}")
+        print(f"[DELL DEBUG] ERROR: SSH connection error for {bmc_ip}: {e}")
         return None
     except Exception as e:
-        print(f"Unexpected error fetching Dell temperatures from {bmc_ip}: {e}")
+        print(f"[DELL DEBUG] ERROR: Unexpected error fetching Dell temperatures from {bmc_ip}: {e}")
         import traceback
         traceback.print_exc()
         return None
-
 
 def fetch_gpu_temperatures_banff_ssh(rack_manager_ip: str, username: str, password: str, system_name: str):
     """
@@ -332,7 +429,7 @@ def fetch_gpu_temperatures_redfish(bmc_ip: str, username: str, password: str, sy
                             gpu_num = int(member_id.replace("TEMP_MI300_GPU", ""))
                             if 0 <= gpu_num <= 7:
                                 reading = temp_sensor.get("ReadingCelsius")
-                                if reading is not None:
+                                if reading is not None and 0 <= reading <= 200:
                                     gpu_temps[gpu_num] = float(reading)
                         except ValueError:
                             continue
@@ -360,7 +457,7 @@ def fetch_gpu_temperatures_redfish(bmc_ip: str, username: str, password: str, sy
                             gpu_num = int(name.split("_")[1])
                             if 0 <= gpu_num <= 7:
                                 reading = temp_sensor.get("ReadingCelsius")
-                                if reading is not None:
+                                if reading is not None and 0 <= reading <= 200:
                                     gpu_temps[gpu_num] = float(reading)
                         except (ValueError, IndexError):
                             continue
@@ -397,23 +494,26 @@ def fetch_gpu_temperatures_redfish(bmc_ip: str, username: str, password: str, sy
 
             elif system_type == "gt":
                 # GT: GPUs numbered 0-7, using specific UBB sensor IDs
+                # Sensor IDs: 51, 59, 67, 75, 83, 91, 99, 107 (corresponding to GPUs 0-7)
                 sensor_ids = [51, 59, 67, 75, 83, 91, 99, 107]
                 gpu_temps = [None] * 8
-
+                
                 for gpu_num, sensor_id in enumerate(sensor_ids):
                     try:
+                        # GT systems use port 8080 for Redfish API
                         url = f"http://{bmc_ip}:8080/redfish/v1/Chassis/1/Sensors/ubb_{sensor_id}"
                         response = requests.get(url, auth=(username, password), verify=False, timeout=10)
-
+                        
                         if response.status_code == 200:
                             try:
                                 sensor_data = response.json()
                             except json.JSONDecodeError:
                                 print(f"GT GPU_{gpu_num} (sensor ubb_{sensor_id}) JSON decode error for {bmc_ip}")
                                 continue
-
+                            
+                            # GT returns temperature in "Reading" field
                             reading = sensor_data.get("Reading")
-                            if reading is not None:
+                            if reading is not None and 0 <= reading <= 200:
                                 try:
                                     gpu_temps[gpu_num] = float(reading)
                                     print(f"  GT GPU_{gpu_num} (ubb_{sensor_id}): {reading}°C")
@@ -422,14 +522,14 @@ def fetch_gpu_temperatures_redfish(bmc_ip: str, username: str, password: str, sy
                                     gpu_temps[gpu_num] = None
                         else:
                             print(f"GT GPU_{gpu_num} (ubb_{sensor_id}) request failed for {bmc_ip}: HTTP {response.status_code}")
-
+                            
                     except requests.exceptions.Timeout:
                         print(f"GT GPU_{gpu_num} (ubb_{sensor_id}) request timed out for {bmc_ip}")
                         continue
                     except requests.exceptions.RequestException as e:
                         print(f"GT GPU_{gpu_num} (ubb_{sensor_id}) request exception for {bmc_ip}: {e}")
                         continue
-
+                
                 return gpu_temps
 
             else:
@@ -514,7 +614,7 @@ def parse_bmc_credentials():
             print("Parsing credentials from Python literal environment variable")
             cleaned_str = bmc_credentials_str.strip().replace("\n", "").replace("\r", "")
             credential_list = ast.literal_eval(cleaned_str)
-            print("Successfully parsed Python literal credentials")
+            print("Successfully parsed Python literal credentials from environment")
         except Exception as e:
             print(f"Error parsing Python literal credentials from environment: {e}")
 
@@ -592,10 +692,6 @@ def parse_bmc_credentials():
 
 @shared_task
 def fetch_power_data():
-    """
-    Fetch power readings from PDUs (SNMP) and store into DB via Power model.
-    Uses Redis caching for PDU list.
-    """
     try:
         r = redis.Redis(
             host=os.environ.get("REDIS_HOST"),
@@ -677,10 +773,6 @@ def fetch_power_data():
 
 @shared_task
 def fetch_temperature_data():
-    """
-    Fetch temperature readings from PDUs (SNMP) where PDU.temperature exists and store via Temperature model.
-    Uses Redis caching for PDUs with temperature sensors.
-    """
     try:
         redis_host = str(os.environ.get("REDIS_HOST") or "localhost")
         redis_port = int(os.environ.get("REDIS_PORT") or 6379)
@@ -818,11 +910,13 @@ def fetch_system_temperature_data():
 
             # Fetch GPU temperatures based on system type
             if system_type == "banff":
-                # Banff uses SSH to rack manager
+                # Banff uses SSH to rack manager instead of Redfish
                 gpu_temperatures = fetch_gpu_temperatures_banff_ssh(bmc_ip, username, password, system_name)
+
             elif system_type == "dell":
-                # Dell uses SSH with special commands
+                # Dell systems use SSH with racadm and local curl
                 gpu_temperatures = fetch_gpu_temperatures_dell_ssh(bmc_ip, username, password, system_name)
+
             else:
                 # Other systems use Redfish
                 gpu_temperatures = fetch_gpu_temperatures_redfish(bmc_ip, username, password, system_type)
@@ -832,7 +926,7 @@ def fetch_system_temperature_data():
                 temp_data = {
                     "system": system_name,
                     "bmc_ip": bmc_ip,
-                    "gpu_temperatures": gpu_temperatures,
+                    "gpu_temperatures": gpu_temperatures,  # List of 8 temps (some may be None)
                     "symbol": "°C",
                     "created": created_time,
                     "updated": created_time,
