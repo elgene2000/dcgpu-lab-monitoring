@@ -21,7 +21,8 @@ def get_date_batches(start_date, end_date, max_days=7):
 
 def query_power_in_batches(power_model, query_filter, start_date, end_date, max_days=7):
     """Query power data in batches to avoid large date range errors"""
-    batches = get_date_batches(start_date, end_date, max_days)
+    adjusted_end_date = end_date + timedelta(days=1)
+    batches = get_date_batches(start_date, adjusted_end_date, max_days)
     all_results = []
     
     for batch_start, batch_end in batches:

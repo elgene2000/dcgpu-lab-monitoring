@@ -63,7 +63,8 @@ def get_date_batches(start_date, end_date, max_days=7):
 
 def query_power_in_batches(power_model, query_filter, start_date, end_date, max_days=7):
     """Query power data in batches to avoid large date range errors"""
-    batches = get_date_batches(start_date, end_date, max_days)
+    adjusted_end_date = end_date + timedelta(days=1)
+    batches = get_date_batches(start_date, adjusted_end_date, max_days)
     all_results = []
     
     for batch_start, batch_end in batches:
@@ -89,6 +90,8 @@ def calculate_max_capacity_for_month(start_date, end_date):
         - Find the highest power reading for that system on that day
       - Sum all system maximums for the data hall for that day
     - The max capacity is the highest daily sum across all days in the month
+    
+    Available Capacity = Planned Capacity - Max Capacity
     
     Returns a dictionary with site keys and their calculated values
     """
@@ -186,21 +189,14 @@ def calculate_max_capacity_for_month(start_date, end_date):
                 col = column_map[site]
                 result[f"{col}_max"] = round(max_capacity_kw, 2)
                 
-                # Calculate DF (max / planned)
+                # Calculate Available Capacity: planned - max
                 planned = PLANNED_CAPACITY[site]
-                df = (max_capacity_kw / planned) * 100 if planned > 0 else 0
-                result[f"{col}_df"] = round(df, 2)
-                
-                # Calculate Remaining Capacity: (planned - max) / (DF/100)
-                if df > 0:
-                    remaining = (planned - max_capacity_kw) / (df / 100)
-                    result[f"{col}_remaining"] = round(remaining, 2)
-                else:
-                    result[f"{col}_remaining"] = 0
+                available = planned - max_capacity_kw
+                result[f"{col}_available"] = round(available, 2)
                 
                 total_max_capacity += max_capacity_kw
                 
-                print(f"{site}: Max Capacity = {max_capacity_kw:.2f} kW, DF = {df:.2f}%, Remaining = {result[f'{col}_remaining']:.2f} kW")
+                print(f"{site}: Max Capacity = {max_capacity_kw:.2f} kW, Available = {available:.2f} kW")
             
         except Exception as e:
             print(f"Error calculating max capacity for {site}: {e}")
@@ -209,20 +205,11 @@ def calculate_max_capacity_for_month(start_date, end_date):
     # Calculate totals
     result["total_max"] = round(total_max_capacity, 2)
     total_planned = sum(PLANNED_CAPACITY.values())
-    
-    if total_planned > 0:
-        total_df = (total_max_capacity / total_planned) * 100
-        result["total_df"] = round(total_df, 2)
-        
-        if total_df > 0:
-            total_remaining = (total_planned - total_max_capacity) / (total_df / 100)
-            result["total_remaining"] = round(total_remaining, 2)
-        else:
-            result["total_remaining"] = 0
+    total_available = total_planned - total_max_capacity
+    result["total_available"] = round(total_available, 2)
     
     print(f"Total Max Capacity: {total_max_capacity:.2f} kW")
-    print(f"Total DF: {result['total_df']:.2f}%")
-    print(f"Total Remaining: {result['total_remaining']:.2f} kW")
+    print(f"Total Available: {total_available:.2f} kW")
     
     return result
 
