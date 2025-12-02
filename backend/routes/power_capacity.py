@@ -5,11 +5,21 @@ from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify
 from dateutil.relativedelta import relativedelta
 from utils.models.power import Power
+from collections import defaultdict
 
 power_capacity = Blueprint("power_capacity", __name__)
 
 # Path to store the JSON file
 DATA_FILE_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'power_capacity_data.json')
+
+# Hard-coded planned capacity values (in kW)
+PLANNED_CAPACITY = {
+    "odcdh1": 429,
+    "odcdh2": 693,
+    "odcdh3": 396,
+    "odcdh4": 165,
+    "odcdh5": 209
+}
 
 def ensure_data_directory():
     """Ensure the data directory exists"""
@@ -38,17 +48,6 @@ def save_capacity_data(data):
     except Exception as e:
         print(f"Error saving capacity data: {e}")
         return False
-
-def calculate_median(values):
-    """Calculate median from a list of values"""
-    if not values:
-        return 0
-    sorted_values = sorted(values)
-    n = len(sorted_values)
-    if n % 2 == 0:
-        return (sorted_values[n//2 - 1] + sorted_values[n//2]) / 2
-    else:
-        return sorted_values[n//2]
 
 def get_date_batches(start_date, end_date, max_days=7):
     """Split a date range into batches of max_days or less"""
@@ -80,63 +79,45 @@ def query_power_in_batches(power_model, query_filter, start_date, end_date, max_
     
     return all_results
 
-def calculate_capacity_for_month(start_date, end_date):
+def calculate_max_capacity_for_month(start_date, end_date):
     """
-    Calculate max and median power for each data hall for a given month.
+    Calculate max capacity for each data hall for a given month.
     
-    Max for individual site: 
-      - Aggregate all readings within each time segment (10-min window)
-      - Find the highest aggregated value for that site
+    Max Capacity Calculation:
+    - For each day in the month:
+      - For each system in a data hall:
+        - Find the highest power reading for that system on that day
+      - Sum all system maximums for the data hall for that day
+    - The max capacity is the highest daily sum across all days in the month
     
-    Max for all:
-      - For each time segment, sum all sites' readings
-      - Find the highest total across all time segments
-    
-    Median for individual site:
-      - Calculate median of all individual readings for that site
-    
-    Median for all:
-      - Calculate median of all readings from all sites combined
+    Returns a dictionary with site keys and their calculated values
     """
     sites = ["odcdh1", "odcdh2", "odcdh3", "odcdh4", "odcdh5"]
     power_model = Power()
     
     result = {
         "month": start_date.strftime("%B %Y"),
+        "dh1_planned": PLANNED_CAPACITY["odcdh1"],
         "dh1_max": 0,
-        "dh1_median": 0,
+        "dh1_available": 0,
+        "dh2_planned": PLANNED_CAPACITY["odcdh2"],
         "dh2_max": 0,
-        "dh2_median": 0,
+        "dh2_available": 0,
+        "dh3_planned": PLANNED_CAPACITY["odcdh3"],
         "dh3_max": 0,
-        "dh3_median": 0,
+        "dh3_available": 0,
+        "dh4_planned": PLANNED_CAPACITY["odcdh4"],
         "dh4_max": 0,
-        "dh4_median": 0,
+        "dh4_available": 0,
+        "dh5_planned": PLANNED_CAPACITY["odcdh5"],
         "dh5_max": 0,
-        "dh5_median": 0,
-        "all_max": 0,
-        "all_median": 0
+        "dh5_available": 0,
+        "total_planned": sum(PLANNED_CAPACITY.values()),
+        "total_max": 0,
+        "total_available": 0
     }
     
-    # Get all readings for all sites
-    all_site_readings = {}
-    all_readings_combined = []  # For "all" median calculation
-    
-    for site in sites:
-        try:
-            readings = query_power_in_batches(
-                power_model,
-                {"site": site},
-                start_date,
-                end_date,
-                max_days=3
-            )
-            all_site_readings[site] = readings
-            print(f"{site}: {len(readings)} readings")
-        except Exception as e:
-            print(f"Error processing {site}: {e}")
-            all_site_readings[site] = []
-    
-    # Calculate for each individual site
+    # Calculate for each site
     column_map = {
         "odcdh1": "dh1",
         "odcdh2": "dh2",
@@ -145,105 +126,103 @@ def calculate_capacity_for_month(start_date, end_date):
         "odcdh5": "dh5"
     }
     
-    # Store aggregated values by timestamp for "all" calculation
-    timestamp_totals = {}
+    total_max_capacity = 0
     
-    for site, readings in all_site_readings.items():
-        col = column_map[site]
-        
-        # Group readings by time segment (10-minute windows) for this site
-        site_time_segments = {}
-        individual_readings = []
-        
-        for reading in readings:
-            try:
-                timestamp = reading.get("created")
-                power_value = reading.get("reading", 0)
-                location = reading.get("location", "unknown")
-                individual_readings.append(power_value)
-                all_readings_combined.append(power_value)  # For "all" median
-                
-                if timestamp:
+    for site in sites:
+        try:
+            print(f"Processing {site} for max capacity calculation...")
+            
+            # Get all readings for this site for the month
+            readings = query_power_in_batches(
+                power_model,
+                {"site": site},
+                start_date,
+                end_date,
+                max_days=3
+            )
+            
+            if not readings:
+                print(f"No readings found for {site}")
+                continue
+            
+            # Group readings by day and system
+            # Structure: {day: {system: [readings]}}
+            daily_system_readings = defaultdict(lambda: defaultdict(list))
+            
+            for reading in readings:
+                try:
+                    timestamp = reading.get("created")
                     if isinstance(timestamp, str):
                         timestamp = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
                     
-                    # Round to nearest 10 minutes
-                    rounded_time = timestamp.replace(second=0, microsecond=0)
-                    minutes = (rounded_time.minute // 10) * 10
-                    timestamp_key = rounded_time.replace(minute=minutes)
+                    day_key = timestamp.date()
+                    system = reading.get("system", reading.get("location", "unknown"))
+                    power_value = reading.get("reading", 0)
                     
-                    # Create nested structure: timestamp -> location -> power
-                    # This ensures we only take ONE reading per location per time segment
-                    if timestamp_key not in site_time_segments:
-                        site_time_segments[timestamp_key] = {}
+                    daily_system_readings[day_key][system].append(power_value)
                     
-                    # Store by location to avoid duplicates
-                    site_time_segments[timestamp_key][location] = power_value
-                    
-                    # Also track for "all" calculation
-                    if timestamp_key not in timestamp_totals:
-                        timestamp_totals[timestamp_key] = {}
-                    if site not in timestamp_totals[timestamp_key]:
-                        timestamp_totals[timestamp_key][site] = {}
-                    
-                    # Store by location within site
-                    timestamp_totals[timestamp_key][site][location] = power_value
-            except Exception as e:
-                print(f"Error processing reading for {site}: {e}")
-                continue
-        
-        # Calculate max for this site: highest sum within any time segment
-        # Sum all locations within each time segment
-        try:
-            if site_time_segments:
-                segment_sums = []
-                for timestamp_key, locations_dict in site_time_segments.items():
-                    # Sum all unique locations for this time segment
-                    segment_sum = sum(locations_dict.values())
-                    segment_sums.append(segment_sum)
-                
-                if segment_sums:
-                    result[f"{col}_max"] = max(segment_sums) / 1000  # Convert to kW
-                    avg_locations = sum(len(locs) for locs in site_time_segments.values()) / len(site_time_segments)
-                    print(f"{site} max: {result[f'{col}_max']:.2f} kW from {len(segment_sums)} time segments, "
-                          f"avg {avg_locations:.1f} locations per segment")
-        except Exception as e:
-            print(f"Error calculating max for {site}: {e}")
-        
-        # Calculate median for this site: median of all individual readings
-        try:
-            if individual_readings:
-                result[f"{col}_median"] = calculate_median(individual_readings) / 1000  # Convert to kW
-                print(f"{site} median: {result[f'{col}_median']:.2f} kW from {len(individual_readings)} readings")
-        except Exception as e:
-            print(f"Error calculating median for {site}: {e}")
-    
-    # Calculate "all" max: highest total across all time segments
-    try:
-        if timestamp_totals:
-            all_segment_totals = []
-            for timestamp_key, sites_data in timestamp_totals.items():
-                # Sum all sites' readings for this time segment
-                # Each site_data is a dict of {location: power_value}
-                segment_total = 0
-                for site, locations_dict in sites_data.items():
-                    # Sum all unique locations for this site at this timestamp
-                    segment_total += sum(locations_dict.values())
-                all_segment_totals.append(segment_total)
+                except Exception as e:
+                    print(f"Error processing reading: {e}")
+                    continue
             
-            if all_segment_totals:
-                result["all_max"] = max(all_segment_totals) / 1000  # Convert to kW
-                print(f"All sites max: {result['all_max']:.2f} kW from {len(all_segment_totals)} time segments")
-    except Exception as e:
-        print(f"Error calculating all max: {e}")
+            # Calculate daily sums (max of each system per day, then sum across systems)
+            daily_sums = []
+            
+            for day, systems_data in daily_system_readings.items():
+                day_sum = 0
+                for system, power_readings in systems_data.items():
+                    # Get the maximum power reading for this system on this day
+                    max_system_power = max(power_readings)
+                    day_sum += max_system_power
+                
+                daily_sums.append(day_sum)
+                print(f"  {site} - {day}: {day_sum / 1000:.2f} kW (from {len(systems_data)} systems)")
+            
+            # The max capacity is the highest daily sum
+            if daily_sums:
+                max_capacity_w = max(daily_sums)
+                max_capacity_kw = max_capacity_w / 1000  # Convert to kW
+                
+                col = column_map[site]
+                result[f"{col}_max"] = round(max_capacity_kw, 2)
+                
+                # Calculate DF (max / planned)
+                planned = PLANNED_CAPACITY[site]
+                df = (max_capacity_kw / planned) * 100 if planned > 0 else 0
+                result[f"{col}_df"] = round(df, 2)
+                
+                # Calculate Remaining Capacity: (planned - max) / (DF/100)
+                if df > 0:
+                    remaining = (planned - max_capacity_kw) / (df / 100)
+                    result[f"{col}_remaining"] = round(remaining, 2)
+                else:
+                    result[f"{col}_remaining"] = 0
+                
+                total_max_capacity += max_capacity_kw
+                
+                print(f"{site}: Max Capacity = {max_capacity_kw:.2f} kW, DF = {df:.2f}%, Remaining = {result[f'{col}_remaining']:.2f} kW")
+            
+        except Exception as e:
+            print(f"Error calculating max capacity for {site}: {e}")
+            continue
     
-    # Calculate "all" median: median of all individual readings from all sites
-    try:
-        if all_readings_combined:
-            result["all_median"] = calculate_median(all_readings_combined) / 1000  # Convert to kW
-            print(f"All sites median: {result['all_median']:.2f} kW from {len(all_readings_combined)} readings")
-    except Exception as e:
-        print(f"Error calculating all median: {e}")
+    # Calculate totals
+    result["total_max"] = round(total_max_capacity, 2)
+    total_planned = sum(PLANNED_CAPACITY.values())
+    
+    if total_planned > 0:
+        total_df = (total_max_capacity / total_planned) * 100
+        result["total_df"] = round(total_df, 2)
+        
+        if total_df > 0:
+            total_remaining = (total_planned - total_max_capacity) / (total_df / 100)
+            result["total_remaining"] = round(total_remaining, 2)
+        else:
+            result["total_remaining"] = 0
+    
+    print(f"Total Max Capacity: {total_max_capacity:.2f} kW")
+    print(f"Total DF: {result['total_df']:.2f}%")
+    print(f"Total Remaining: {result['total_remaining']:.2f} kW")
     
     return result
 
@@ -268,7 +247,7 @@ def auto_save_previous_month():
         print(f"Auto-saving capacity data for {previous_month}")
         
         # Calculate capacity data for previous month
-        capacity_data = calculate_capacity_for_month(first_day_previous, first_day_current)
+        capacity_data = calculate_max_capacity_for_month(first_day_previous, first_day_current)
         capacity_data["auto_saved"] = True
         capacity_data["saved_date"] = datetime.now().isoformat()
         
@@ -315,7 +294,7 @@ def get_current_previous():
         # If not, calculate it live
         if not current_data:
             print(f"Calculating live capacity data for {current_month}")
-            current_data = calculate_capacity_for_month(first_day_current, current_date)
+            current_data = calculate_max_capacity_for_month(first_day_current, current_date)
         
         # Get previous month data from saved data
         previous_data = next((item for item in existing_data if item['month'] == previous_month), None)
