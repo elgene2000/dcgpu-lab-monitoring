@@ -24,18 +24,24 @@ import {
 
 interface PowerCapacityData {
   month: string;
+  dh1_planned: number;
   dh1_max: number;
-  dh1_median: number;
+  dh1_available: number;
+  dh2_planned: number;
   dh2_max: number;
-  dh2_median: number;
+  dh2_available: number;
+  dh3_planned: number;
   dh3_max: number;
-  dh3_median: number;
+  dh3_available: number;
+  dh4_planned: number;
   dh4_max: number;
-  dh4_median: number;
+  dh4_available: number;
+  dh5_planned: number;
   dh5_max: number;
-  dh5_median: number;
-  all_max: number;
-  all_median: number;
+  dh5_available: number;
+  total_planned: number;
+  total_max: number;
+  total_available: number;
   auto_saved?: boolean;
   saved_date?: string;
 }
@@ -92,23 +98,23 @@ const PowerCapacityCard = () => {
 
     const headers = [
       'Month',
-      'DH1 Max (kW)', 'DH1 Median (kW)',
-      'DH2 Max (kW)', 'DH2 Median (kW)',
-      'DH3 Max (kW)', 'DH3 Median (kW)',
-      'DH4 Max (kW)', 'DH4 Median (kW)',
-      'DH5 Max (kW)', 'DH5 Median (kW)',
-      'All Max (kW)', 'All Median (kW)',
+      'DH1 Planned (kW)', 'DH1 Max (kW)', 'DH1 Available (kW)',
+      'DH2 Planned (kW)', 'DH2 Max (kW)', 'DH2 Available (kW)',
+      'DH3 Planned (kW)', 'DH3 Max (kW)', 'DH3 Available (kW)',
+      'DH4 Planned (kW)', 'DH4 Max (kW)', 'DH4 Available (kW)',
+      'DH5 Planned (kW)', 'DH5 Max (kW)', 'DH5 Available (kW)',
+      'Total Planned (kW)', 'Total Max (kW)', 'Total Available (kW)',
       'Auto Saved', 'Saved Date'
     ];
 
     const rows = historyData.map(row => [
       row.month,
-      row.dh1_max.toFixed(2), row.dh1_median.toFixed(2),
-      row.dh2_max.toFixed(2), row.dh2_median.toFixed(2),
-      row.dh3_max.toFixed(2), row.dh3_median.toFixed(2),
-      row.dh4_max.toFixed(2), row.dh4_median.toFixed(2),
-      row.dh5_max.toFixed(2), row.dh5_median.toFixed(2),
-      row.all_max.toFixed(2), row.all_median.toFixed(2),
+      row.dh1_planned.toFixed(2), row.dh1_max.toFixed(2), row.dh1_available.toFixed(2),
+      row.dh2_planned.toFixed(2), row.dh2_max.toFixed(2), row.dh2_available.toFixed(2),
+      row.dh3_planned.toFixed(2), row.dh3_max.toFixed(2), row.dh3_available.toFixed(2),
+      row.dh4_planned.toFixed(2), row.dh4_max.toFixed(2), row.dh4_available.toFixed(2),
+      row.dh5_planned.toFixed(2), row.dh5_max.toFixed(2), row.dh5_available.toFixed(2),
+      row.total_planned.toFixed(2), row.total_max.toFixed(2), row.total_available.toFixed(2),
       row.auto_saved ? 'Yes' : 'No',
       row.saved_date || ''
     ]);
@@ -134,8 +140,8 @@ const PowerCapacityCard = () => {
   // Format number for display
   const formatNumber = (num: number) => {
     return num.toLocaleString(undefined, { 
-      minimumFractionDigits: 3, 
-      maximumFractionDigits: 3 
+      minimumFractionDigits: 2, 
+      maximumFractionDigits: 2 
     });
   };
 
@@ -183,7 +189,7 @@ const PowerCapacityCard = () => {
     { key: 'dh3', label: 'Data Hall 3' },
     { key: 'dh4', label: 'Data Hall 4' },
     { key: 'dh5', label: 'Data Hall 5' },
-    { key: 'all', label: 'All Data Halls' }
+    { key: 'total', label: 'Total' }
   ];
 
   return (
@@ -195,7 +201,7 @@ const PowerCapacityCard = () => {
             Power Capacity Analysis
           </CardTitle>
           <CardDescription className="text-purple-600 dark:text-purple-400">
-            Maximum and median power consumption comparison
+            Planned capacity vs maximum observed capacity
           </CardDescription>
           {error && (
             <div className="flex items-center gap-1 mt-1 text-red-600 dark:text-red-400">
@@ -213,14 +219,14 @@ const PowerCapacityCard = () => {
                 className="flex items-center gap-2"
               >
                 <History className="h-4 w-4" />
-                View All History
+                View History
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-full sm:max-w-6xl overflow-y-auto">
               <SheetHeader>
                 <SheetTitle>Complete Power Capacity History</SheetTitle>
                 <SheetDescription>
-                  All historical power capacity data (max and median)
+                  Historical power capacity analysis data
                 </SheetDescription>
               </SheetHeader>
               
@@ -250,37 +256,39 @@ const PowerCapacityCard = () => {
                       <TableHeader>
                         <TableRow>
                           <TableHead className="font-semibold">Month</TableHead>
-                          <TableHead className="text-right font-semibold">DH1 Max (W)</TableHead>
-                          <TableHead className="text-right font-semibold">DH1 Median (W)</TableHead>
-                          <TableHead className="text-right font-semibold">DH2 Max (W)</TableHead>
-                          <TableHead className="text-right font-semibold">DH2 Median (W)</TableHead>
-                          <TableHead className="text-right font-semibold">DH3 Max (W)</TableHead>
-                          <TableHead className="text-right font-semibold">DH3 Median (W)</TableHead>
-                          <TableHead className="text-right font-semibold">DH4 Max (W)</TableHead>
-                          <TableHead className="text-right font-semibold">DH4 Median (W)</TableHead>
-                          <TableHead className="text-right font-semibold">DH5 Max (kW)</TableHead>
-                          <TableHead className="text-right font-semibold">DH5 Median (kW)</TableHead>
-                          <TableHead className="text-right font-semibold">All Max (kW)</TableHead>
-                          <TableHead className="text-right font-semibold">All Median (kW)</TableHead>
+                          <TableHead className="text-right font-semibold">Data Hall</TableHead>
+                          <TableHead className="text-right font-semibold">Planned (kW)</TableHead>
+                          <TableHead className="text-right font-semibold">Max (kW)</TableHead>
+                          <TableHead className="text-right font-semibold">Available (kW)</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {historyData.map((row, index) => (
-                          <TableRow key={index}>
-                            <TableCell className="font-medium">{row.month}</TableCell>
-                            <TableCell className="text-right">{formatNumber(row.dh1_max)}</TableCell>
-                            <TableCell className="text-right">{formatNumber(row.dh1_median)}</TableCell>
-                            <TableCell className="text-right">{formatNumber(row.dh2_max)}</TableCell>
-                            <TableCell className="text-right">{formatNumber(row.dh2_median)}</TableCell>
-                            <TableCell className="text-right">{formatNumber(row.dh3_max)}</TableCell>
-                            <TableCell className="text-right">{formatNumber(row.dh3_median)}</TableCell>
-                            <TableCell className="text-right">{formatNumber(row.dh4_max)}</TableCell>
-                            <TableCell className="text-right">{formatNumber(row.dh4_median)}</TableCell>
-                            <TableCell className="text-right">{formatNumber(row.dh5_max)}</TableCell>
-                            <TableCell className="text-right">{formatNumber(row.dh5_median)}</TableCell>
-                            <TableCell className="text-right font-semibold">{formatNumber(row.all_max)}</TableCell>
-                            <TableCell className="text-right font-semibold">{formatNumber(row.all_median)}</TableCell>
-                          </TableRow>
+                          <React.Fragment key={index}>
+                            {sites.map((site) => {
+                              const planned = row[`${site.key}_planned` as keyof PowerCapacityData] as number;
+                              const max = row[`${site.key}_max` as keyof PowerCapacityData] as number;
+                              const available = row[`${site.key}_available` as keyof PowerCapacityData] as number;
+                              
+                              return (
+                                <TableRow key={`${index}-${site.key}`} className={site.key === 'total' ? 'font-semibold bg-purple-50 dark:bg-purple-950/30' : ''}>
+                                  {site.key === 'dh1' && (
+                                    <TableCell rowSpan={6} className="font-medium align-top">
+                                      {row.month}
+                                    </TableCell>
+                                  )}
+                                  <TableCell className="text-right">{site.label}</TableCell>
+                                  <TableCell className="text-right">{formatNumber(planned)}</TableCell>
+                                  <TableCell className="text-right">{formatNumber(max)}</TableCell>
+                                  <TableCell className="text-right">
+                                    <span className={available < 0 ? 'text-red-600' : available < 50 ? 'text-yellow-600' : 'text-green-600'}>
+                                      {formatNumber(available)}
+                                    </span>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </React.Fragment>
                         ))}
                       </TableBody>
                     </Table>
@@ -313,64 +321,26 @@ const PowerCapacityCard = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="font-semibold">Data Hall</TableHead>
-                  <TableHead className="text-right font-semibold">Current Max (kW)</TableHead>
-                  <TableHead className="text-right font-semibold">Previous Max (kW)</TableHead>
-                  <TableHead className="text-right font-semibold">Change</TableHead>
-                  <TableHead className="text-right font-semibold">Current Median (kW)</TableHead>
-                  <TableHead className="text-right font-semibold">Previous Median (kW)</TableHead>
-                  <TableHead className="text-right font-semibold">Change</TableHead>
+                  <TableHead className="text-right font-semibold">Planned Capacity (kW)</TableHead>
+                  <TableHead className="text-right font-semibold">Max Capacity (kW)</TableHead>
+                  <TableHead className="text-right font-semibold">Available Capacity (kW)</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {sites.map((site) => {
+                  const planned = data.current?.[`${site.key}_planned` as keyof PowerCapacityData] as number || 0;
                   const currentMax = data.current?.[`${site.key}_max` as keyof PowerCapacityData] as number || 0;
-                  const previousMax = data.previous?.[`${site.key}_max` as keyof PowerCapacityData] as number || 0;
-                  const currentMedian = data.current?.[`${site.key}_median` as keyof PowerCapacityData] as number || 0;
-                  const previousMedian = data.previous?.[`${site.key}_median` as keyof PowerCapacityData] as number || 0;
-                  
-                  const maxChange = calculateChange(currentMax, previousMax);
-                  const medianChange = calculateChange(currentMedian, previousMedian);
+                  const available = data.current?.[`${site.key}_available` as keyof PowerCapacityData] as number || 0;
 
                   return (
-                    <TableRow key={site.key} className={site.key === 'all' ? 'font-semibold bg-purple-50 dark:bg-purple-950/30' : ''}>
+                    <TableRow key={site.key} className={site.key === 'total' ? 'font-semibold bg-purple-50 dark:bg-purple-950/30' : ''}>
                       <TableCell>{site.label}</TableCell>
+                      <TableCell className="text-right">{formatNumber(planned)}</TableCell>
                       <TableCell className="text-right">{formatNumber(currentMax)}</TableCell>
-                      <TableCell className="text-right">{formatNumber(previousMax)}</TableCell>
                       <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          {maxChange > 0 ? (
-                            <>
-                              <TrendingUp className="h-3 w-3 text-red-500" />
-                              <span className="text-red-500">+{maxChange.toFixed(1)}%</span>
-                            </>
-                          ) : maxChange < 0 ? (
-                            <>
-                              <TrendingDown className="h-3 w-3 text-green-500" />
-                              <span className="text-green-500">{maxChange.toFixed(1)}%</span>
-                            </>
-                          ) : (
-                            <span className="text-gray-500">0%</span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">{formatNumber(currentMedian)}</TableCell>
-                      <TableCell className="text-right">{formatNumber(previousMedian)}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          {medianChange > 0 ? (
-                            <>
-                              <TrendingUp className="h-3 w-3 text-red-500" />
-                              <span className="text-red-500">+{medianChange.toFixed(1)}%</span>
-                            </>
-                          ) : medianChange < 0 ? (
-                            <>
-                              <TrendingDown className="h-3 w-3 text-green-500" />
-                              <span className="text-green-500">{medianChange.toFixed(1)}%</span>
-                            </>
-                          ) : (
-                            <span className="text-gray-500">0%</span>
-                          )}
-                        </div>
+                        <span className={available < 0 ? 'text-red-600 font-semibold' : available < 50 ? 'text-yellow-600' : 'text-green-600'}>
+                          {formatNumber(available)}
+                        </span>
                       </TableCell>
                     </TableRow>
                   );
@@ -382,15 +352,14 @@ const PowerCapacityCard = () => {
 
         <div className="mt-4 space-y-2">
           <div className="text-xs text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/20 p-2 rounded">
-            📊 <strong>Individual DH Max:</strong> Highest aggregated power in any 10-min segment | <strong>All Max:</strong> Highest total across all DHs in any 10-min segment | <strong>Median:</strong> Middle value showing typical operating power
+            📊 <strong>Calculation Method:</strong> For each day, find the maximum power reading per system, sum these maximums across all systems in a data hall, then take the highest daily sum as the Max Capacity for the month
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400 space-y-1">
+            <p>• <strong>Planned Capacity:</strong> Target capacity allocation per data hall</p>
+            <p>• <strong>Max Capacity:</strong> Highest observed daily total (sum of system maximums)</p>
+            <p>• <strong>Available Capacity:</strong> Planned Capacity - Max Capacity</p>
+            <p>• <strong>Color coding:</strong> Green (≥50 kW), Yellow (&lt;50 kW), Red (negative/over capacity)</p>
             <p>• Current month: {data.current?.month || 'N/A'}</p>
-            <p>• Previous month: {data.previous?.month || 'N/A'}</p>
-            <p>• <strong>Max calculation:</strong> Readings aggregated per 10-min segment, highest segment shown</p>
-            <p>• <strong>Median calculation:</strong> Median of all individual power readings</p>
-            <p>• <strong>"All" values:</strong> Combined metrics across all data halls</p>
-            <p>• Data automatically saved at the end of each month</p>
           </div>
         </div>
       </CardContent>

@@ -31,7 +31,7 @@ class Validator(object):
                 if not self.validate_type(element[field], fields[field]):
                     print(f"Validation failed for field '{field}': expected {fields[field]}, got {type(element[field])}")
                     return False
-        return True
+            return True
 
     def validate(self, element, fields, required_fields, optional_fields):
         if not self.validateTypes(element, fields):

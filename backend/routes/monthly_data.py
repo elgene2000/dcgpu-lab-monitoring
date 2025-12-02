@@ -57,9 +57,10 @@ def query_power_data_for_month(site, start_date, end_date):
     power = Power()
     all_readings = []
     
-    # Split the month into batches of 7 days or less
-    batches = get_date_batches(start_date, end_date)
-    
+    # Include the full last day
+    adjusted_end_date = end_date + timedelta(days=1)
+    batches = get_date_batches(start_date, adjusted_end_date)
+ 
     print(f"Querying {site} from {start_date} to {end_date} in {len(batches)} batches")
     
     for batch_start, batch_end in batches:
