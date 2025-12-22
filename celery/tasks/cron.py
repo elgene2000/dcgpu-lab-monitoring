@@ -937,6 +937,7 @@ def fetch_system_temperature_data():
                 print(f"Successfully collected temperatures for {system_name}: {len(valid_temps)}/8 GPUs")
                 print(f"GPU temps: {gpu_temperatures}")
             else:
+                print(f"special tracking gpu_temperatures: {gpu_temperatures}")
                 print(f"Failed to collect GPU temperatures for {system_name} (BMC: {bmc_ip})")
                 print(f"FAILURE LOG: {system_name} - Could not retrieve data")
 
