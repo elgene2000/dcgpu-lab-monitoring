@@ -1,3 +1,15 @@
+
+"""
+Enhanced System Temperature Monitoring with Critical Alert System
+
+This implementation adds dynamic scheduling for systems with critical temperatures.
+Systems with temperatures >= 80°C are checked every 30 seconds instead of every 5 minutes.
+"""
+
+# ============================================================================
+# celery/tasks/cron.py - MODIFIED VERSION
+# ============================================================================
+
 import os
 import json
 import redis
@@ -7,7 +19,7 @@ import re
 import requests
 import paramiko
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from celery import shared_task
 from utils.models.pdu import PDU
 from utils.models.power import Power
@@ -39,6 +51,189 @@ MAX_VALID_TEMP = 100.0
 MAX_RETRY_ATTEMPTS = 3
 RETRY_DELAY_SECONDS = 30
 
+# ============================================================================
+# CRITICAL TEMPERATURE MONITORING CONSTANTS
+# ============================================================================
+CRITICAL_TEMP_THRESHOLD = 80.0
+CRITICAL_CHECK_INTERVAL = 30  # seconds
+NORMAL_CHECK_INTERVAL = 300   # 5 minutes in seconds
+
+# Redis keys for tracking critical systems
+CRITICAL_SYSTEMS_KEY = "critical_temp_systems"
+LAST_CHECK_TIME_KEY = "system_temp_last_check"
+
+
+def get_redis_client():
+    """Get Redis client for tracking critical systems"""
+    try:
+        redis_host = str(os.environ.get("REDIS_HOST") or "localhost")
+        redis_port = int(os.environ.get("REDIS_PORT") or 6379)
+        redis_password = str(os.environ.get("REDIS_PASSWORD") or "")
+        
+        return redis.Redis(
+            host=redis_host,
+            port=redis_port,
+            password=redis_password if redis_password else None,
+            db=0,
+            decode_responses=True
+        )
+    except Exception as e:
+        print(f"Error creating Redis client: {e}")
+        return None
+
+
+def is_critical_temperature(gpu_temps):
+    """
+    Check if any GPU temperature is at or above critical threshold.
+    
+    Args:
+        gpu_temps: List of 8 GPU temperatures (may contain None values)
+    
+    Returns:
+        tuple: (is_critical: bool, max_temp: float or None, critical_gpus: list)
+    """
+    if not gpu_temps or not isinstance(gpu_temps, list):
+        return False, None, []
+    
+    valid_temps = [t for t in gpu_temps if t is not None]
+    
+    if not valid_temps:
+        return False, None, []
+    
+    max_temp = max(valid_temps)
+    critical_gpus = [i for i, t in enumerate(gpu_temps) if t is not None and t >= CRITICAL_TEMP_THRESHOLD]
+    
+    is_critical = max_temp >= CRITICAL_TEMP_THRESHOLD
+    
+    return is_critical, max_temp, critical_gpus
+
+
+def update_critical_systems_list(system_name, is_critical, max_temp, redis_client):
+    """
+    Update the Redis set of systems with critical temperatures.
+    
+    Args:
+        system_name: Name of the system
+        is_critical: Boolean indicating if system is at critical temp
+        max_temp: Maximum temperature recorded
+        redis_client: Redis client instance
+    """
+    if not redis_client:
+        return
+    
+    try:
+        critical_systems_data = redis_client.get(CRITICAL_SYSTEMS_KEY)
+        critical_systems = json.loads(critical_systems_data) if critical_systems_data else {}
+        
+        if is_critical:
+            # Add or update system in critical list
+            critical_systems[system_name] = {
+                "max_temp": max_temp,
+                "timestamp": datetime.now().isoformat(),
+                "check_count": critical_systems.get(system_name, {}).get("check_count", 0) + 1
+            }
+            print(f"🔥 CRITICAL ALERT: {system_name} added to critical monitoring - Max temp: {max_temp}°C")
+        else:
+            # Remove system from critical list if it exists
+            if system_name in critical_systems:
+                removed_data = critical_systems.pop(system_name)
+                print(f"✅ RECOVERY: {system_name} removed from critical monitoring - Was: {removed_data['max_temp']}°C, Now below {CRITICAL_TEMP_THRESHOLD}°C")
+        
+        # Save updated list
+        redis_client.setex(
+            CRITICAL_SYSTEMS_KEY,
+            86400,  # 24 hour TTL
+            json.dumps(critical_systems)
+        )
+        
+        # Log current critical systems count
+        if critical_systems:
+            print(f"⚠️  Currently monitoring {len(critical_systems)} critical system(s): {list(critical_systems.keys())}")
+        
+    except Exception as e:
+        print(f"Error updating critical systems list: {e}")
+
+
+def get_critical_systems(redis_client):
+    """
+    Get list of systems currently at critical temperatures.
+    
+    Returns:
+        dict: Dictionary of critical systems with their data
+    """
+    if not redis_client:
+        return {}
+    
+    try:
+        critical_systems_data = redis_client.get(CRITICAL_SYSTEMS_KEY)
+        return json.loads(critical_systems_data) if critical_systems_data else {}
+    except Exception as e:
+        print(f"Error getting critical systems: {e}")
+        return {}
+
+
+def should_check_system_now(system_name, redis_client):
+    """
+    Determine if a system should be checked now based on its critical status.
+    
+    Args:
+        system_name: Name of the system
+        redis_client: Redis client instance
+    
+    Returns:
+        tuple: (should_check: bool, reason: str)
+    """
+    if not redis_client:
+        return True, "Redis unavailable, checking all systems"
+    
+    try:
+        # Get critical systems list
+        critical_systems = get_critical_systems(redis_client)
+        
+        # Get last check time for this system
+        last_check_key = f"{LAST_CHECK_TIME_KEY}:{system_name}"
+        last_check_time_str = redis_client.get(last_check_key)
+        
+        is_critical = system_name in critical_systems
+        
+        if not last_check_time_str:
+            return True, "First check"
+        
+        last_check_time = datetime.fromisoformat(last_check_time_str)
+        time_since_check = (datetime.now() - last_check_time).total_seconds()
+        
+        if is_critical:
+            # Check every 30 seconds for critical systems
+            if time_since_check >= CRITICAL_CHECK_INTERVAL:
+                return True, f"Critical system check (last: {int(time_since_check)}s ago, max: {critical_systems[system_name]['max_temp']}°C)"
+            else:
+                return False, f"Critical system checked recently ({int(time_since_check)}s ago)"
+        else:
+            # Check every 5 minutes for normal systems
+            if time_since_check >= NORMAL_CHECK_INTERVAL:
+                return True, f"Normal check (last: {int(time_since_check)}s ago)"
+            else:
+                return False, f"Normal system checked recently ({int(time_since_check)}s ago)"
+        
+    except Exception as e:
+        print(f"Error in should_check_system_now: {e}")
+        return True, "Error checking status, defaulting to check"
+
+
+def record_system_check_time(system_name, redis_client):
+    """Record the time a system was checked."""
+    if not redis_client:
+        return
+    
+    try:
+        last_check_key = f"{LAST_CHECK_TIME_KEY}:{system_name}"
+        redis_client.setex(
+            last_check_key,
+            86400,  # 24 hour TTL
+            datetime.now().isoformat()
+        )
+    except Exception as e:
+        print(f"Error recording check time: {e}")
 
 def validate_gpu_temperatures(gpu_temps):
     """
@@ -946,10 +1141,25 @@ def fetch_temperature_data():
 @shared_task
 def fetch_system_temperature_data():
     """
-    Fetch system GPU temperature data using Redfish API or SSH for all 8 GPUs per system.
-    NOW WITH RETRY LOGIC for invalid temperatures.
+    Fetch system GPU temperature data with dynamic scheduling for critical systems.
+    Systems with temps >= 80°C are checked every 30 seconds.
+    Normal systems are checked every 5 minutes.
     """
     try:
+        # Get Redis client for tracking critical systems
+        redis_client = get_redis_client()
+        
+        if redis_client:
+            print("=" * 80)
+            print("SYSTEM TEMPERATURE CHECK - CRITICAL MONITORING ENABLED")
+            print("=" * 80)
+            critical_systems = get_critical_systems(redis_client)
+            if critical_systems:
+                print(f"🔥 {len(critical_systems)} system(s) currently at critical temperatures:")
+                for sys_name, data in critical_systems.items():
+                    print(f"   - {sys_name}: {data['max_temp']}°C (checks: {data['check_count']})")
+            print("=" * 80)
+        
         # Parse BMC credentials from environment
         bmc_credentials = parse_bmc_credentials()
 
@@ -979,6 +1189,8 @@ def fetch_system_temperature_data():
         system_temperature_list = []
         created_time = datetime.now()
         matched_systems = 0
+        systems_checked = 0
+        systems_skipped = 0
 
         # Process each system from database
         for system in all_systems:
@@ -993,6 +1205,18 @@ def fetch_system_temperature_data():
                 continue
 
             matched_systems += 1
+            
+            # Check if this system should be checked now based on critical status
+            should_check, reason = should_check_system_now(system_name, redis_client)
+            
+            if not should_check:
+                systems_skipped += 1
+                print(f"⏭️  SKIPPING {system_name}: {reason}")
+                continue
+            
+            systems_checked += 1
+            print(f"✓ CHECKING {system_name}: {reason}")
+            
             credentials = bmc_credentials[system_name]
             bmc_ip = credentials["bmc_ip"]
             username = credentials["username"]
@@ -1002,12 +1226,26 @@ def fetch_system_temperature_data():
             system_type = determine_system_type(system_name)
             print(f"Processing system: {system_name} (BMC: {bmc_ip}, Type: {system_type})")
 
-            # ===== KEY CHANGE: Use retry logic instead of direct fetch =====
+            # Fetch temperatures with retry logic
             gpu_temperatures, attempts_made, validation_msgs = fetch_gpu_temperatures_with_retry(
                 system_name, bmc_ip, username, password, system_type
             )
 
             if gpu_temperatures is not None:
+                # Check if temperatures are critical
+                is_critical, max_temp, critical_gpus = is_critical_temperature(gpu_temperatures)
+                
+                # Update critical systems tracking in Redis
+                if redis_client:
+                    update_critical_systems_list(system_name, is_critical, max_temp, redis_client)
+                
+                # Log critical temperature alert
+                if is_critical:
+                    print(f"🚨 CRITICAL TEMPERATURE ALERT: {system_name}")
+                    print(f"   Max GPU temp: {max_temp}°C (Threshold: {CRITICAL_TEMP_THRESHOLD}°C)")
+                    print(f"   Critical GPUs: {critical_gpus}")
+                    print(f"   This system will now be checked every {CRITICAL_CHECK_INTERVAL} seconds")
+                
                 # Create temperature record with GPU array
                 temp_data = {
                     "system": system_name,
@@ -1022,12 +1260,20 @@ def fetch_system_temperature_data():
                 valid_temps = [t for t in gpu_temperatures if t is not None]
                 print(f"✓ Collected temperatures for {system_name} after {attempts_made} attempt(s): {len(valid_temps)}/8 GPUs")
                 print(f"  GPU temps: {gpu_temperatures}")
-                print(f"  Validation log: {' | '.join(validation_msgs)}")
+                print(f"  Max temp: {max_temp}°C {'🔥 CRITICAL' if is_critical else '✅ Normal'}")
+                
+                # Record check time
+                if redis_client:
+                    record_system_check_time(system_name, redis_client)
             else:
                 print(f"✗ Failed to collect GPU temperatures for {system_name} after {attempts_made} attempts")
-                print(f"  Validation log: {' | '.join(validation_msgs)}")
 
-        print(f"Processed {matched_systems} systems with BMC credentials out of {len(all_systems)} total systems")
+        print(f"\n{'=' * 80}")
+        print(f"CHECK SUMMARY:")
+        print(f"  Matched systems: {matched_systems}")
+        print(f"  Systems checked: {systems_checked}")
+        print(f"  Systems skipped: {systems_skipped}")
+        print(f"{'=' * 80}\n")
 
         # Upload to DB with detailed logging
         if system_temperature_list:
