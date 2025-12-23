@@ -355,7 +355,7 @@ const TemperatureChart = ({ site }: { site: string }) => {
   useEffect(() => {
     const grouped: any[] = [];
     const cfg: any = {};
-  
+
     data.forEach((entry) => {
       let gp = grouped.find((g) => g.created === entry.created);
       if (!gp) {
@@ -367,41 +367,57 @@ const TemperatureChart = ({ site }: { site: string }) => {
         cfg[entry.location] = { label: entry.location };
       }
     });
-  
+
     // ---- Apply 30-min moving average ----
-    const averaged = grouped.map((point, idx) => {
-      const windowStart = new Date(point.created).getTime() - 30 * 60 * 1000; // 30 min earlier
+    const averaged = grouped.map((point) => {
+      const windowStart =
+        new Date(point.created).getTime() - 30 * 60 * 1000;
+
       const windowPoints = grouped.filter(
         (p) =>
           new Date(p.created).getTime() >= windowStart &&
-          new Date(p.created).getTime() <= new Date(point.created).getTime()
+          new Date(p.created).getTime() <=
+            new Date(point.created).getTime()
       );
-  
+
       const averagedPoint: any = { created: point.created };
-  
+
       Object.keys(cfg).forEach((location) => {
         const vals = windowPoints
           .map((p) => p[location])
           .filter((v) => v !== undefined);
+
         if (vals.length > 0) {
           averagedPoint[location] =
             vals.reduce((sum, v) => sum + v, 0) / vals.length;
         }
       });
-  
+
       return averagedPoint;
     });
-  
+
     setFiltered(averaged);
     setConfig(cfg);
   }, [data]);
-  
 
   useEffect(() => {
     fetchTemp();
     const interval = setInterval(fetchTemp, 60000);
     return () => clearInterval(interval);
   }, [selectedRange]);
+
+  // ---- Dynamic Y-axis minimum (no lower limit, no rounding) ----
+  const minTemp = React.useMemo(() => {
+    if (!filtered.length) return "auto";
+
+    const values = filtered.flatMap((point) =>
+      Object.keys(config)
+        .map((key) => point[key])
+        .filter((v) => typeof v === "number")
+    );
+
+    return values.length ? Math.min(...values) : "auto";
+  }, [filtered, config]);
 
   return (
     <Card className="w-full relative overflow-hidden min-h-64">
@@ -419,13 +435,14 @@ const TemperatureChart = ({ site }: { site: string }) => {
           )}
         </CardDescription>
       </CardHeader>
+
       <CardContent className="mt-4">
         {error ? (
           <div className="flex items-center justify-center h-[300px] text-gray-500 dark:text-gray-400">
             <div className="text-center space-y-2">
               <AlertTriangle className="h-8 w-8 mx-auto" />
               <p>Unable to load temperature data</p>
-              <button 
+              <button
                 onClick={fetchTemp}
                 className="text-blue-600 dark:text-blue-400 underline hover:no-underline"
               >
@@ -440,6 +457,7 @@ const TemperatureChart = ({ site }: { site: string }) => {
                 vertical={false}
                 stroke={theme === "dark" ? "#424C5E" : "#D9DEE3"}
               />
+
               <XAxis
                 dataKey="created"
                 tickLine={false}
@@ -460,12 +478,22 @@ const TemperatureChart = ({ site }: { site: string }) => {
                   })
                 }
               />
+
               <YAxis
                 width={35}
-                axisLine={{ stroke: theme === "dark" ? "#424C5E" : "#D9DEE3" }}
-                tickLine={{ stroke: theme === "dark" ? "#424C5E" : "#D9DEE3" }}
-                tick={{ fill: theme === "dark" ? "#CBD5E1" : "#334155" }}
+                domain={[minTemp, "auto"]}
+                padding={{ bottom: 10 }}
+                axisLine={{
+                  stroke: theme === "dark" ? "#424C5E" : "#D9DEE3",
+                }}
+                tickLine={{
+                  stroke: theme === "dark" ? "#424C5E" : "#D9DEE3",
+                }}
+                tick={{
+                  fill: theme === "dark" ? "#CBD5E1" : "#334155",
+                }}
               />
+
               <ChartTooltip
                 cursor={false}
                 content={
@@ -484,9 +512,11 @@ const TemperatureChart = ({ site }: { site: string }) => {
                   />
                 }
               />
-              {Object.keys(config).map((location, index) => {
+
+              {Object.keys(config).map((location) => {
                 const isHighlighted =
                   !highlightedKey || highlightedKey === location;
+
                 return (
                   <Line
                     key={location}
@@ -496,10 +526,13 @@ const TemperatureChart = ({ site }: { site: string }) => {
                     strokeWidth={highlightedKey === location ? 4 : 2}
                     dot={false}
                     opacity={isHighlighted ? 1 : 0.3}
-                    style={{ transition: "opacity 0.2s, stroke-width 0.2s" }}
+                    style={{
+                      transition: "opacity 0.2s, stroke-width 0.2s",
+                    }}
                   />
                 );
               })}
+
               <ChartLegend
                 content={
                   <ChartLegendContent

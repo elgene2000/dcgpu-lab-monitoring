@@ -6,6 +6,7 @@ import subprocess
 import re
 import requests
 import paramiko
+import time
 from datetime import datetime
 from celery import shared_task
 from utils.models.pdu import PDU
@@ -30,6 +31,103 @@ except ImportError as e:
 # Ensure .env file is loaded in tasks
 load_dotenv()
 
+# ============================================================================
+# TEMPERATURE VALIDATION AND RETRY CONSTANTS
+# ============================================================================
+MIN_VALID_TEMP = 20.0
+MAX_VALID_TEMP = 100.0
+MAX_RETRY_ATTEMPTS = 3
+RETRY_DELAY_SECONDS = 30
+
+
+def validate_gpu_temperatures(gpu_temps):
+    """
+    Validate GPU temperature array.
+    Returns (is_valid, reason) tuple.
+    
+    Valid temperatures must:
+    - Be a list of 8 elements
+    - Have at least one non-None value
+    - All non-None values must be between MIN_VALID_TEMP and MAX_VALID_TEMP
+    """
+    if gpu_temps is None:
+        return False, "No temperature data returned"
+    
+    if not isinstance(gpu_temps, list) or len(gpu_temps) != 8:
+        return False, f"Invalid temperature array format: {gpu_temps}"
+    
+    valid_temps = [t for t in gpu_temps if t is not None]
+    
+    if len(valid_temps) == 0:
+        return False, "All GPU temperatures are None"
+    
+    # Check if any temperature is outside valid range
+    invalid_temps = [t for t in valid_temps if t < MIN_VALID_TEMP or t > MAX_VALID_TEMP]
+    
+    if invalid_temps:
+        return False, f"Temperature(s) outside valid range ({MIN_VALID_TEMP}-{MAX_VALID_TEMP}°C): {invalid_temps}"
+    
+    return True, "Valid"
+
+
+def fetch_gpu_temperatures_with_retry(system_name, bmc_ip, username, password, system_type):
+    """
+    Fetch GPU temperatures with retry logic.
+    
+    Retries up to MAX_RETRY_ATTEMPTS times if:
+    - Temperature is > 100°C
+    - Temperature is < 20°C  
+    - Temperature is None/NA
+    
+    Args:
+        system_name: Name of the system
+        bmc_ip: BMC IP address or rack manager IP
+        username: Authentication username
+        password: Authentication password
+        system_type: Type of system (smci, miramar, gbt, quanta, banff, dell, gt)
+    
+    Returns:
+        tuple: (gpu_temperatures, attempt_count, validation_messages)
+    """
+    validation_messages = []
+    
+    for attempt in range(1, MAX_RETRY_ATTEMPTS + 1):
+        print(f"[RETRY] Attempt {attempt}/{MAX_RETRY_ATTEMPTS} for {system_name} (BMC: {bmc_ip})")
+        
+        # Fetch temperatures based on system type
+        if system_type == "banff":
+            gpu_temps = fetch_gpu_temperatures_banff_ssh(bmc_ip, username, password, system_name)
+        elif system_type == "dell":
+            gpu_temps = fetch_gpu_temperatures_dell_ssh(bmc_ip, username, password, system_name)
+        else:
+            gpu_temps = fetch_gpu_temperatures_redfish(bmc_ip, username, password, system_type)
+        
+        # Validate the temperatures
+        is_valid, reason = validate_gpu_temperatures(gpu_temps)
+        
+        validation_msg = f"Attempt {attempt}: {reason}"
+        validation_messages.append(validation_msg)
+        print(f"[RETRY] {system_name} - {validation_msg}")
+        
+        if is_valid:
+            print(f"[RETRY] {system_name} - Valid temperatures obtained on attempt {attempt}")
+            return gpu_temps, attempt, validation_messages
+        
+        # If not valid and we have more attempts, wait before retrying
+        if attempt < MAX_RETRY_ATTEMPTS:
+            print(f"[RETRY] {system_name} - Waiting {RETRY_DELAY_SECONDS} seconds before retry...")
+            time.sleep(RETRY_DELAY_SECONDS)
+        else:
+            print(f"[RETRY] {system_name} - All {MAX_RETRY_ATTEMPTS} attempts exhausted")
+    
+    # If we've exhausted all attempts, return the last result anyway
+    # This allows the system to still record data even if validation failed
+    return gpu_temps, MAX_RETRY_ATTEMPTS, validation_messages
+
+
+# ============================================================================
+# EXISTING FUNCTIONS (keep all your existing functions here)
+# ============================================================================
 
 @shared_task
 def say_hello():
@@ -39,12 +137,10 @@ def say_hello():
 async def snmpFetch(pdu_hostname: str, oid: str, v2c: str, type: str):
     try:
         client = Client(pdu_hostname, V2C(v2c))
-        # Retrieve SNMP value
         data = await client.get(OID(oid))
         if not data:
             return None
         if type == "temp":
-            # many SNMP temp sensors report tenths of degree
             return float(data.value / 10)
         else:
             return int(data.value)
@@ -54,10 +150,7 @@ async def snmpFetch(pdu_hostname: str, oid: str, v2c: str, type: str):
 
 
 def determine_system_type(system_name: str):
-    """
-    Determine system type based on system name prefix.
-    Returns: 'smci', 'miramar', 'gbt', 'quanta', 'banff', or 'unknown'
-    """
+    """Determine system type based on system name prefix."""
     system_name_lower = (system_name or "").lower()
     if system_name_lower.startswith("smci"):
         return "smci"
@@ -75,6 +168,7 @@ def determine_system_type(system_name: str):
         return "gt"
     else:
         return "unknown"
+
 
 def fetch_gpu_temperatures_dell_ssh(bmc_ip: str, username: str, password: str, system_name: str):
     """
@@ -853,7 +947,7 @@ def fetch_temperature_data():
 def fetch_system_temperature_data():
     """
     Fetch system GPU temperature data using Redfish API or SSH for all 8 GPUs per system.
-    Matches system names from database with BMC credentials and collects GPU temperature data.
+    NOW WITH RETRY LOGIC for invalid temperatures.
     """
     try:
         # Parse BMC credentials from environment
@@ -865,7 +959,7 @@ def fetch_system_temperature_data():
 
         # Check if SystemTemperature model is available
         if SystemTemperature is None:
-            print("ERROR: SystemTemperature model is not available. Check if the model file exists and is properly imported.")
+            print("ERROR: SystemTemperature model is not available.")
             return
 
         # Get systems from database
@@ -908,25 +1002,17 @@ def fetch_system_temperature_data():
             system_type = determine_system_type(system_name)
             print(f"Processing system: {system_name} (BMC: {bmc_ip}, Type: {system_type})")
 
-            # Fetch GPU temperatures based on system type
-            if system_type == "banff":
-                # Banff uses SSH to rack manager instead of Redfish
-                gpu_temperatures = fetch_gpu_temperatures_banff_ssh(bmc_ip, username, password, system_name)
-
-            elif system_type == "dell":
-                # Dell systems use SSH with racadm and local curl
-                gpu_temperatures = fetch_gpu_temperatures_dell_ssh(bmc_ip, username, password, system_name)
-
-            else:
-                # Other systems use Redfish
-                gpu_temperatures = fetch_gpu_temperatures_redfish(bmc_ip, username, password, system_type)
+            # ===== KEY CHANGE: Use retry logic instead of direct fetch =====
+            gpu_temperatures, attempts_made, validation_msgs = fetch_gpu_temperatures_with_retry(
+                system_name, bmc_ip, username, password, system_type
+            )
 
             if gpu_temperatures is not None:
                 # Create temperature record with GPU array
                 temp_data = {
                     "system": system_name,
                     "bmc_ip": bmc_ip,
-                    "gpu_temperatures": gpu_temperatures,  # List of 8 temps (some may be None)
+                    "gpu_temperatures": gpu_temperatures,
                     "symbol": "°C",
                     "created": created_time,
                     "updated": created_time,
@@ -934,11 +1020,12 @@ def fetch_system_temperature_data():
                 system_temperature_list.append(temp_data)
 
                 valid_temps = [t for t in gpu_temperatures if t is not None]
-                print(f"Successfully collected temperatures for {system_name}: {len(valid_temps)}/8 GPUs")
-                print(f"GPU temps: {gpu_temperatures}")
+                print(f"✓ Collected temperatures for {system_name} after {attempts_made} attempt(s): {len(valid_temps)}/8 GPUs")
+                print(f"  GPU temps: {gpu_temperatures}")
+                print(f"  Validation log: {' | '.join(validation_msgs)}")
             else:
-                print(f"Failed to collect GPU temperatures for {system_name} (BMC: {bmc_ip})")
-                print(f"FAILURE LOG: {system_name} - Could not retrieve data")
+                print(f"✗ Failed to collect GPU temperatures for {system_name} after {attempts_made} attempts")
+                print(f"  Validation log: {' | '.join(validation_msgs)}")
 
         print(f"Processed {matched_systems} systems with BMC credentials out of {len(all_systems)} total systems")
 
@@ -946,7 +1033,6 @@ def fetch_system_temperature_data():
         if system_temperature_list:
             print(f"Attempting to save {len(system_temperature_list)} GPU temperature records to database...")
             try:
-                # Initialize the SystemTemperature model
                 system_temp = SystemTemperature()
                 print("SystemTemperature model initialized successfully")
 
@@ -962,21 +1048,14 @@ def fetch_system_temperature_data():
                         successful_inserts += 1
                     except Exception as e:
                         print(f"Failed to insert record {i+1} ({temp_data['system']}): {e}")
-                        print(f"Failed record data: {temp_data}")
                         failed_inserts += 1
 
                 print(f"Database insertion complete: {successful_inserts} successful, {failed_inserts} failed")
 
-                if successful_inserts > 0:
-                    print(f"System GPU temperature data successfully stored in DB ({successful_inserts} records)")
-                else:
-                    print("No records were successfully inserted into the database")
-
             except Exception as e:
-                print(f"Error initializing SystemTemperature model or database connection: {e}")
+                print(f"Error initializing SystemTemperature model: {e}")
                 import traceback
                 traceback.print_exc()
-
         else:
             print("No system GPU temperature data collected to save")
 
