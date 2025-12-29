@@ -1139,174 +1139,104 @@ def fetch_temperature_data():
 
 
 @shared_task
-def fetch_system_temperature_data():
-    """
-    Fetch system GPU temperature data with dynamic scheduling for critical systems.
-    Systems with temps >= 80°C are checked every 30 seconds.
-    Normal systems are checked every 5 minutes.
-    """
-    try:
-        # Get Redis client for tracking critical systems
-        redis_client = get_redis_client()
-        
-        if redis_client:
-            print("=" * 80)
-            print("SYSTEM TEMPERATURE CHECK - CRITICAL MONITORING ENABLED")
-            print("=" * 80)
-            critical_systems = get_critical_systems(redis_client)
-            if critical_systems:
-                print(f"🔥 {len(critical_systems)} system(s) currently at critical temperatures:")
-                for sys_name, data in critical_systems.items():
-                    print(f"   - {sys_name}: {data['max_temp']}°C (checks: {data['check_count']})")
-            print("=" * 80)
-        
-        # Parse BMC credentials from environment
-        bmc_credentials = parse_bmc_credentials()
-
-        if not bmc_credentials:
-            print("No valid BMC credentials found")
-            return
-
-        # Check if SystemTemperature model is available
-        if SystemTemperature is None:
-            print("ERROR: SystemTemperature model is not available.")
-            return
-
-        # Get systems from database
-        print("Fetching systems from database...")
-        try:
-            systems_model = Systems()
-            all_systems = systems_model.find({})
-            print(f"Found {len(all_systems)} systems in database")
-        except Exception as e:
-            print(f"Error fetching systems from database: {e}")
-            return
-
-        if not all_systems:
-            print("No systems found in database")
-            return
-
-        system_temperature_list = []
-        created_time = datetime.now()
-        matched_systems = 0
-        systems_checked = 0
-        systems_skipped = 0
-
-        # Process each system from database
-        for system in all_systems:
-            system_name = system.get("system")
-            if not system_name:
-                print(f"System record missing system field: {system}")
-                continue
-
-            # Check if we have BMC credentials for this system
-            if system_name not in bmc_credentials:
-                print(f"No BMC credentials found for system: {system_name}")
-                continue
-
-            matched_systems += 1
-            
-            # Check if this system should be checked now based on critical status
-            should_check, reason = should_check_system_now(system_name, redis_client)
-            
-            if not should_check:
-                systems_skipped += 1
-                print(f"⏭️  SKIPPING {system_name}: {reason}")
-                continue
-            
-            systems_checked += 1
-            print(f"✓ CHECKING {system_name}: {reason}")
-            
-            credentials = bmc_credentials[system_name]
-            bmc_ip = credentials["bmc_ip"]
-            username = credentials["username"]
-            password = credentials["password"]
-
-            # Determine system type
-            system_type = determine_system_type(system_name)
-            print(f"Processing system: {system_name} (BMC: {bmc_ip}, Type: {system_type})")
-
-            # Fetch temperatures with retry logic
-            gpu_temperatures, attempts_made, validation_msgs = fetch_gpu_temperatures_with_retry(
-                system_name, bmc_ip, username, password, system_type
-            )
-
-            if gpu_temperatures is not None:
-                # Check if temperatures are critical
-                is_critical, max_temp, critical_gpus = is_critical_temperature(gpu_temperatures)
-                
-                # Update critical systems tracking in Redis
-                if redis_client:
-                    update_critical_systems_list(system_name, is_critical, max_temp, redis_client)
-                
-                # Log critical temperature alert
-                if is_critical:
-                    print(f"🚨 CRITICAL TEMPERATURE ALERT: {system_name}")
-                    print(f"   Max GPU temp: {max_temp}°C (Threshold: {CRITICAL_TEMP_THRESHOLD}°C)")
-                    print(f"   Critical GPUs: {critical_gpus}")
-                    print(f"   This system will now be checked every {CRITICAL_CHECK_INTERVAL} seconds")
-                
-                # Create temperature record with GPU array
-                temp_data = {
-                    "system": system_name,
-                    "bmc_ip": bmc_ip,
-                    "gpu_temperatures": gpu_temperatures,
-                    "symbol": "°C",
-                    "created": created_time,
-                    "updated": created_time,
-                }
-                system_temperature_list.append(temp_data)
-
-                valid_temps = [t for t in gpu_temperatures if t is not None]
-                print(f"✓ Collected temperatures for {system_name} after {attempts_made} attempt(s): {len(valid_temps)}/8 GPUs")
-                print(f"  GPU temps: {gpu_temperatures}")
-                print(f"  Max temp: {max_temp}°C {'🔥 CRITICAL' if is_critical else '✅ Normal'}")
-                
-                # Record check time
-                if redis_client:
-                    record_system_check_time(system_name, redis_client)
-            else:
-                print(f"✗ Failed to collect GPU temperatures for {system_name} after {attempts_made} attempts")
-
-        print(f"\n{'=' * 80}")
-        print(f"CHECK SUMMARY:")
-        print(f"  Matched systems: {matched_systems}")
-        print(f"  Systems checked: {systems_checked}")
-        print(f"  Systems skipped: {systems_skipped}")
-        print(f"{'=' * 80}\n")
-
-        # Upload to DB with detailed logging
-        if system_temperature_list:
-            print(f"Attempting to save {len(system_temperature_list)} GPU temperature records to database...")
-            try:
-                system_temp = SystemTemperature()
-                print("SystemTemperature model initialized successfully")
-
-                successful_inserts = 0
-                failed_inserts = 0
-
-                for i, temp_data in enumerate(system_temperature_list):
-                    try:
-                        valid_gpus = len([t for t in temp_data["gpu_temperatures"] if t is not None])
-                        print(f"Inserting record {i+1}/{len(system_temperature_list)}: {temp_data['system']} - {valid_gpus}/8 GPUs")
-                        result = system_temp.create(temp_data)
-                        print(f"Database insert result: {result}")
-                        successful_inserts += 1
-                    except Exception as e:
-                        print(f"Failed to insert record {i+1} ({temp_data['system']}): {e}")
-                        failed_inserts += 1
-
-                print(f"Database insertion complete: {successful_inserts} successful, {failed_inserts} failed")
-
-            except Exception as e:
-                print(f"Error initializing SystemTemperature model: {e}")
-                import traceback
-                traceback.print_exc()
-        else:
-            print("No system GPU temperature data collected to save")
-
-    except Exception as e:
-        print(f"Error in fetch_system_temperature_data: {e}")
-        import traceback
-        traceback.print_exc()
+def fetch_normal_system_temperature_data():
+    redis_client = get_redis_client()
+    bmc_credentials = parse_bmc_credentials()
+    if not bmc_credentials:
         return
+
+    systems_model = Systems()
+    all_systems = systems_model.find({})
+
+    system_temperature_list = []
+
+    critical_systems = get_critical_systems(redis_client)  # skip these
+
+    for system in all_systems:
+        system_name = system.get("system")
+        if not system_name or system_name not in bmc_credentials:
+            continue
+
+        if system_name in critical_systems:
+            continue
+
+        should_check, reason = should_check_system_now(system_name, redis_client)
+        if not should_check:
+            continue
+
+        credentials = bmc_credentials[system_name]
+        gpu_temperatures, attempts_made, _ = fetch_gpu_temperatures_with_retry(
+            system_name,
+            credentials["bmc_ip"],
+            credentials["username"],
+            credentials["password"],
+            determine_system_type(system_name)
+        )
+
+        if gpu_temperatures:
+            created_time = datetime.now()
+            temp_data = {
+                "system": system_name,
+                "bmc_ip": credentials["bmc_ip"],
+                "gpu_temperatures": gpu_temperatures,
+                "symbol": "°C",
+                "created": created_time,
+                "updated": created_time,
+            }
+            system_temperature_list.append(temp_data)
+            record_system_check_time(system_name, redis_client)
+
+    if system_temperature_list:
+        system_temp = SystemTemperature()
+        for temp_data in system_temperature_list:
+            system_temp.create(temp_data)
+
+@shared_task
+def fetch_critical_system_temperature_data():
+    redis_client = get_redis_client()
+    bmc_credentials = parse_bmc_credentials()
+    if not bmc_credentials:
+        return
+
+    critical_systems = get_critical_systems(redis_client)
+    if not critical_systems:
+        return
+
+    system_temperature_list = []
+
+    for system_name in critical_systems:
+        if system_name not in bmc_credentials:
+            continue
+
+        credentials = bmc_credentials[system_name]
+        gpu_temperatures, attempts_made, _ = fetch_gpu_temperatures_with_retry(
+            system_name,
+            credentials["bmc_ip"],
+            credentials["username"],
+            credentials["password"],
+            determine_system_type(system_name)
+        )
+
+        if gpu_temperatures:
+            created_time = datetime.now()
+            temp_data = {
+                "system": system_name,
+                "bmc_ip": credentials["bmc_ip"],
+                "gpu_temperatures": gpu_temperatures,
+                "symbol": "°C",
+                "created": created_time,
+                "updated": created_time,
+            }
+            system_temperature_list.append(temp_data)
+
+            # Update last check time
+            record_system_check_time(system_name, redis_client)
+
+            # Update critical system max temperature
+            is_critical, max_temp, _ = is_critical_temperature(gpu_temperatures)
+            update_critical_systems_list(system_name, is_critical, max_temp, redis_client)
+
+    if system_temperature_list:
+        system_temp = SystemTemperature()
+        for temp_data in system_temperature_list:
+            system_temp.create(temp_data)
